@@ -1,0 +1,57 @@
+/*
+   FreeRDP: A Remote Desktop Protocol client.
+   RDP Window Order constants
+
+   Copyright 2009 Marc-Andre Moreau <marcandre.moreau@gmail.com>
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+#ifndef __CONSTANTS_WINDOW_H
+#define __CONSTANTS_WINDOW_H
+
+/* Window Order Header Flags */
+#define WINDOW_ORDER_TYPE_WINDOW			0x01000000
+#define WINDOW_ORDER_TYPE_NOTIFY			0x02000000
+#define WINDOW_ORDER_TYPE_DESKTOP			0x04000000
+#define WINDOW_ORDER_STATE_NEW				0x10000000
+#define WINDOW_ORDER_STATE_DELETED			0x20000000
+#define WINDOW_ORDER_FIELD_OWNER			0x00000002
+#define WINDOW_ORDER_FIELD_STYLE			0x00000008
+#define WINDOW_ORDER_FIELD_SHOW				0x00000010
+#define WINDOW_ORDER_FIELD_TITLE			0x00000004
+#define WINDOW_ORDER_FIELD_CLIENTAREAOFFSET		0x00004000
+#define WINDOW_ORDER_FIELD_CLIENTAREASIZE		0x00010000
+#define WINDOW_ORDER_FIELD_RPCONTENT			0x00020000
+#define WINDOW_ORDER_FIELD_ROOTPARENT			0x00040000
+#define WINDOW_ORDER_FIELD_WNDOFFSET			0x00000800
+#define WINDOW_ORDER_FIELD_WNDCLIENTDELTA		0x00008000
+#define WINDOW_ORDER_FIELD_WNDSIZE			0x00000400
+#define WINDOW_ORDER_FIELD_WNDRECTS			0x00000100
+#define WINDOW_ORDER_FIELD_VISOFFSET			0x00001000
+#define WINDOW_ORDER_FIELD_VISIBILITY			0x00000200
+#define WINDOW_ORDER_FIELD_ICON_BIG			0x00002000
+#define WINDOW_ORDER_ICON				0x40000000
+#define WINDOW_ORDER_CACHEDICON				0x80000000
+#define WINDOW_ORDER_FIELD_NOTIFY_VERSION		0x00000008
+#define WINDOW_ORDER_FIELD_NOTIFY_TIP			0x00000001
+#define WINDOW_ORDER_FIELD_NOTIFY_INFO_TIP		0x00000002
+#define WINDOW_ORDER_FIELD_NOTIFY_STATE			0x00000004
+#define WINDOW_ORDER_FIELD_DESKTOP_NONE			0x00000001
+#define WINDOW_ORDER_FIELD_DESKTOP_HOOKED		0x00000002
+#define WINDOW_ORDER_FIELD_DESKTOP_ARC_COMPLETED	0x00000004
+#define WINDOW_ORDER_FIELD_DESKTOP_ARC_BEGAN		0x00000008
+#define WINDOW_ORDER_FIELD_DESKTOP_ZORDER		0x00000010
+#define WINDOW_ORDER_FIELD_DESKTOP_ACTIVEWND		0x00000020
+
+#endif /* __CONSTANTS_WINDOW_H */
