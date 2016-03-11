@@ -28,13 +28,13 @@
         "Entry"
         {
         "MsmKey" = "8:_0215A6D4E0D6C9A4E0237E42AD6D1D31"
-        "OwnerKey" = "8:_C8C1CA93127A4CFF84719DC54B07F45A"
+        "OwnerKey" = "8:_106A23CA68E948AB9DFA10C27C8D763A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_0215A6D4E0D6C9A4E0237E42AD6D1D31"
-        "OwnerKey" = "8:_106A23CA68E948AB9DFA10C27C8D763A"
+        "OwnerKey" = "8:_C8C1CA93127A4CFF84719DC54B07F45A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -94,13 +94,13 @@
         "Entry"
         {
         "MsmKey" = "8:_730F9A3A0F1A07BA06A442ADAD7A415A"
-        "OwnerKey" = "8:_BFBBC647424056B07066A5DA7E34D017"
+        "OwnerKey" = "8:_C8C1CA93127A4CFF84719DC54B07F45A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_730F9A3A0F1A07BA06A442ADAD7A415A"
-        "OwnerKey" = "8:_C8C1CA93127A4CFF84719DC54B07F45A"
+        "OwnerKey" = "8:_BFBBC647424056B07066A5DA7E34D017"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -160,19 +160,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_730F9A3A0F1A07BA06A442ADAD7A415A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_C8C1CA93127A4CFF84719DC54B07F45A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_1C7F2C85804C5C9FA1699EF18EB9976B"
+        "OwnerKey" = "8:_0215A6D4E0D6C9A4E0237E42AD6D1D31"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -184,7 +172,19 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_0215A6D4E0D6C9A4E0237E42AD6D1D31"
+        "OwnerKey" = "8:_1C7F2C85804C5C9FA1699EF18EB9976B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_C8C1CA93127A4CFF84719DC54B07F45A"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_730F9A3A0F1A07BA06A442ADAD7A415A"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -421,11 +421,6 @@
             "AssemblyAsmDisplayName" = "8:log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_0215A6D4E0D6C9A4E0237E42AD6D1D31"
-                    {
-                    "Name" = "8:log4net.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:log4net.dll"
             "TargetName" = "8:"
@@ -472,11 +467,6 @@
             "AssemblyAsmDisplayName" = "8:Myrtille.Services.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_1C7F2C85804C5C9FA1699EF18EB9976B"
-                    {
-                    "Name" = "8:Myrtille.Services.Contracts.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Myrtille.Services.Contracts.dll"
             "TargetName" = "8:"
@@ -594,11 +584,6 @@
             "AssemblyAsmDisplayName" = "8:Myrtille.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_BFBBC647424056B07066A5DA7E34D017"
-                    {
-                    "Name" = "8:Myrtille.Common.dll"
-                    "Attributes" = "3:512"
-                    }
                 }
             "SourcePath" = "8:Myrtille.Common.dll"
             "TargetName" = "8:"
@@ -725,28 +710,6 @@
             "Property" = "8:TARGETDIR"
                 "Folders"
                 {
-                    "{9EF0B969-E518-4E46-987F-47570745A589}:_441B7ABCAE3F4AE5B0A56DCDF1977011"
-                    {
-                    "Name" = "8:log"
-                    "AlwaysCreate" = "11:TRUE"
-                    "Condition" = "8:"
-                    "Transitive" = "11:FALSE"
-                    "Property" = "8:_33A8E760547044A09AE958072F2D1C60"
-                        "Folders"
-                        {
-                        }
-                    }
-                    "{9EF0B969-E518-4E46-987F-47570745A589}:_84BEF471B7D64937BE1935F3A2595E1B"
-                    {
-                    "Name" = "8:ssl"
-                    "AlwaysCreate" = "11:TRUE"
-                    "Condition" = "8:"
-                    "Transitive" = "11:FALSE"
-                    "Property" = "8:_22EDDDA076504ED5B203EA1B687EAAF3"
-                        "Folders"
-                        {
-                        }
-                    }
                     "{9EF0B969-E518-4E46-987F-47570745A589}:_FA146EB9AE2B44E2AB4B01E26999CAB2"
                     {
                     "Name" = "8:bin"

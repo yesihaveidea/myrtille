@@ -1,0 +1,4 @@
+Here goes the myrtille websockets server SSL certificate.
+
+To proceed, export your SSL certificate from IIS, with private key, into PFX format and save it into this folder with name "PKCS12Cert.pfx" (or any other name that match the "WebSocketServerCertificateFilename" key, defined into the myrtille "Web.config" file, <appSettings> section).
+Set a password that match the "WebSocketServerCertificatePassword" key, also defined into the myrtille "Web.config" file, <appSettings> section (default "myrtille").
