@@ -2,7 +2,7 @@
 
 I apologize not providing an extensive documentation, diagrams, industry grade architecture models, mockups and unit tests; I wanted to keep things as simple as possible (but I don't exclude doing it in a future release).
 
-If you have any issue, question or suggestion that isn't addressed into this synthetic documentation, FAQ or Wiki, please don't hesitate to contact me (mailto:cedrozor@gmail.com) or ask the community (https://groups.google.com/forum/#!forum/myrtille_rdp).
+If you have any issue, question or suggestion that isn't addressed into this synthetic documentation, FAQ or Wiki, please don't hesitate to contact me (cedrozor@gmail.com) or ask the community (https://groups.google.com/forum/#!forum/myrtille_rdp).
 
 ## History
 Myrtille started back in 2007 as a PoC, with coworkers on our spare time, under the name AppliKr. I (Cedric Coste) was in charge of the websites (admin and frontal), business and database layers. The objective was to demonstrate it was possible to virtualize desktops and applications into a web browser only using native web technologies (no plugin). HTML5 was in early stage and it was a real challenge to do it only with HTML4. We were pioneers on that matter, along with Guacamole (HTML5/VNC), and wanted to take part on the emerging SaaS market.
