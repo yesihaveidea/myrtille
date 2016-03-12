@@ -2,11 +2,13 @@
 Myrtille provides a simple and fast access to remote desktops and applications through a web browser.
 
 ## How does it works?
-It works by forwarding the user inputs (keyboard, mouse, touchscreen) from a web browser to an HTTP(S) gateway, then up to an RDP client which maintain a session with an RDP server.  
-The display resulting, or not, of such actions is streamed back to the browser, from the rdp client and through the gateway.  
-The implementation is quite straightforward in order to maintain the best speed and stability as possible.  
-Some optimizations, such as inputs buffering and display quality tweaking, help to mitigate with latency and bandwidth issues.  
-More information into the DOCUMENTATION file.
+It works by forwarding the user inputs (keyboard, mouse, touchscreen) from a web browser to an HTTP(S) gateway, then up to an RDP client which maintain a session with an RDP server.
+
+The display resulting, or not, of such actions is streamed back to the browser, from the rdp client and through the gateway.
+
+The implementation is quite straightforward in order to maintain the best speed and stability as possible. Some optimizations, such as inputs buffering and display quality tweaking, help to mitigate with latency and bandwidth issues.
+
+More information into the DOCUMENTATION.md file.
 
 ## Requirements
 - Client: a HTML4 or HTML5 browser
@@ -28,14 +30,19 @@ Add the following rules to the machine firewall:
 - Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (if not already installed), then install the Myrtille MSI package
 - Myrtille.msi: Myrtille MSI package (x86)
 
-If you have several RDP servers, you don't have to install Myrtille on each of them; you only have to configure them to be accessed by a Myrtille installation.  
+If you have several RDP servers, you don't have to install Myrtille on each of them; you only have to configure them to be accessed by a Myrtille installation.
+
 You can either do it manually (see notes and limitations below) or copy and import the Myrtille "RDPSetup.reg" file over the servers.
 
 ## Usage
-Once Myrtille is installed on your server, you can use it at http://yourserver/myrtille. Set the rdp server address, user domain (if defined), name and password then click "Connect!" to log in. "Disconnect" to log out.  
-If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (logs are saved under the Myrtille "log" folder).  
-You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall).  
-On touchscreen devices, you can pop the device keyboard with the "Keyboard" button. Then enter some text and click "Send".  
+Once Myrtille is installed on your server, you can use it at http://yourserver/myrtille. Set the rdp server address, user domain (if defined), name and password then click "Connect!" to log in. "Disconnect" to log out.
+
+If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (logs are saved under the Myrtille "log" folder).
+
+You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall).
+
+On touchscreen devices, you can pop the device keyboard with the "Keyboard" button. Then enter some text and click "Send".
+
 You can also upload/download file(s) to/from the user documents folder with the "My documents" button. Note that it requires the rdp server to be localhost (same machine as the http server).
 
 ## Third-party
@@ -48,7 +55,8 @@ Myrtille uses the following licensed software:
 
 See DISCLAIMERS.md file.
 
-The Myrtille code in FreeRDP is surrounded by region tags "#pragma region Myrtille" and "#pragma endregion".  
+The Myrtille code in FreeRDP is surrounded by region tags "#pragma region Myrtille" and "#pragma endregion".
+
 libWebP are official Google's WebP precompiled binaries, and are left unmodified. Same for Fleck websockets.
 
 ## License
@@ -56,8 +64,7 @@ Myrtille is licensed under Apache 2.0 license.
 See LICENSE file.
 
 ## Author
-Cedric Coste (mailto:cedrozor@gmail.com)
-https://fr.linkedin.com/in/cedric-coste-a1b9194b
+Cedric Coste (cedrozor@gmail.com). https://fr.linkedin.com/in/cedric-coste-a1b9194b
 
 ## Contributors
 - Catalin Trifanescu (AppliKr developer: application server. Steemind cofounder)
