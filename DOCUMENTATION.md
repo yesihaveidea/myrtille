@@ -18,6 +18,38 @@ I hope you will enjoy Myrtille! :)
 
 Special thanks to Catalin Trifanescu for its support.
 
+## Prerequisites
+Ensure the following Windows Server Roles and Features are installed on the machine on which you want to install Myrtille:
+- Remote Destop Services role (formerly Terminal Services). Myrtille only requires the Remote Desktop Session Host. You can either setup it manually (see notes and limitations below) or double click the Myrtille "RDPSetup.reg" file for automatic configuration (import registry keys).
+- Web Server role (IIS). Myrtille also requires .NET 4.0, which can be installed separately (using the Myrtille setup bootstrapper or a standalone installation package) or as a IIS feature.
+- Applications Server role. Myrtille requires the Windows Processes activation service support, through HTTP, TCP and named pipes.
+- Files Storage Service role. Should be installed automatically if the above roles are installed. Myrtille requires the files server feature in order to allow to upload/download file(s) to the connected users documents folders.
+
+## Network
+Add the following rules to the machine firewall:
+- "Myrtille Websockets": allow both directions TCP port 8181
+- "Myrtille Websockets Secured": allow both directions TCP port 8431
+
+## Installation
+- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (if not already installed), then install the Myrtille MSI package
+- Myrtille.msi: Myrtille MSI package (x86)
+
+If you have several RDP servers, you don't have to install Myrtille on each of them; you only have to configure them to be accessed by a Myrtille installation.
+
+You can either do it manually (see notes and limitations below) or copy and import the Myrtille "RDPSetup.reg" file over the servers.
+
+## Security
+If you want to use Myrtille through HTTPS (https://yourserver/myrtille), you have to create a self-signed SSL certificate or import a valid one (server side). Then, in order to use secure websockets (WSS), export this certificate into the Myrtille "ssl" folder, with private key, name "PKCS12Cert.pfx" and set a password that match the one defined into the Myrtille "Web.Config" file ("myrtille" by default).
+
+If not using Google Chrome (client side), see detailed comments regarding the security configuration into the Myrtille "Web.Config" file. You may have to add an exception for port 8431 (secure websockets) into your browser.
+
+In case of issues, ensure the port 8431 is not blocked by your firewall (or proxy, reverse proxy, VPN, etc.).
+
+## Configuration
+Both the gateway and services have their own .NET config files; the gateway also uses XDT transform files to adapt the settings depending on the current solution configuration.
+
+You may also play with the gateway "js/config.js" file settings to fine tune the configuration depending on your needs.
+
 ## Code organization
 - Myrtille.RDP: C++ code. FreeRDP rdp client; modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
 - Myrtille.Common: C# code. Fleck Websockets library and common helpers.
@@ -68,38 +100,6 @@ However, I'm fully aware that it breaks the distributed architecture pattern. Th
 
 This is a thing to consider if you want to isolate the web gateway from your intranet (into a DMZ for instance) and still be able to connect a machine on it.
 
-## Prerequisites
-Ensure the following Windows Server Roles and Features are installed on the machine on which you want to install Myrtille:
-- Remote Destop Services role (formerly Terminal Services). Myrtille only requires the Remote Desktop Session Host. You can either setup it manually (see notes and limitations below) or double click the Myrtille "RDPSetup.reg" file for automatic configuration (import registry keys).
-- Web Server role (IIS). Myrtille also requires .NET 4.0, which can be installed separately (using the Myrtille setup bootstrapper or a standalone installation package) or as a IIS feature.
-- Applications Server role. Myrtille requires the Windows Processes activation service support, through HTTP, TCP and named pipes.
-- Files Storage Service role. Should be installed automatically if the above roles are installed. Myrtille requires the files server feature in order to allow to upload/download file(s) to the connected users documents folders.
-
-## Network
-Add the following rules to the machine firewall:
-- "Myrtille Websockets": allow both directions TCP port 8181
-- "Myrtille Websockets Secured": allow both directions TCP port 8431
-
-## Installation
-- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (if not already installed), then install the Myrtille MSI package
-- Myrtille.msi: Myrtille MSI package (x86)
-
-If you have several RDP servers, you don't have to install Myrtille on each of them; you only have to configure them to be accessed by a Myrtille installation.
-
-You can either do it manually (see notes and limitations below) or copy and import the Myrtille "RDPSetup.reg" file over the servers.
-
-## Security
-If you want to use Myrtille through HTTPS (https://yourserver/myrtille), you have to create a self-signed SSL certificate or import a valid one (server side). Then, in order to use secure websockets (WSS), export this certificate into the Myrtille "ssl" folder, with private key, name "PKCS12Cert.pfx" and set a password that match the one defined into the Myrtille "Web.Config" file ("myrtille" by default).
-
-If not using Google Chrome (client side), see detailed comments regarding the security configuration into the Myrtille "Web.Config" file. You may have to add an exception for port 8431 (secure websockets) into your browser.
-
-In case of issues, ensure the port 8431 is not blocked by your firewall (or proxy, reverse proxy, VPN, etc.).
-
-## Configuration
-Both the gateway and services have their own .NET config files; the gateway also uses XDT transform files to adapt the settings depending on the current solution configuration.
-
-You may also play with the gateway "js/config.js" file settings to fine tune the configuration depending on your needs.
-
 ## Notes and limitations
 - On Windows Server 2008, you may have to install (manually) the Microsoft Visual C++ 2008 redistributables, required by OpenSSL (libeay32.dll/ssleay32.dll)
 - On Windows Server 2012, you may have issues installing the Microsoft Visual C++ 2015 redistributables (http://stackoverflow.com/questions/31536606/while-installing-vc-redist-x64-exe-getting-error-failed-to-configure-per-machi). To circumvent that, ensure your system is fully updated or try to install the package "Windows8.1-KB2999226-x64.msu" manually.
@@ -110,7 +110,7 @@ You may also play with the gateway "js/config.js" file settings to fine tune the
 - The installer configures the RDP server on the local machine according to the Myrtille specifications (see above comment regarding NLA); any subsequent configuration changes may make Myrtille to dysfunction or stop working.
 
 ## Troubleshoot
-First at all, ensure the Myrtille prerequisites are met (see README.md file).
+First at all, ensure the Myrtille prerequisites are met (see "Prerequisites" section).
 
 - The installation fails
 	- Check the Windows events logs ("System", "Application", etc.).
@@ -118,14 +118,14 @@ First at all, ensure the Myrtille prerequisites are met (see README.md file).
 - I can't access http://yourserver/myrtille
 	- Ensure IIS is started and "Myrtille.Web" application is running on the "MyrtilleAppPool" application pool.
 	- Ensure .NET 4.0 is installed and the "MyrtilleAppPool" is running on it.
-	- If using HTTPS, ensure a valid SSL certificate is installed on IIS and exported as .PFX into Myrtille "ssl" folder (more details in README, "Security" part).
+	- If using HTTPS, ensure a valid SSL certificate is installed on IIS and exported as .PFX into Myrtille "ssl" folder (see "Security" section).
 
 - Nothing happens when I click "Connect!"
 	- Ensure you entered valid connection information (server address, user credentials, etc.).
 	- Ensure the network traffic (websockets and xmlhttp in particular) is not blocked by a firewall, proxy, reverse proxy, VPN or whatever.
 	- Ensure IIS is started and "Myrtille.Web" application is running on the "MyrtilleAppPool" application pool.
 	- Ensure .NET 4.0 is installed and the "MyrtilleAppPool" is running on it.
-	- If using HTTPS with HTML5 rendering (hence secure websockets, WSS), ensure the TCP port 8431 is opened (more details in README, "Security" part).
+	- If using HTTPS with HTML5 rendering (hence secure websockets, WSS), ensure the TCP port 8431 is opened (see "Security" section).
 	- Ensure the "Myrtille.Services" Windows service is started.
 	- Ensure the Microsoft Visual C++ 2015 redistributables are installed (and also Microsoft Visual C++ 2008 redistributables if on Windows Server 2008); they are required by FreeRDP.
 	- Check the RDP server configuration (does the user exists, is it a member of the "Remote Desktop Users" group, are Remote Desktop CALs valid?, etc.).
