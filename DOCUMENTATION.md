@@ -1,4 +1,4 @@
-﻿## Welcome!
+﻿## Introduction
 I worked hard to make Myrtille as straightforward as possible, with commented code, but some points may needs additional information.
 
 I apologize not providing an extensive documentation, diagrams, industry grade architecture models, mockups and unit tests; I wanted to keep things as simple as possible (but I don't exclude doing it in a future release).
