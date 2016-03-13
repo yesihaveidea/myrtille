@@ -138,7 +138,7 @@ First at all, ensure the Myrtille prerequisites are met (see "Prerequisites" sec
 
 - Myrtille is slow or buggy
 	- Enable the stats bar to have detailed information about the current connection. Check latency and bandwith, among other things.
-	- Ensure debug is disabled or otherwise logs are not set to "Information" level (Myrtille "Web.Config" file, "<system.diagnostics>" section, default is "Warning"). Check logs, if debug is enabled.
+	- Ensure debug is disabled or otherwise logs are not set to "Information" level (Myrtille "Web.Config" file, "system.diagnostics" section, default is "Warning"). Check logs, if debug is enabled.
 	- If debug is enabled and you are running Myrtille in debug mode under Visual Studio, you will have the FreeRDP window (session display) and console (rdp events) shown to you. It may help to debug.
 	- Switch from HTML4 to HTML5 rendering, or inversely (should be faster with HTML5).
 	- Check your network configuration (is something filtering the traffic?) and capabilities (high latency or small bandwith?).
