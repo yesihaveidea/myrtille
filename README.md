@@ -14,25 +14,14 @@ More information into the DOCUMENTATION.md file.
 - Client: a HTML4 or HTML5 browser
 - Server: a RDP enabled computer, IIS 7.0+ and .NET 4.0+ (see related roles and features below)
 
-## Prerequisites
-Ensure the following Windows Server Roles and Features are installed on the machine on which you want to install Myrtille:
-- Remote Destop Services role (formerly Terminal Services). Myrtille only requires the Remote Desktop Session Host. You can either setup it manually (see notes and limitations below) or double click the Myrtille "RDPSetup.reg" file for automatic configuration (import registry keys).
-- Web Server role (IIS). Myrtille also requires .NET 4.0, which can be installed separately (using the Myrtille setup bootstrapper or a standalone installation package) or as a IIS feature.
-- Applications Server role. Myrtille requires the Windows Processes activation service support, through HTTP, TCP and named pipes.
-- Files Storage Service role. Should be installed automatically if the above roles are installed. Myrtille requires the files server feature in order to allow to upload/download file(s) to the connected users documents folders.
-
-## Network
-Add the following rules to the machine firewall:
-- "Myrtille Websockets": allow both directions TCP port 8181
-- "Myrtille Websockets Secured": allow both directions TCP port 8431
+## Build
+See DOCUMENTATION.md.
 
 ## Installation
 - Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (if not already installed), then install the Myrtille MSI package
 - Myrtille.msi: Myrtille MSI package (x86)
 
-If you have several RDP servers, you don't have to install Myrtille on each of them; you only have to configure them to be accessed by a Myrtille installation.
-
-You can either do it manually (see notes and limitations below) or copy and import the Myrtille "RDPSetup.reg" file over the servers.
+See DOCUMENTATION.md for more details.
 
 ## Usage
 Once Myrtille is installed on your server, you can use it at http://yourserver/myrtille. Set the rdp server address, user domain (if defined), name and password then click "Connect!" to log in. "Disconnect" to log out.

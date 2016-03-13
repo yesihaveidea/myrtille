@@ -38,11 +38,13 @@ If you want to run Myrtille with Visual Studio, you should set startup projects 
 
 You can choose the browser you want to use by right-clicking an ASPX page into the "Myrtille.Web" project and click "Browse With...".
 
-Hit F5 to start debugging.
-	
 The FreeRDP executable project is "Myrtille.RDP/FreeRDP.wfreerdp" (others FreeRDP projects under "Myrtille.RDP" are static or dynamic libraries).
 
 You can debug FreeRDP, while an rdp session is active, by attaching the debugger to the process "FreeRDP.wfreerdp.exe" (native code).
+
+Before first run, build all the solution in order to generate "FreeRDP.wfreerdp.exe".
+
+Hit F5 to start debugging.
 
 ## Communication
 ### Overview
@@ -64,6 +66,26 @@ web gateway <-IPC-> rdp client
 However, I'm fully aware that it breaks the distributed architecture pattern. Thus, if you want, feel free to move the named pipes management up to the wcf services layer and proxy the data from/to the web gateway.
 
 This is a thing to consider if you want to isolate the web gateway from your intranet (into a DMZ for instance) and still be able to connect a machine on it.
+
+## Prerequisites
+Ensure the following Windows Server Roles and Features are installed on the machine on which you want to install Myrtille:
+- Remote Destop Services role (formerly Terminal Services). Myrtille only requires the Remote Desktop Session Host. You can either setup it manually (see notes and limitations below) or double click the Myrtille "RDPSetup.reg" file for automatic configuration (import registry keys).
+- Web Server role (IIS). Myrtille also requires .NET 4.0, which can be installed separately (using the Myrtille setup bootstrapper or a standalone installation package) or as a IIS feature.
+- Applications Server role. Myrtille requires the Windows Processes activation service support, through HTTP, TCP and named pipes.
+- Files Storage Service role. Should be installed automatically if the above roles are installed. Myrtille requires the files server feature in order to allow to upload/download file(s) to the connected users documents folders.
+
+## Network
+Add the following rules to the machine firewall:
+- "Myrtille Websockets": allow both directions TCP port 8181
+- "Myrtille Websockets Secured": allow both directions TCP port 8431
+
+## Installation
+- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (if not already installed), then install the Myrtille MSI package
+- Myrtille.msi: Myrtille MSI package (x86)
+
+If you have several RDP servers, you don't have to install Myrtille on each of them; you only have to configure them to be accessed by a Myrtille installation.
+
+You can either do it manually (see notes and limitations below) or copy and import the Myrtille "RDPSetup.reg" file over the servers.
 
 ## Security
 If you want to use Myrtille through HTTPS (https://yourserver/myrtille), you have to create a self-signed SSL certificate or import a valid one (server side). Then, in order to use secure websockets (WSS), export this certificate into the Myrtille "ssl" folder, with private key, name "PKCS12Cert.pfx" and set a password that match the one defined into the Myrtille "Web.Config" file ("myrtille" by default).
