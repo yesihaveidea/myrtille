@@ -12,7 +12,7 @@ More information into the DOCUMENTATION.md file.
 
 ## Requirements
 - Client: a HTML4 or HTML5 browser
-- Server: a RDP enabled computer, IIS 7.0+ and .NET 4.0+ (see related roles and features below)
+- Server: a RDP enabled computer, IIS 7.0+ and .NET 4.0+ (see DOCUMENTATION.md for related roles and features)
 
 ## Build
 See DOCUMENTATION.md.
