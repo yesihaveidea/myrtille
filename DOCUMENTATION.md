@@ -127,7 +127,8 @@ First at all, ensure the Myrtille prerequisites are met (see "Prerequisites" sec
 	- Ensure .NET 4.0 is installed and the "MyrtilleAppPool" is running on it.
 	- If using HTTPS with HTML5 rendering (hence secure websockets, WSS), ensure the TCP port 8431 is opened (see "Security" section).
 	- Ensure the "Myrtille.Services" Windows service is started.
-	- Ensure the Microsoft Visual C++ 2015 redistributables are installed (and also Microsoft Visual C++ 2008 redistributables if on Windows Server 2008); they are required by FreeRDP.
+	- Ensure the RDP client ("FreeRDP.wfreerdp.exe") does exists (into the "Myrtille.Services" output folder, if running under Visual Studio, or into the "bin" folder otherwise); if not, you need to build the "Myrtille.RDP/FreeRDP.wfreerdp" project (or simply build all the solution).
+	- Ensure the Microsoft Visual C++ 2015 redistributables are installed (and also Microsoft Visual C++ 2008 redistributables if on Windows Server 2008); they are required by the RDP client.
 	- Check the RDP server configuration (does the user exists, is it a member of the "Remote Desktop Users" group, are Remote Desktop CALs valid?, etc.).
 	- Check the RDP server logs (and also the Windows events logs on the RDP server machine).
 	- Check the Windows events logs ("System", "Application", etc.), particulary regarding .NET.

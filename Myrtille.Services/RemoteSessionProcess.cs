@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.ServiceModel;
+using System.Windows.Forms;
 using Myrtille.Services.Contracts;
 
 namespace Myrtille.Services
@@ -86,6 +87,18 @@ namespace Myrtille.Services
                 _process = new Process();
 
                 _process.StartInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FreeRDP.wfreerdp.exe");
+
+                // ensure the FreeRDP executable does exists
+                if (!File.Exists(_process.StartInfo.FileName))
+                {
+                    var msg = "The FreeRDP executable is missing. Please build the Myrtille.RDP/FreeRDP.wfreerdp project in order to generate it.";
+                    if (Environment.UserInteractive)
+                    {
+                        MessageBox.Show(msg);
+                    }
+                    Trace.TraceError(msg);
+                    return;
+                }
 
                 _process.StartInfo.Arguments =
                     "-i " + _remoteSessionId +

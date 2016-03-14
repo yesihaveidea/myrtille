@@ -202,7 +202,7 @@ namespace Myrtille.Web
             }
 
             // connect it
-            if (RemoteSessionManager != null && RemoteSessionManager.RemoteSession.State == RemoteSessionState.NotConnected)
+            if (RemoteSessionManager != null && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected)
             {
                 try
                 {
@@ -244,7 +244,7 @@ namespace Myrtille.Web
             EventArgs e)
         {
             // disconnect the active remote session, if any and connected
-            if (RemoteSessionManager != null && RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected)
+            if (RemoteSessionManager != null && (RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected))
             {
                 try
                 {
