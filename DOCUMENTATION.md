@@ -138,10 +138,10 @@ First at all, ensure the Myrtille prerequisites are met (see "Prerequisites" sec
 	- Check the RDP server configuration (session disconnect timeout in particular). You can setup it automatically by importing the Myrtille "RDPSetup.reg" file into registry.
 
 - Myrtille is slow or buggy
-	- Enable the stats bar to have detailed information about the current connection. Check latency and bandwith, among other things.
+	- Enable the stats bar to have detailed information about the current connection. Check latency and bandwidth, among other things.
 	- Ensure debug is disabled or otherwise logs are not set to "Information" level (Myrtille "Web.Config" file, "system.diagnostics" section, default is "Warning"). Check logs, if debug is enabled.
 	- If debug is enabled and you are running Myrtille in debug mode under Visual Studio, you will have the FreeRDP window (session display) and console (rdp events) shown to you. It may help to debug.
 	- Switch from HTML4 to HTML5 rendering, or inversely (should be faster with HTML5).
-	- Check your network configuration (is something filtering the traffic?) and capabilities (high latency or small bandwith?).
+	- Check your network configuration (is something filtering the traffic?) and capabilities (high latency or small bandwidth?).
 	- Maybe the default settings are not adapted to your configuration. You can tweak the "js/config.js" file as you wish (see extensive comments there).
 	- Despite my best efforts to produce quality and efficient code, I may have missed/messed something... Please don't hesitate to tell me or add your contribution! Thanks! :)
