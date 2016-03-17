@@ -36,7 +36,7 @@ You can also upload/download file(s) to/from the user documents folder with the 
 
 ## Third-party
 Myrtille uses the following licensed software:
-- RDP client: FreeRDP 0.8.2 (https://github.com/FreeRDP/FreeRDP), licensed under Apache 2.0 license.
+- RDP client: FreeRDP 0.8.2 (https://github.com/FreeRDP/FreeRDP-old), licensed under Apache 2.0 license.
 - OpenSSL toolkit: 1.0.1f (https://github.com/openssl/openssl), licensed under BSD-style Open Source licenses.
 - WebP encoding: libWebP 0.5.0 (https://github.com/webmproject/libwebp), licensed under BSD-style Open Source license. Copyright (c) 2010, Google Inc. All rights reserved.
 - HTML5 websockets: Fleck 0.14.0 (https://github.com/statianzo/Fleck), licensed under MIT license. Copyright (c) 2010-2014 Jason Staten.
