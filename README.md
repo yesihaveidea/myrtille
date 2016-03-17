@@ -34,6 +34,8 @@ On touchscreen devices, you can pop the device keyboard with the "Keyboard" butt
 
 You can also upload/download file(s) to/from the user documents folder with the "My documents" button. Note that it requires the rdp server to be localhost (same machine as the http server).
 
+Myrtille doesn't support the mouse pointer shadow. If enabled for the user, you have to disable it (not much difference anyway). See "Notes and limitations" into DOCUMENTATION.md.
+
 ## Third-party
 Myrtille uses the following licensed software:
 - RDP client: FreeRDP 0.8.2 (https://github.com/FreeRDP/FreeRDP-old), licensed under Apache 2.0 license.
