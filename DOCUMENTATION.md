@@ -111,7 +111,7 @@ This is a thing to consider if you want to isolate the web gateway from your int
 - The installer configures the RDP server on the local machine according to the Myrtille specifications (see above comment regarding NLA); any subsequent configuration changes may make Myrtille to dysfunction or stop working.
 
 ## Troubleshoot
-First at all, ensure the Myrtille prerequisites are met (see "Prerequisites" section).
+First at all, ensure the Myrtille prerequisites are met (see "Prerequisites").
 
 - The installation fails
 	- Check the Windows events logs ("System", "Application", etc.).
@@ -119,14 +119,14 @@ First at all, ensure the Myrtille prerequisites are met (see "Prerequisites" sec
 - I can't access http://yourserver/myrtille
 	- Ensure IIS is started and "Myrtille.Web" application is running on the "MyrtilleAppPool" application pool.
 	- Ensure .NET 4.0 is installed and the "MyrtilleAppPool" is running on it.
-	- If using HTTPS, ensure a valid SSL certificate is installed on IIS and exported as .PFX into Myrtille "ssl" folder (see "Security" section).
+	- If using HTTPS, ensure a valid SSL certificate is installed on IIS and exported as .PFX into Myrtille "ssl" folder (see "Security").
 
 - Nothing happens when I click "Connect!"
 	- Ensure you entered valid connection information (server address, user credentials, etc.).
 	- Ensure the network traffic (websockets and xmlhttp in particular) is not blocked by a firewall, proxy, reverse proxy, VPN or whatever.
 	- Ensure IIS is started and "Myrtille.Web" application is running on the "MyrtilleAppPool" application pool.
 	- Ensure .NET 4.0 is installed and the "MyrtilleAppPool" is running on it.
-	- If using HTTPS with HTML5 rendering (hence secure websockets, WSS), ensure the TCP port 8431 is opened (see "Security" section).
+	- If using HTTPS with HTML5 rendering (hence secure websockets, WSS), ensure the TCP port 8431 is opened (see "Security").
 	- Ensure the "Myrtille.Services" Windows service (or console application if running under Visual Studio) is started.
 	- Ensure the RDP client ("FreeRDP.wfreerdp.exe") does exists (into the "Myrtille.Services" output folder, if running under Visual Studio, or into the "bin" folder otherwise); if not, you need to build the "Myrtille.RDP/FreeRDP.wfreerdp" project (or simply build all the solution).
 	- Ensure the Microsoft Visual C++ 2015 redistributables are installed (and also Microsoft Visual C++ 2008 redistributables if on Windows Server 2008); they are required by the RDP client.
@@ -134,6 +134,9 @@ First at all, ensure the Myrtille prerequisites are met (see "Prerequisites" sec
 	- Check the RDP server logs (and also the Windows events logs on the RDP server machine).
 	- Check the Windows events logs ("System", "Application", etc.), particulary regarding .NET.
 	- Retry with Myrtille logs enabled and check them (Myrtille "log" folder). You can change their verbosity level in config (but be warned it will affect peformance and flood the disk if setted too verbose).
+
+- The mouse pointer is weird (malformed)
+	- Myrtille doesn't support the mouse pointer shadow (see "Notes and limitations"). You have to disable it (Control panel > Hardware > Mouse > Pointers (tab) > uncheck "Enable pointer shadow").
 
 - The RDP session continues to run after clicking "Disconnect"
 	- Check the RDP server configuration (session disconnect timeout in particular). You can setup it automatically by importing the Myrtille "RDPSetup.reg" file into registry.
