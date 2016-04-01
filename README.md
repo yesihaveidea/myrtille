@@ -1,5 +1,5 @@
 ﻿# Myrtille
-Myrtille provides a simple and fast access to remote desktops and applications through a web browser.
+Myrtille provides a simple and fast access to remote desktops and applications through a web browser (without any plugin, extension or configuration).
 
 ## How does it works?
 It works by forwarding the user inputs (keyboard, mouse, touchscreen) from a web browser to an HTTP(S) gateway, then up to an RDP client which maintain a session with an RDP server.
