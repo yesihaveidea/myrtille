@@ -10,6 +10,11 @@ The implementation is quite straightforward in order to maintain the best speed 
 
 More information into the DOCUMENTATION.md file.
 
+## Features
+- HTML4 and HTML5 support
+- File transfer
+- WebP compression
+
 ## Requirements
 - Client: a HTML4 or HTML5 browser
 - Server: a RDP enabled computer, IIS 7.0+ and .NET 4.0+ (see DOCUMENTATION.md for related roles and features)
