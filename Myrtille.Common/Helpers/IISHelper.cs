@@ -107,10 +107,12 @@ namespace Myrtille.Helpers
         /// </summary>
         /// <param name="poolName"></param>
         /// <param name="version"></param>
+        /// <param name="enable32BitAppOnWin64"></param>
         /// <param name="loadUserProfile">true for IIS > 6</param>
         public static void CreateIISApplicationPool(
             string poolName,
             string version,
+            bool enable32BitAppOnWin64 = true,
             bool loadUserProfile = true)
         {
             Trace.TraceInformation("Creating IIS application pool {0}, .NET framework {1}", poolName, version);
@@ -123,6 +125,7 @@ namespace Myrtille.Helpers
                 var serverManager = new ServerManager();
                 var pool = serverManager.ApplicationPools.Add(poolName);
                 pool.ManagedRuntimeVersion = version;
+                pool.Enable32BitAppOnWin64 = enable32BitAppOnWin64;
                 pool.ProcessModel.LoadUserProfile = loadUserProfile;
                 serverManager.CommitChanges();
             }

@@ -1,2 +1,5 @@
 ﻿2016-03-08 Version 1.0.0
 	Initial release version (stable)
+
+2016-04-06 Version 1.0.1
+	Forced x86 (32 bits) build, in order to fix COM issues on mixed platforms
