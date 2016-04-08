@@ -31,7 +31,7 @@ Add the following rules to the machine firewall:
 - "Myrtille Websockets Secured": allow both directions TCP port 8431
 
 ## Installation
-- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (if not already installed), then install the Myrtille MSI package
+- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 (x86) redistributables (if not already installed), then install the Myrtille MSI package
 - Myrtille.msi: Myrtille MSI package (x86)
 
 If you have several RDP servers, you don't have to install Myrtille on each of them; you only have to configure them to be accessed by a Myrtille installation.
@@ -136,8 +136,8 @@ First at all, ensure the Myrtille prerequisites are met (see "Prerequisites").
 	- If using HTTPS with HTML5 rendering (hence secure websockets, WSS), ensure the TCP port 8431 is opened (see "Security").
 	- Ensure the "Myrtille.Services" Windows service (or console application if running under Visual Studio) is started.
 	- Ensure the RDP client ("FreeRDP.wfreerdp.exe") does exists (into the "Myrtille.Services" output folder, if running under Visual Studio, or into the "bin" folder otherwise); if not, you need to build the "Myrtille.RDP/FreeRDP.wfreerdp" project (or simply build all the solution).
-	- Ensure the Microsoft Visual C++ 2015 redistributables are installed (and also Microsoft Visual C++ 2008 redistributables if on Windows Server 2008); they are required by the RDP client.
-	- Check the RDP server configuration (does the user exists, is it a member of the "Remote Desktop Users" group, are Remote Desktop CALs valid?, etc.).
+	- Ensure the Microsoft Visual C++ 2015 (x86) redistributables are installed (and also Microsoft Visual C++ 2008 (x86) redistributables if on Windows Server 2008); they are required by the RDP client.
+	- Check the RDP server configuration (**ensure NLA is disabled** (Myrtille supports standard RDP authentication only; see notes and limitations), does the user exists, is it a member of the "Remote Desktop Users" group, are Remote Desktop CALs valid?, etc.).
 	- Check the RDP server logs (and also the Windows events logs on the RDP server machine).
 	- Check the Windows events logs ("System", "Application", etc.), particulary regarding .NET.
 	- Retry with Myrtille logs enabled and check them (Myrtille "log" folder). You can change their verbosity level in config (but be warned it will affect peformance and flood the disk if setted too verbose).
