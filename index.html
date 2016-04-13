@@ -33,14 +33,14 @@
       <section id="main_content" class="inner">
         
         <h3><a id="welcome" class="anchor" href="#welcome" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Welcome to Myrtille!</h3>
-        <p>Myrtille is a simple yet efficient way to connect an RDP server through a web browser.</p>
-        <p>It requires only a simple browser (no plugin, extension, application or configuration whatsoever). Thus, it works straight from any web device (including touch pads and mobiles).</p>
-        <p>This project started back as a PoC in 2007, then became commercial in 2011 before going open source this year.</p>
+        <p>Myrtille is a straightforward way to connect remote desktops, hosted on Windows Servers and using the RDP protocol, from a web browser.</p>
+        <p>It just needs a browser (no plugin, extension, application or configuration whatsoever) and thus works on any operating system or device (including touchpads and mobiles).</p>
+        <p>This project started back as a PoC in 2007, then became commercial in 2011 before going open source in march 2016.</p>
 
         <h3><a id="overview" class="anchor" href="#overview" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How does it works?</h3>
-        <p>Myrtille is basically a web interface to a standard RDP client running on an HTTP gateway. It sends the user actions up to the RDP server then receives the resulting display.</p>
-        <p>By doing so, it acts like many other equivalent solutions (Guacamole or FreeRDP-WebConnect, to name only some).</p>
-        <p>However, it's one of the few available for .NET C#. It also supports both HTML5 and HTML4 (compatility with old browsers, starting from IE6 (!), or in case HTML5 websockets are blocked by a firewall or proxy).</p>
+        <p>Myrtille is basically a web interface to a standard RDP client running through an HTTP(S) gateway. It sends the user actions up to the RDP server then receives the resulting display.</p>
+        <p>By doing so, it works like comparable solutions (<a href="https://github.com/glyptodon/guacamole-client">Guacamole</a> or <a href="https://github.com/FreeRDP/FreeRDP-WebConnect">FreeRDP-WebConnect</a>, to name a few), but is specifically intended for Windows as it uses IIS the .NET (C#) framework.</p>
+		<p>It features HTML4 (starting from IE6!) and HTML5 support, file transfer and WebP compression. Many optimizations and a minimalist design makes it an efficient solution.</p>
 
         <h3><a id="setup" class="anchor" href="#setup" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Download Installer</h3>
         <p>Even if there is nothing to install client side, there is a server part :p</p>
