@@ -209,7 +209,7 @@ function sendText(text)
     }
 }
 
-function sendKey(keyCode)
+function sendKey(keyCode, release)
 {
     try
     {
@@ -224,7 +224,9 @@ function sendKey(keyCode)
         var keys = new Array();
                 
         keys.push('K' + keyCode + '-1');
-        keys.push('K' + keyCode + '-0');
+
+        if (release)
+            keys.push('K' + keyCode + '-0');
                 
         network.processUserEvent('keyboard', keys.toString());
     }

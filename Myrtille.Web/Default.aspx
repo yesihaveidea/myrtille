@@ -78,6 +78,9 @@
             
                 <%-- upload/download file(s). only enabled if the connected server is localhost so file(s) can be accessed within the rdp session --%>
                 <input type="button" runat="server" id="files" value="My Documents" disabled="disabled" onclick="openPopup('fileStoragePopup', 'FileStorage.aspx');" title="upload/download files to/from server (localhost only)"/>
+
+                <%-- send ctrl+alt+del to the rdp session. may be useful to change the user password, for example --%>
+                <input type="button" runat="server" id="cad" value="Ctrl+Alt+Del" disabled="disabled" onclick="sendCtrlAltDel();" title="send Ctrl+Alt+Del to the remote session"/>
             </div>
 
             <%-- remote session display --%>
@@ -139,6 +142,22 @@
                 {
                     document.body.removeChild(popup);
                 }
+            }
+
+            function sendCtrlAltDel()
+            {
+                // ctrl
+                sendKey(17, false);
+                window.setTimeout(function()
+                {
+                    // alt
+                    sendKey(18, false);
+                    window.setTimeout(function()
+                    {
+                        // del
+                        sendKey(46, false);
+                    }, 100)
+                }, 100);
             }
 
 		</script>

@@ -111,6 +111,9 @@ namespace Myrtille.Web
                 files.Disabled = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected ||
                     (RemoteSessionManager.RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSessionManager.RemoteSession.ServerAddress != "127.0.0.1" && RemoteSessionManager.RemoteSession.ServerAddress != HttpContext.Current.Request.Url.Host) ||
                     !string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserDomain) || string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserName) || string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserPassword);
+
+                // ctrl+alt+del
+                cad.Disabled = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
             }
         }
 
