@@ -69,6 +69,24 @@ namespace Myrtille.Services
         public override void Install(
             IDictionary stateSaver)
         {
+            // enable the line below to debug this installer; disable otherwise
+            //MessageBox.Show("Attach the .NET debugger to the 'MSI Debug' msiexec.exe process now for debug. Click OK when ready...", "MSI Debug");
+
+            // if the installer is running in repair mode, it will try to re-install Myrtille... which is fine
+            // problem is, it won't uninstall it first... which is not fine because some components can't be installed twice!
+            // thus, prior to any install, try to uninstall first
+
+            Trace.TraceInformation("Myrtille.Services is being installed, cleaning first");
+
+            try
+            {
+                Uninstall(null);
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceInformation("Failed to clean Myrtille.Services ({0})", exc);
+            }
+
             base.Install(stateSaver);
             // insert code as needed
         }
@@ -90,15 +108,15 @@ namespace Myrtille.Services
         public override void Uninstall(
             IDictionary savedState)
         {
+            // enable the line below to debug this installer; disable otherwise
+            //MessageBox.Show("Attach the .NET debugger to the 'MSI Debug' msiexec.exe process now for debug. Click OK when ready...", "MSI Debug");
+
             StopService();
             base.Uninstall(savedState);
         }
 
         private void StartService()
         {
-            // enable the line below to debug this installer; disable otherwise
-            //MessageBox.Show("Attach the .NET debugger to the 'MSI Debug' msiexec.exe process now for debug. Click OK when ready...", "MSI Debug");
-
             Trace.TraceInformation("Starting Myrtille.Services");
 
             // try to start the service
@@ -133,9 +151,6 @@ namespace Myrtille.Services
 
         private void StopService()
         {
-            // enable the line below to debug this installer; disable otherwise
-            //MessageBox.Show("Attach the .NET debugger to the 'MSI Debug' msiexec.exe process now for debug. Click OK when ready...", "MSI Debug");
-
             Trace.TraceInformation("Stopping Myrtille.Services");
 
             // if the service is running while uninstall is going on, the user is asked wether to stop it or not

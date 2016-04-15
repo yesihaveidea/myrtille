@@ -34,10 +34,25 @@ namespace Myrtille.Web
         public override void Install(
             IDictionary stateSaver)
         {
-            base.Install(stateSaver);
-
             // enable the line below to debug this installer; disable otherwise
             //MessageBox.Show("Attach the .NET debugger to the 'MSI Debug' msiexec.exe process now for debug. Click OK when ready...", "MSI Debug");
+
+            // if the installer is running in repair mode, it will try to re-install Myrtille... which is fine
+            // problem is, it won't uninstall it first... which is not fine because some components can't be installed twice!
+            // thus, prior to any install, try to uninstall first
+
+            Trace.TraceInformation("Myrtille.Web is being installed, cleaning first");
+
+            try
+            {
+                Uninstall(null);
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceInformation("Failed to clean Myrtille.Web ({0})", exc);
+            }
+
+            base.Install(stateSaver);
 
             Trace.TraceInformation("Installing Myrtille.Web");
 

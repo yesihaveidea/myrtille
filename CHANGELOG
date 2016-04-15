@@ -1,8 +1,12 @@
-﻿2016-04-13 Version 1.0.2
+﻿2016-04-15 Version 1.0.3 (stable)
+	Added elevated privileges check (UAC) to the installer (must be run as administrator)
+	Fixed an installer issue in repair mode
+
+2016-04-13 Version 1.0.2 (stable)
 	Added Ctrl+Alt+Del button
 
-2016-04-06 Version 1.0.1
+2016-04-06 Version 1.0.1 (stable)
 	Forced x86 (32 bits) build, in order to fix COM issues on mixed platforms
 
-2016-03-08 Version 1.0.0
-	Initial release version (stable)
+2016-03-08 Version 1.0.0 (stable)
+	Initial release version

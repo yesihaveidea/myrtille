@@ -752,6 +752,13 @@
         }
         "LaunchCondition"
         {
+            "{836E08B8-0285-4809-BA42-01DB6754A45D}:_2BA2698A031748E3816CE6F35AAF7B46"
+            {
+            "Name" = "8:Administrator"
+            "Condition" = "8:Privileged"
+            "Message" = "8:This installation requires elevated permissions to continue (must be run as administrator)"
+            "InstallUrl" = "8:"
+            }
         }
         "Locator"
         {
@@ -759,30 +766,30 @@
         "MsiBootstrapper"
         {
         "LangId" = "3:1033"
-        "RequiresElevation" = "11:FALSE"
+        "RequiresElevation" = "11:TRUE"
         }
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Myrtille"
         "ProductCode" = "8:{B00BCC6F-3958-4726-9D99-DBAC78513C26}"
-        "PackageCode" = "8:{E828DBA9-EABA-48AF-A007-926826060DE0}"
+        "PackageCode" = "8:{245E89A0-C83F-47DE-B058-0901FFDEF174}"
         "UpgradeCode" = "8:{8B56253E-D535-4891-BA0D-13DE49BB64A0}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.2"
+        "ProductVersion" = "8:1.0.3"
         "Manufacturer" = "8:Cedric Coste"
         "ARPHELPTELEPHONE" = "8:"
-        "ARPHELPLINK" = "8:"
+        "ARPHELPLINK" = "8:http://cedrozor.github.io/myrtille"
         "Title" = "8:Myrtille"
         "Subject" = "8:"
         "ARPCONTACT" = "8:Cedric Coste"
         "Keywords" = "8:"
-        "ARPCOMMENTS" = "8:"
-        "ARPURLINFOABOUT" = "8:"
+        "ARPCOMMENTS" = "8:A native HTML4/5 Remote Desktop Protocol client"
+        "ARPURLINFOABOUT" = "8:http://cedrozor.github.io/myrtille"
         "ARPPRODUCTICON" = "8:"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
