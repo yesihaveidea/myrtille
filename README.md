@@ -23,7 +23,7 @@ More information into the DOCUMENTATION.md file.
 See DOCUMENTATION.md.
 
 ## Installation
-- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (if not already installed), then install the Myrtille MSI package
+- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 (x86) redistributables (if not already installed), then install the Myrtille MSI package
 - Myrtille.msi: Myrtille MSI package (x86)
 
 See DOCUMENTATION.md for more details.
@@ -60,7 +60,11 @@ Myrtille is licensed under Apache 2.0 license.
 See LICENSE file.
 
 ## Author
-Cedric Coste (cedrozor@gmail.com). https://fr.linkedin.com/in/cedric-coste-a1b9194b
+Cedric Coste (cedrozor@gmail.com).
+- LinkedIn:	https://fr.linkedin.com/in/cedric-coste-a1b9194b
+- Twitter:	https://twitter.com/cedrozor
+- Google+:	https://plus.google.com/111659262235573941837
+- Facebook:	https://www.facebook.com/profile.php?id=100011710352840
 
 ## Contributors
 - Catalin Trifanescu (AppliKr developer: application server. Steemind cofounder)
