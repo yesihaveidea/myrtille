@@ -86,7 +86,7 @@ namespace Myrtille.Services
                 Trace.Listeners.Add(consoleTraceListener);
 
                 _remoteSessionProcess = OpenService(typeof(RemoteSessionProcess));
-                _localFileStorage = OpenService(typeof(LocalFileStorage));
+                _localFileStorage = OpenService(typeof(FileStorage));
 
                 Console.WriteLine("press any key to exit...");
                 Console.ReadKey();
@@ -99,7 +99,7 @@ namespace Myrtille.Services
         protected override void OnStart(string[] args)
 		{
             _remoteSessionProcess = OpenService(typeof(RemoteSessionProcess));
-            _localFileStorage = OpenService(typeof(LocalFileStorage));
+            _localFileStorage = OpenService(typeof(FileStorage));
 		}
  
 		protected override void OnStop()

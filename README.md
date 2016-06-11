@@ -37,7 +37,7 @@ You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for
 
 On touchscreen devices, you can pop the device keyboard with the "Keyboard" button. Then enter some text and click "Send".
 
-You can also upload/download file(s) to/from the user documents folder with the "My documents" button. Note that it requires the rdp server to be localhost (same machine as the http server).
+You can also upload/download file(s) to/from the user documents folder with the "My documents" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified.
 
 Myrtille doesn't support the mouse pointer shadow. If enabled for the user, you have to disable it (not much difference anyway and ensure best performance). See "Notes and limitations" into DOCUMENTATION.md.
 

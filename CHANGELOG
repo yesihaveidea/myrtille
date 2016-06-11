@@ -1,4 +1,8 @@
-﻿2016-04-15 Version 1.0.3 (stable)
+﻿2016-06-11 Version 1.0.4 (beta)
+	Added domain support to file transfer (see file transfer configuration in documentation)
+	Build set back to AnyCPU to have 64 bits registry hives loaded on 64 bits machines (fix a load user profile issue)
+
+2016-04-15 Version 1.0.3 (stable)
 	Added elevated privileges check (UAC) to the installer (must be run as administrator)
 	Fixed an installer issue in repair mode
 

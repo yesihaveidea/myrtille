@@ -76,7 +76,7 @@
                 <%-- virtual keyboard. for use on devices without a physical keyboard as it will force the virtual keyboard to pop --%>
                 <input type="button" runat="server" id="keyboard" value="Keyboard" disabled="disabled" onclick="openPopup('virtualKeyboardPopup', 'VirtualKeyboard.aspx');" title="force virtual keyboard to pop up (useful when no physical keyboard is available)"/>
             
-                <%-- upload/download file(s). only enabled if the connected server is localhost so file(s) can be accessed within the rdp session --%>
+                <%-- upload/download file(s). only enabled if the connected server is localhost or if a domain is specified (so file(s) can be accessed within the rdp session) --%>
                 <input type="button" runat="server" id="files" value="My Documents" disabled="disabled" onclick="openPopup('fileStoragePopup', 'FileStorage.aspx');" title="upload/download files to/from server (localhost only)"/>
 
                 <%-- send ctrl+alt+del to the rdp session. may be useful to change the user password, for example --%>

@@ -32,7 +32,7 @@
         
         <form method="post" runat="server">
             
-            <%-- upload/download file. only enabled if server is localhost (so file can be accessed within an rdp session); doesn't requires an active rdp connection --%>
+            <%-- upload/download file(s). only enabled if the connected server is localhost or if a domain is specified (so file(s) can be accessed within the rdp session) --%>
             <div>
                 Upload file: <input type="file" runat="server" id="fileToUploadText" onchange="onFileToUploadChange(this);"/>
                 <input type="button" runat="server" id="uploadFileButton" value="Upload" disabled="disabled" onserverclick="UploadFileButtonClick"/><br/>

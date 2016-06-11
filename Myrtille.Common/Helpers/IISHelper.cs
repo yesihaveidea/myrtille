@@ -112,7 +112,7 @@ namespace Myrtille.Helpers
         public static void CreateIISApplicationPool(
             string poolName,
             string version,
-            bool enable32BitAppOnWin64 = true,
+            bool enable32BitAppOnWin64 = false,
             bool loadUserProfile = true)
         {
             Trace.TraceInformation("Creating IIS application pool {0}, .NET framework {1}", poolName, version);

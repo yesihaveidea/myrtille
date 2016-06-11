@@ -25,43 +25,43 @@ using Myrtille.Services.Contracts;
 
 namespace Myrtille.Web
 {
-    public class LocalFileStorageClient : ClientBase<ILocalFileStorage>, ILocalFileStorage
+    public class FileStorageClient : ClientBase<IFileStorage>, IFileStorage
     {
-        public List<string> GetLocalUserDocumentsFolderFiles(string userName, string userPassword)
+        public List<string> GetUserDocumentsFolderFiles(string domain, string userName, string userPassword)
         {
             try
             {
-                return Channel.GetLocalUserDocumentsFolderFiles(userName, userPassword);
+                return Channel.GetUserDocumentsFolderFiles(domain, userName, userPassword);
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to list file(s) from local user {0} documents folder ({1})", userName, exc);
+                Trace.TraceError("Failed to list file(s) from user {0} documents folder ({1})", userName, exc);
                 throw;
             }
         }
 
-        public void UploadFileToLocalUserDocumentsFolder(UploadRequest uploadRequest)
+        public void UploadFileToUserDocumentsFolder(UploadRequest uploadRequest)
         {
             try
             {
-                Channel.UploadFileToLocalUserDocumentsFolder(uploadRequest);
+                Channel.UploadFileToUserDocumentsFolder(uploadRequest);
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to upload file {0} to local user {1} documents folder ({2})", uploadRequest.FileName, uploadRequest.UserName, exc);
+                Trace.TraceError("Failed to upload file {0} to user {1} documents folder ({2})", uploadRequest.FileName, uploadRequest.UserName, exc);
                 throw;
             }
         }
 
-        public Stream DownloadFileFromLocalUserDocumentsFolder(string userName, string userPassword, string fileName)
+        public Stream DownloadFileFromUserDocumentsFolder(string domain, string userName, string userPassword, string fileName)
         {
             try
             {
-                return Channel.DownloadFileFromLocalUserDocumentsFolder(userName, userPassword, fileName);
+                return Channel.DownloadFileFromUserDocumentsFolder(domain, userName, userPassword, fileName);
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to download file {0} from local user {1} documents folder ({2})", fileName, userName, exc);
+                Trace.TraceError("Failed to download file {0} from user {1} documents folder ({2})", fileName, userName, exc);
                 throw;
             }
         }

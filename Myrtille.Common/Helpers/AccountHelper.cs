@@ -158,15 +158,104 @@ namespace Myrtille.Helpers
         public static extern bool CloseHandle(
             IntPtr handle);
 
+        // from winbase.h
         private const int LOGON32_LOGON_INTERACTIVE = 2;
+        private const int LOGON32_LOGON_NETWORK = 3;
+        private const int LOGON32_LOGON_BATCH = 4;
+        private const int LOGON32_LOGON_SERVICE = 5;
+        private const int LOGON32_LOGON_UNLOCK = 7;
+        private const int LOGON32_LOGON_NETWORK_CLEARTEXT = 8;
+        private const int LOGON32_LOGON_NEW_CREDENTIALS = 9;
+
         private const int LOGON32_PROVIDER_DEFAULT = 0;
+        private const int LOGON32_PROVIDER_WINNT35 = 1;
+        private const int LOGON32_PROVIDER_WINNT40 = 2;
+        private const int LOGON32_PROVIDER_WINNT50 = 3;
+
+        #endregion
+
+        #region Windows Users Profiles
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct ProfileInfo
+        {
+            ///
+            /// Specifies the size of the structure, in bytes.
+            ///
+            public int dwSize;
+
+            ///
+            /// This member can be one of the following flags: 
+            /// PI_NOUI or PI_APPLYPOLICY
+            ///
+            public int dwFlags;
+
+            ///
+            /// Pointer to the name of the user.
+            /// This member is used as the base name of the directory 
+            /// in which to store a new profile.
+            ///
+            public string lpUserName;
+
+            ///
+            /// Pointer to the roaming user profile path.
+            /// If the user does not have a roaming profile, this member can be NULL.
+            ///
+            public string lpProfilePath;
+
+            ///
+            /// Pointer to the default user profile path. This member can be NULL.
+            ///
+            public string lpDefaultPath;
+
+            ///
+            /// Pointer to the name of the validating domain controller, in NetBIOS format.
+            /// If this member is NULL, the Windows NT 4.0-style policy will not be applied.
+            ///
+            public string lpServerName;
+
+            ///
+            /// Pointer to the path of the Windows NT 4.0-style policy file. 
+            /// This member can be NULL.
+            ///
+            public string lpPolicyPath;
+
+            ///
+            /// Handle to the HKEY_CURRENT_USER registry key.
+            ///
+            public IntPtr hProfile;
+        }
+
+        [DllImport("userenv.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern bool LoadUserProfile(
+            IntPtr hToken,
+            ref ProfileInfo lpProfileInfo);
+
+        [DllImport("userenv.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern bool UnloadUserProfile(
+            IntPtr hToken,
+            IntPtr lpProfileInfo);
+
+        // from userenv.h
+        private enum ProfileInfoFlags : int
+        {
+            /// <summary>
+            /// Prevents the display of profile error messages.
+            /// </summary>
+            PI_NOUI = 1,
+
+            /// <summary>
+            /// Apply NT4 style policy.
+            /// </summary>
+            PI_APPLYPOLICY = 2
+        }
 
         #endregion
 
         #region Windows Known Folders
 
-        [DllImport("Shell32.dll", SetLastError = true)]
-        private static extern int SHGetKnownFolderPath(
+        [DllImport("shell32.dll", SetLastError = true)]
+        public static extern int SHGetKnownFolderPath(
             [MarshalAs(UnmanagedType.LPStruct)]Guid rfid,
             uint dwFlags,
             IntPtr hToken,
@@ -174,43 +263,80 @@ namespace Myrtille.Helpers
 
         private static Guid KNOWNFOLDER_GUID_DOCUMENTS = new Guid("{FDD39AD0-238F-46AF-ADB4-6C85480369C7}");
 
-        private static uint KNOWNFOLDER_FLAG_DEFAULTPATH = 0x00000400;
-        private static uint KNOWNFOLDER_FLAG_DONTVERIFY = 0x00004000;
+        // from shlobj.h
+        private enum KnownFolderFlags : uint
+        {
+            SimpleIDList = 0x00000100,
+            NotParentRelative = 0x00000200,
+            DefaultPath = 0x00000400,
+            Init = 0x00000800,
+            NoAlias = 0x00001000,
+            DontUnexpand = 0x00002000,
+            DontVerify = 0x00004000,
+            Create = 0x00008000,
+            NoAppcontainerRedirection = 0x00010000,
+            AliasOnly = 0x80000000
+        }
 
         #endregion
 
         /// <summary>
-        /// retrieve a local user documents folder; also validates the user credentials to prevent unauthorized access to this folder
+        /// retrieve an user documents folder; also validates the user credentials to prevent unauthorized access to this folder
         /// </summary>
+        /// <param name="domain"></param>
         /// <param name="userName"></param>
         /// <param name="password"></param>
         /// <returns>home directory</returns>
-        public static string GetLocalUserDocumentsFolder(
+        public static string GetUserDocumentsFolder(
+            string domain,
             string userName,
             string password)
         {
-            // Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) may be used to retrieve the documents folder for the current user
-            // thus, instead of using P/Invoke calls, it's also possible to impersonate the given user then use the environment variables (a bit more code involved)
-
             var token = IntPtr.Zero;
 
             try
             {
-                if (LogonUser(userName, Environment.MachineName, password, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, ref token) != 0)
+                // logon the user, domain (if defined) or local otherwise
+                // myrtille must be running on a machine which is part of the domain for it to work
+                if (LogonUser(userName, string.IsNullOrEmpty(domain) ? Environment.MachineName : domain, password, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, ref token) != 0)
                 {
-                    IntPtr outPath;
-                    var result = SHGetKnownFolderPath(KNOWNFOLDER_GUID_DOCUMENTS, KNOWNFOLDER_FLAG_DEFAULTPATH | KNOWNFOLDER_FLAG_DONTVERIFY, token, out outPath);
-                    if (result == 0)
+                    var profileInfo = new ProfileInfo
                     {
-                        return Marshal.PtrToStringUni(outPath);
+                        dwSize = Marshal.SizeOf(typeof(ProfileInfo)),
+                        lpServerName = string.IsNullOrEmpty(domain) ? Environment.MachineName : domain,
+                        lpUserName = userName,
+                        dwFlags = (int)ProfileInfoFlags.PI_NOUI
+                    };
+
+                    // load the user profile (roaming if a domain is defined, local otherwise), in order to have it mounted into the registry hive (HKEY_CURRENT_USER)
+                    // the user must have logged on at least once for windows to create its profile (this is forcibly done as myrtille requires an active remote session for the user to enable file transfer)
+                    if (LoadUserProfile(token, ref profileInfo))
+                    {
+                        if (profileInfo.hProfile != IntPtr.Zero)
+                        {
+                            try
+                            {
+                                // retrieve the user documents folder path, possibly redirected by a GPO to a network share (read/write accessible to domain users)
+                                // ensure the user doesn't have exclusive rights on it (otherwise myrtille won't be able to access it)
+                                IntPtr outPath;
+                                var result = SHGetKnownFolderPath(KNOWNFOLDER_GUID_DOCUMENTS, (uint)KnownFolderFlags.DontVerify, token, out outPath);
+                                if (result == 0)
+                                {
+                                    return Marshal.PtrToStringUni(outPath);
+                                }
+                            }
+                            finally
+                            {
+                                UnloadUserProfile(token, profileInfo.hProfile);
+                            }
+                        }
                     }
-                    throw new Exception(string.Format("Failed to retrieve documents folder with result code: {0} (did the user already logged in for Windows to create its profile?)", result));
                 }
                 throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to retrieve local user {0} documents folder ({1})", userName, exc);
+                Trace.TraceError("Failed to retrieve user {0} documents folder ({1})", userName, exc);
                 throw;
             }
             finally

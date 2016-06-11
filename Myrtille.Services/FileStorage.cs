@@ -25,13 +25,14 @@ using Myrtille.Services.Contracts;
 
 namespace Myrtille.Services
 {
-    public class LocalFileStorage : ILocalFileStorage
+    public class FileStorage : IFileStorage
     {
-        public List<string> GetLocalUserDocumentsFolderFiles(
+        public List<string> GetUserDocumentsFolderFiles(
+            string domain,
             string userName,
             string userPassword)
         {
-            var documentsFolder = AccountHelper.GetLocalUserDocumentsFolder(userName, userPassword);
+            var documentsFolder = AccountHelper.GetUserDocumentsFolder(domain, userName, userPassword);
 
             try
             {
@@ -44,15 +45,15 @@ namespace Myrtille.Services
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to retrieve file(s) from local user {0} documents folder {1} ({2})", userName, documentsFolder, exc);
+                Trace.TraceError("Failed to retrieve file(s) from user {0} documents folder {1} ({2})", userName, documentsFolder, exc);
                 throw;
             }
         }
 
-        public void UploadFileToLocalUserDocumentsFolder(
+        public void UploadFileToUserDocumentsFolder(
             UploadRequest uploadRequest)
         {
-            var documentsFolder = AccountHelper.GetLocalUserDocumentsFolder(uploadRequest.UserName, uploadRequest.UserPassword);
+            var documentsFolder = AccountHelper.GetUserDocumentsFolder(uploadRequest.Domain, uploadRequest.UserName, uploadRequest.UserPassword);
 
             try
             {
@@ -77,21 +78,22 @@ namespace Myrtille.Services
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to upload file {0} to local user {1} documents folder {2} ({3})", uploadRequest.FileName, uploadRequest.UserName, documentsFolder, exc);
+                Trace.TraceError("Failed to upload file {0} to user {1} documents folder {2} ({3})", uploadRequest.FileName, uploadRequest.UserName, documentsFolder, exc);
                 throw;
             }
 
-            Trace.TraceInformation("Uploaded file {0} to local user {1} documents folder {2}", uploadRequest.FileName, uploadRequest.UserName, documentsFolder);
+            Trace.TraceInformation("Uploaded file {0} to user {1} documents folder {2}", uploadRequest.FileName, uploadRequest.UserName, documentsFolder);
         }
 
-        public Stream DownloadFileFromLocalUserDocumentsFolder(
+        public Stream DownloadFileFromUserDocumentsFolder(
+            string domain,
             string userName,
             string userPassword,
             string fileName)
         {
-            var documentsFolder = AccountHelper.GetLocalUserDocumentsFolder(userName, userPassword);
+            var documentsFolder = AccountHelper.GetUserDocumentsFolder(domain, userName, userPassword);
 
-            Trace.TraceInformation("Downloading file {0} from local user {1} documents folder {2}", fileName, userName, documentsFolder);
+            Trace.TraceInformation("Downloading file {0} from user {1} documents folder {2}", fileName, userName, documentsFolder);
 
             try
             {
@@ -99,7 +101,7 @@ namespace Myrtille.Services
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to download file {0} from local user {1} documents folder {2} ({3})", fileName, userName, documentsFolder, exc);
+                Trace.TraceError("Failed to download file {0} from user {1} documents folder {2} ({3})", fileName, userName, documentsFolder, exc);
                 throw;
             }
         }

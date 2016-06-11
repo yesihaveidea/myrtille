@@ -28,7 +28,7 @@ namespace Myrtille.Web
     public partial class FileStorage : Page
     {
         private RemoteSessionManager _remoteSessionManager;
-        private LocalFileStorageClient _localFileStorageClient;
+        private FileStorageClient _fileStorageClient;
 
         /// <summary>
         /// initialization
@@ -54,17 +54,19 @@ namespace Myrtille.Web
                     }
                 }
 
-                // ensure there is an active remote session, localhost connection
-                // as it's a local file storage only, it excludes domain users
-                // user credentials will be checked against the local machine prior to any file operation
+                // ensure there is an active remote session
+                // if a domain is specified, the roaming user profile is loaded from the Active Directory
+                // file storage is synchronized with the user "My documents" folder (will use folder redirection if defined)
+                // user credentials will be checked prior to any file operation
                 // if possible, use SSL to communicate with the service
                 if (_remoteSessionManager != null && (_remoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || _remoteSessionManager.RemoteSession.State == RemoteSessionState.Connected) &&
-                   (_remoteSessionManager.RemoteSession.ServerAddress.ToLower() == "localhost" || _remoteSessionManager.RemoteSession.ServerAddress == "127.0.0.1" || _remoteSessionManager.RemoteSession.ServerAddress == HttpContext.Current.Request.Url.Host) &&
-                   string.IsNullOrEmpty(_remoteSessionManager.RemoteSession.UserDomain) && !string.IsNullOrEmpty(_remoteSessionManager.RemoteSession.UserName) && !string.IsNullOrEmpty(_remoteSessionManager.RemoteSession.UserPassword))
+                   (_remoteSessionManager.RemoteSession.ServerAddress.ToLower() == "localhost" || _remoteSessionManager.RemoteSession.ServerAddress == "127.0.0.1" || _remoteSessionManager.RemoteSession.ServerAddress == HttpContext.Current.Request.Url.Host || !string.IsNullOrEmpty(_remoteSessionManager.RemoteSession.UserDomain)) &&
+                   !string.IsNullOrEmpty(_remoteSessionManager.RemoteSession.UserName) && !string.IsNullOrEmpty(_remoteSessionManager.RemoteSession.UserPassword))
                 {
-                    _localFileStorageClient = new LocalFileStorageClient();
+                    _fileStorageClient = new FileStorageClient();
 
-                    var files = _localFileStorageClient.GetLocalUserDocumentsFolderFiles(
+                    var files = _fileStorageClient.GetUserDocumentsFolderFiles(
+                        _remoteSessionManager.RemoteSession.UserDomain,
                         _remoteSessionManager.RemoteSession.UserName,
                         _remoteSessionManager.RemoteSession.UserPassword);
 
@@ -83,8 +85,7 @@ namespace Myrtille.Web
         }
 
         /// <summary>
-        /// upload a file to "My documents" folder
-        /// the file will be available to the rdp session ONLY if the rdp server is on the same machine as the rdp client...
+        /// upload a file to the user "My documents" folder
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -94,7 +95,7 @@ namespace Myrtille.Web
         {
             try
             {
-                if (_localFileStorageClient == null)
+                if (_fileStorageClient == null)
                     return;
 
                 if (fileToUploadText.PostedFile == null)
@@ -107,9 +108,10 @@ namespace Myrtille.Web
                 }
                 else
                 {
-                    _localFileStorageClient.UploadFileToLocalUserDocumentsFolder(
+                    _fileStorageClient.UploadFileToUserDocumentsFolder(
                         new UploadRequest
                         {
+                            Domain = _remoteSessionManager.RemoteSession.UserDomain,
                             UserName = _remoteSessionManager.RemoteSession.UserName,
                             UserPassword = _remoteSessionManager.RemoteSession.UserPassword,
                             FileName = fileToUploadText.PostedFile.FileName,
@@ -131,8 +133,7 @@ namespace Myrtille.Web
         }
 
         /// <summary>
-        /// download a file from "My documents" folder
-        /// the file will be available to the rdp session ONLY if the rdp server is on the same machine as the rdp client...
+        /// download a file from the user "My documents" folder
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -142,12 +143,13 @@ namespace Myrtille.Web
         {
             try
             {
-                if (_localFileStorageClient == null)
+                if (_fileStorageClient == null)
                     return;
 
                 if (!string.IsNullOrEmpty(fileToDownloadSelect.Value))
                 {
-                    var fileStream = _localFileStorageClient.DownloadFileFromLocalUserDocumentsFolder(
+                    var fileStream = _fileStorageClient.DownloadFileFromUserDocumentsFolder(
+                        _remoteSessionManager.RemoteSession.UserDomain,
                         _remoteSessionManager.RemoteSession.UserName,
                         _remoteSessionManager.RemoteSession.UserPassword,
                         fileToDownloadSelect.Value);

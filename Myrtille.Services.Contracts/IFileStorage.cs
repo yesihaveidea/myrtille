@@ -26,6 +26,9 @@ namespace Myrtille.Services.Contracts
     public class UploadRequest
     {
         [MessageHeader(MustUnderstand = true)]
+        public string Domain { get; set; }
+
+        [MessageHeader(MustUnderstand = true)]
         public string UserName { get; set; }
 
         [MessageHeader(MustUnderstand = true)]
@@ -39,13 +42,14 @@ namespace Myrtille.Services.Contracts
     }
 
     [ServiceContract]
-    public interface ILocalFileStorage
+    public interface IFileStorage
     {
         /// <summary>
         /// list the file(s) into the given user documents folder
         /// </summary>
         [OperationContract]
-        List<string> GetLocalUserDocumentsFolderFiles(
+        List<string> GetUserDocumentsFolderFiles(
+            string domain,
             string userName,
             string userPassword);
 
@@ -53,14 +57,15 @@ namespace Myrtille.Services.Contracts
         /// upload a file to the given user documents folder
         /// </summary>
         [OperationContract]
-        void UploadFileToLocalUserDocumentsFolder(
+        void UploadFileToUserDocumentsFolder(
             UploadRequest uploadRequest);
 
         /// <summary>
         /// download a file from the given user documents folder
         /// </summary>
         [OperationContract]
-        Stream DownloadFileFromLocalUserDocumentsFolder(
+        Stream DownloadFileFromUserDocumentsFolder(
+            string domain,
             string userName,
             string userPassword,
             string fileName);
