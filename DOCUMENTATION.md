@@ -28,7 +28,7 @@ Ensure the following Windows Server Roles and Features are installed on the mach
 ## File transfer
 Myrtille supports both local and network file storage. If you want your domain users to have access to their documents whatever the connected server, follow these steps:
 - Ensure the machine on which Myrtille is installed is part of the domain
-- Create a network share, read/write accessible to the domain users (i.e: \\MYNETWORKSHARE\Users)
+- Create a network share, read/write accessible to the domain users (i.e: \\\MYNETWORKSHARE\Users)
 - Create a Group Policy (GPO), or edit the default one, on your domain server with a folder redirection rule (for the "Documents" folder, see https://mizitechinfo.wordpress.com/2014/11/18/simple-step-configure-folder-redirection-in-window-server-2012-r2/)
 - In the target tab, select basic configuration to redirect everyone's folder to the same location, with create a folder for each user under the root path (the network share)
 - In the settings tab, ensure the user doesn't have exclusive rights to the documents folder (otherwise Myrtille won't be able to access it)
