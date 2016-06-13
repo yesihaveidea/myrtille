@@ -39,6 +39,7 @@ Add the following rules to the machine firewall:
 - "Myrtille Websockets Secured": allow both directions TCP port 8431
 
 ## Installation
+All releases here: https://github.com/cedrozor/myrtille/releases
 - Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 (x86) redistributables (if not already installed), then install the Myrtille MSI package
 - Myrtille.msi: Myrtille MSI package (x86)
 
