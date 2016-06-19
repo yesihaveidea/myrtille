@@ -20,6 +20,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.DirectoryServices.AccountManagement;
+using System.DirectoryServices.ActiveDirectory;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
@@ -174,6 +175,82 @@ namespace Myrtille.Helpers
 
         #endregion
 
+        #region Windows Network API
+
+        [DllImport("netapi32.dll", SetLastError = true)]
+        public static extern NET_API_STATUS NetUserGetInfo(
+            [MarshalAs(UnmanagedType.LPWStr)] string servername,
+            [MarshalAs(UnmanagedType.LPWStr)] string username,
+            int level,
+            out IntPtr bufptr);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct USER_INFO_4
+        {
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_name;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_password;
+            public uint usri4_password_age;
+            public uint usri4_priv;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_home_dir;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_comment;
+            public uint usri4_flags;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_script_path;
+            public uint usri4_auth_flags;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_full_name;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_usr_comment;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_parms;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_workstations;
+            public uint usri4_last_logon;
+            public uint usri4_last_logoff;
+            public uint usri4_acct_expires;
+            public uint usri4_max_storage;
+            public uint usri4_units_per_week;
+            public IntPtr usri4_logon_hours;
+            public uint usri4_bad_pw_count;
+            public uint usri4_num_logons;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_logon_server;
+            public uint usri4_country_code;
+            public uint usri4_code_page;
+            public IntPtr usri4_user_sid;
+            public uint usri4_primary_group_id;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_profile;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string usri4_home_dir_drive;
+            public uint usri4_password_expired;
+        }
+
+        public enum NET_API_STATUS : uint
+        {
+            NERR_Success = 0,
+            NERR_InvalidComputer = 2351,
+            NERR_NotPrimary = 2226,
+            NERR_SpeGroupOp = 2234,
+            NERR_LastAdmin = 2452,
+            NERR_BadPassword = 2203,
+            NERR_PasswordTooShort = 2245,
+            NERR_UserNotFound = 2221,
+            ERROR_ACCESS_DENIED = 5,
+            ERROR_NOT_ENOUGH_MEMORY = 8,
+            ERROR_INVALID_PARAMETER = 87,
+            ERROR_INVALID_NAME = 123,
+            ERROR_INVALID_LEVEL = 124,
+            ERROR_MORE_DATA = 234,
+            ERROR_SESSION_CREDENTIAL_CONFLICT = 1219
+        }
+
+        #endregion
+
         #region Windows Users Profiles
 
         [StructLayout(LayoutKind.Sequential)]
@@ -300,34 +377,50 @@ namespace Myrtille.Helpers
                 // myrtille must be running on a machine which is part of the domain for it to work
                 if (LogonUser(userName, string.IsNullOrEmpty(domain) ? Environment.MachineName : domain, password, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, ref token) != 0)
                 {
-                    var profileInfo = new ProfileInfo
+                    string serverName = null;
+                    if (!string.IsNullOrEmpty(domain))
                     {
-                        dwSize = Marshal.SizeOf(typeof(ProfileInfo)),
-                        lpServerName = string.IsNullOrEmpty(domain) ? Environment.MachineName : domain,
-                        lpUserName = userName,
-                        dwFlags = (int)ProfileInfoFlags.PI_NOUI
-                    };
+                        var context = new DirectoryContext(DirectoryContextType.Domain, domain, userName, password);
+                        var controller = Domain.GetDomain(context).FindDomainController();
+                        serverName = controller.Name;
+                    }
 
-                    // load the user profile (roaming if a domain is defined, local otherwise), in order to have it mounted into the registry hive (HKEY_CURRENT_USER)
-                    // the user must have logged on at least once for windows to create its profile (this is forcibly done as myrtille requires an active remote session for the user to enable file transfer)
-                    if (LoadUserProfile(token, ref profileInfo))
+                    IntPtr bufPtr;
+                    if (NetUserGetInfo(serverName, userName, 4, out bufPtr) == NET_API_STATUS.NERR_Success)
                     {
-                        if (profileInfo.hProfile != IntPtr.Zero)
+                        var userInfo = new USER_INFO_4();
+                        userInfo = (USER_INFO_4)Marshal.PtrToStructure(bufPtr, typeof(USER_INFO_4));
+
+                        var profileInfo = new ProfileInfo
                         {
-                            try
+                            dwSize = Marshal.SizeOf(typeof(ProfileInfo)),
+                            dwFlags = (int)ProfileInfoFlags.PI_NOUI,
+                            lpServerName = string.IsNullOrEmpty(domain) ? Environment.MachineName : serverName.Split(new[] { "." }, StringSplitOptions.None)[0],
+                            lpUserName = string.IsNullOrEmpty(domain) ? userName : string.Format(@"{0}\{1}", domain, userName),
+                            lpProfilePath = userInfo.usri4_profile
+                        };
+
+                        // load the user profile (roaming if a domain is defined, local otherwise), in order to have it mounted into the registry hive (HKEY_CURRENT_USER)
+                        // the user must have logged on at least once for windows to create its profile (this is forcibly done as myrtille requires an active remote session for the user to enable file transfer)
+                        if (LoadUserProfile(token, ref profileInfo))
+                        {
+                            if (profileInfo.hProfile != IntPtr.Zero)
                             {
-                                // retrieve the user documents folder path, possibly redirected by a GPO to a network share (read/write accessible to domain users)
-                                // ensure the user doesn't have exclusive rights on it (otherwise myrtille won't be able to access it)
-                                IntPtr outPath;
-                                var result = SHGetKnownFolderPath(KNOWNFOLDER_GUID_DOCUMENTS, (uint)KnownFolderFlags.DontVerify, token, out outPath);
-                                if (result == 0)
+                                try
                                 {
-                                    return Marshal.PtrToStringUni(outPath);
+                                    // retrieve the user documents folder path, possibly redirected by a GPO to a network share (read/write accessible to domain users)
+                                    // ensure the user doesn't have exclusive rights on it (otherwise myrtille won't be able to access it)
+                                    IntPtr outPath;
+                                    var result = SHGetKnownFolderPath(KNOWNFOLDER_GUID_DOCUMENTS, (uint)KnownFolderFlags.DontVerify, token, out outPath);
+                                    if (result == 0)
+                                    {
+                                        return Marshal.PtrToStringUni(outPath);
+                                    }
                                 }
-                            }
-                            finally
-                            {
-                                UnloadUserProfile(token, profileInfo.hProfile);
+                                finally
+                                {
+                                    UnloadUserProfile(token, profileInfo.hProfile);
+                                }
                             }
                         }
                     }
