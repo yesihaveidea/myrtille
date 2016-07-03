@@ -24,6 +24,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Security.AccessControl;
 using System.Windows.Forms;
+using System.Xml;
 using Myrtille.Helpers;
 
 namespace Myrtille.Web
@@ -58,8 +59,6 @@ namespace Myrtille.Web
 
             try
             {
-                Process process = null;
-
                 // register Myrtille.Web to local IIS
 
                 if (!IISHelper.IsIISApplicationPoolExists("MyrtilleAppPool"))
@@ -82,38 +81,45 @@ namespace Myrtille.Web
                     PropagationFlags.None,
                     AccessControlType.Allow);
 
-                // create a default rdp user (myrtille) on the local server
+                // websockets ports
 
-                AccountHelper.CreateLocalUser(
-                    "Myrtille",
-                    "Myrtille User",
-                    "/Passw1rd/",
-                    true,
-                    true);
+                int wsPort;
+                if (!int.TryParse(Context.Parameters["WSPort"], out wsPort))
+                {
+                    wsPort = 8181;
+                }
 
-                // add myrtille to the windows users group
+                int wssPort;
+                if (!int.TryParse(Context.Parameters["WSSPort"], out wssPort))
+                {
+                    wssPort = 8431;
+                }
 
-                AccountHelper.AddLocalUserToGroup(
-                    "Myrtille",
-                    AccountHelper.GetUsersGroupName());
+                // load config
 
-                // add myrtille to the remote desktop users group
+                var config = new XmlDocument();
+                var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Web.config");
+                config.Load(configPath);
 
-                AccountHelper.AddLocalUserToGroup(
-                    "Myrtille",
-                    AccountHelper.GetRemoteDesktopUsersGroupName());
+                // update settings
 
-                // import the rdp registry keys required by myrtille on the local server
+                var navigator = config.CreateNavigator();
 
-                process = new Process();
+                var node = XmlTools.GetNode(navigator, "/configuration/appSettings");
+                if (node != null)
+                {
+                    XmlTools.WriteConfigKey(node, "WebSocketServerPort", wsPort.ToString());
+                    XmlTools.WriteConfigKey(node, "WebSocketServerPortSecured", wssPort.ToString());
+                }
 
-                #if !DEBUG
-                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                #endif
+                // save config
 
-                process.StartInfo.FileName = "regedit.exe";
-                process.StartInfo.Arguments = "/s \"" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "RDPSetup.reg") + "\"";
-                process.Start();
+                config.Save(configPath);
+
+                // open ports
+
+                FirewallHelper.OpenFirewallPort(wsPort, "Myrtille Websockets");
+                FirewallHelper.OpenFirewallPort(wssPort, "Myrtille Websockets Secured");
 
                 Trace.TraceInformation("Installed Myrtille.Web");
             }
@@ -167,9 +173,39 @@ namespace Myrtille.Web
                     IISHelper.DeleteIISApplicationPool("MyrtilleAppPool");
                 }
 
-                // delete myrtille user
+                // websockets ports
 
-                AccountHelper.DeleteLocalUser("Myrtille");
+                int wsPort = 8181;
+                int wssPort = 8431;
+
+                // load config
+
+                var config = new XmlDocument();
+                var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Web.config");
+                config.Load(configPath);
+
+                // read settings
+
+                var navigator = config.CreateNavigator();
+
+                var node = XmlTools.GetNode(navigator, "/configuration/appSettings");
+                if (node != null)
+                {
+                    if (!int.TryParse(XmlTools.ReadConfigKey(node, "WebSocketServerPort"), out wsPort))
+                    {
+                        wsPort = 8181;
+                    }
+
+                    if (!int.TryParse(XmlTools.ReadConfigKey(node, "WebSocketServerPortSecured"), out wssPort))
+                    {
+                        wssPort = 8431;
+                    }
+                }
+
+                // close ports
+
+                FirewallHelper.CloseFirewallPort(wsPort);
+                FirewallHelper.CloseFirewallPort(wssPort);
 
                 Trace.TraceInformation("Uninstalled Myrtille.Web");
             }

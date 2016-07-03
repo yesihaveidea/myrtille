@@ -1,4 +1,10 @@
-﻿2016-06-11 Version 1.0.4 (beta)
+﻿2016-07-03 Version 1.0.5 (stable)
+	removed the RDS role, application server role and file storage service prerequisites
+	removed the creation of an rdp user ("Myrtille") on install (it was used for tests but is no longer relevant)
+	removed the configuration on the localhost rdp server
+	added automatic configuration of the firewall (websockets ports)
+
+2016-06-11 Version 1.0.4 (beta)
 	Added domain support to file transfer (see file transfer configuration in documentation)
 	Build set back to AnyCPU to have 64 bits registry hives loaded on 64 bits machines (fix a load user profile issue)
 

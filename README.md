@@ -1,5 +1,7 @@
 ﻿# Myrtille
-Myrtille provides a simple and fast access to remote desktops and applications through a web browser (without any plugin, extension or configuration).
+Myrtille provides a simple and fast access to remote desktops and applications through a web browser, without any plugin, extension or configuration.
+
+Technically, Myrtille is an HTTP(S) to RDP gateway.
 
 ## How does it works?
 It works by forwarding the user inputs (keyboard, mouse, touchscreen) from a web browser to an HTTP(S) gateway, then up to an RDP client which maintain a session with an RDP server.
@@ -12,20 +14,20 @@ More information into the DOCUMENTATION.md file.
 
 ## Features
 - HTML4 and HTML5 support
+- HTTP(S) to RDP gateway
 - File transfer
 - WebP compression
 
 ## Requirements
-- Client: a HTML4 or HTML5 browser
-- Server: a RDP enabled computer, IIS 7.0+ and .NET 4.0+ (see DOCUMENTATION.md for related roles and features)
+- HTTP(S) client: any HTML4 or HTML5 browser (starting from IE6!)
+- HTTP(S) to RDP gateway: IIS 7.0+ and .NET 4.0+ (see DOCUMENTATION.md for gateway prerequisites)
+- RDP server: any RDP enabled computer (preferably Windows Server but can also be Windows XP, 7, 8, 10. see DOCUMENTATION.md for configuration)
 
 ## Build
 See DOCUMENTATION.md.
 
 ## Installation
 All releases here: https://github.com/cedrozor/myrtille/releases
-- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 (x86) redistributables (if not already installed), then install the Myrtille MSI package
-- Myrtille.msi: Myrtille MSI package (x86)
 
 See DOCUMENTATION.md for more details.
 
