@@ -44,7 +44,9 @@ All releases here: https://github.com/cedrozor/myrtille/releases
 - Myrtille.msi: Myrtille MSI package (x86)
 
 ## Security
-If you want to use Myrtille through HTTPS (https://yourserver/myrtille), you have to create a self-signed SSL certificate or import a valid one (server side). Then, in order to use secure websockets (WSS), export this certificate into the Myrtille "ssl" folder, with private key, name "PKCS12Cert.pfx" and set a password that match the one defined into the Myrtille "Web.Config" file ("myrtille" by default).
+The installer creates a self-signed certificate for myrtille (so you can use it at https://yourserver/myrtille), but you can set your own certificate (if you wish) as follow:
+- export your SSL certificate in .PFX format, with the private key
+- save it into the myrtille "ssl" folder with the name "PKCS12Cert.pfx"
 
 If not using Google Chrome (client side), see detailed comments regarding the security configuration into the Myrtille "Web.Config" file. You may have to add an exception for the secured websockets port (default 8431) into your browser.
 

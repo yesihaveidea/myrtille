@@ -18,7 +18,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Web.Administration;
 using Microsoft.Win32;
 
@@ -347,6 +349,53 @@ namespace Myrtille.Helpers
             catch (Exception exc)
             {
                 Trace.TraceError("Failed to delete IIS virtual directory {0} ({1})", virtualDirectoryName, exc);
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region SSL certificate
+
+        public static void BindCertificate(
+            X509Certificate2 certificate)
+        {
+            try
+            {
+                // if not exists already, add an https binding and link it to the certificate
+                var serverManager = new ServerManager();
+                var binding = serverManager.Sites[0].Bindings.FirstOrDefault(b => b.Protocol == "https");
+                if (binding == null)
+                {
+                    binding = serverManager.Sites[0].Bindings.Add("*:443:", certificate.GetCertHash(), "");
+                    binding.Protocol = "https";
+                    serverManager.CommitChanges();
+                }
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to bind certificate to the default website ({0})", exc);
+                throw;
+            }
+        }
+
+        public static void UnbindCertificate(
+            X509Certificate2 certificate)
+        {
+            try
+            {
+                // if exists and linked to the certificate, remove the https binding
+                var serverManager = new ServerManager();
+                var binding = serverManager.Sites[0].Bindings.FirstOrDefault(b => b.Protocol == "https");
+                if (binding != null && Convert.ToBase64String(binding.CertificateHash) == Convert.ToBase64String(certificate.GetCertHash()))
+                {
+                    serverManager.Sites[0].Bindings.Remove(binding);
+                    serverManager.CommitChanges();
+                }
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to unbind certificate from the default website ({0})", exc);
                 throw;
             }
         }

@@ -102,6 +102,7 @@
     <Compile Include="Fleck\WebSocketHttpRequest.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Helpers\CertificateHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Helpers\FirewallHelper.cs" />
     <Compile Include="Helpers\IISHelper.cs" />
@@ -157,6 +158,15 @@
     <None Include="Fleck\VERSION" />
   </ItemGroup>
   <ItemGroup>
+    <COMReference Include="CERTENROLLLib">
+      <Guid>{728AB348-217D-11DA-B2A4-000E7BBB2B09}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
     <COMReference Include="NetFwTypeLib">
       <Guid>{58FBCF7C-E7A9-467C-80B3-FC65E8FCCA08}</Guid>
       <VersionMajor>1</VersionMajor>

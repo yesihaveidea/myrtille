@@ -23,6 +23,7 @@ using System.Configuration.Install;
 using System.Diagnostics;
 using System.IO;
 using System.Security.AccessControl;
+using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
 using System.Xml;
 using Myrtille.Helpers;
@@ -60,7 +61,6 @@ namespace Myrtille.Web
             try
             {
                 // register Myrtille.Web to local IIS
-
                 if (!IISHelper.IsIISApplicationPoolExists("MyrtilleAppPool"))
                 {
                     IISHelper.CreateIISApplicationPool("MyrtilleAppPool", "v4.0");
@@ -71,8 +71,17 @@ namespace Myrtille.Web
                     IISHelper.CreateIISApplication("/Myrtille", Path.GetFullPath(Context.Parameters["targetdir"]), "MyrtilleAppPool");
                 }
 
-                // add write permission to the targetdir "log" folder for MyrtilleAppPool, so that Myrtille.Web can save logs into it
+                // create a self signed certificate
+                var cert = CertificateHelper.CreateSelfSignedCertificate(Environment.MachineName, "Myrtille self-signed certificate");
 
+                // bind it to the default website
+                IISHelper.BindCertificate(cert);
+
+                // export it to the targetdir "ssl" folder, for secure websocket communication
+                var certBytes = cert.Export(X509ContentType.Pfx, "");
+                File.WriteAllBytes(Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "ssl", "PKCS12Cert.pfx"), certBytes);
+
+                // add write permission to the targetdir "log" folder for MyrtilleAppPool, so that Myrtille.Web can save logs into it
                 PermissionsHelper.AddDirectorySecurity(
                     Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log"),
                     "IIS AppPool\\MyrtilleAppPool",
@@ -82,7 +91,6 @@ namespace Myrtille.Web
                     AccessControlType.Allow);
 
                 // websockets ports
-
                 int wsPort;
                 if (!int.TryParse(Context.Parameters["WSPort"], out wsPort))
                 {
@@ -96,13 +104,11 @@ namespace Myrtille.Web
                 }
 
                 // load config
-
                 var config = new XmlDocument();
                 var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Web.config");
                 config.Load(configPath);
 
                 // update settings
-
                 var navigator = config.CreateNavigator();
 
                 var node = XmlTools.GetNode(navigator, "/configuration/appSettings");
@@ -113,11 +119,9 @@ namespace Myrtille.Web
                 }
 
                 // save config
-
                 config.Save(configPath);
 
                 // open ports
-
                 FirewallHelper.OpenFirewallPort(wsPort, "Myrtille Websockets");
                 FirewallHelper.OpenFirewallPort(wssPort, "Myrtille Websockets Secured");
 
@@ -162,7 +166,6 @@ namespace Myrtille.Web
             try
             {
                 // unregister Myrtille.Web from local IIS
-
                 if (IISHelper.IsIISApplicationExists("/Myrtille"))
                 {
                     IISHelper.DeleteIISApplication("/Myrtille");
@@ -173,19 +176,40 @@ namespace Myrtille.Web
                     IISHelper.DeleteIISApplicationPool("MyrtilleAppPool");
                 }
 
-                // websockets ports
+                // retrieve the myrtille self signed certificate
+                var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+                store.Open(OpenFlags.ReadWrite);
+                var certs = store.Certificates.Find(X509FindType.FindByIssuerName, Environment.MachineName, false);
+                if (certs.Count > 0)
+                {
+                    foreach (var cert in certs)
+                    {
+                        if (cert.FriendlyName == "Myrtille self-signed certificate")
+                        {
+                            // unbind it from the default website
+                            IISHelper.UnbindCertificate(cert);
 
+                            // remove it
+                            store.Remove(cert);
+
+                            // normally, there should be only one myrtille self-signed certificate, but let's check further (just in case)...
+                            //break;
+                        }
+                    }
+                }
+
+                store.Close();
+
+                // websockets ports
                 int wsPort = 8181;
                 int wssPort = 8431;
 
                 // load config
-
                 var config = new XmlDocument();
                 var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Web.config");
                 config.Load(configPath);
 
                 // read settings
-
                 var navigator = config.CreateNavigator();
 
                 var node = XmlTools.GetNode(navigator, "/configuration/appSettings");
@@ -203,7 +227,6 @@ namespace Myrtille.Web
                 }
 
                 // close ports
-
                 FirewallHelper.CloseFirewallPort(wsPort);
                 FirewallHelper.CloseFirewallPort(wssPort);
 

@@ -28,13 +28,13 @@
         "Entry"
         {
         "MsmKey" = "8:_02A3E8F5A11247389E2ABAF9C960F248"
-        "OwnerKey" = "8:_106A23CA68E948AB9DFA10C27C8D763A"
+        "OwnerKey" = "8:_C8C1CA93127A4CFF84719DC54B07F45A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_02A3E8F5A11247389E2ABAF9C960F248"
-        "OwnerKey" = "8:_C8C1CA93127A4CFF84719DC54B07F45A"
+        "OwnerKey" = "8:_106A23CA68E948AB9DFA10C27C8D763A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -118,13 +118,13 @@
         "Entry"
         {
         "MsmKey" = "8:_730F9A3A0F1A07BA06A442ADAD7A415A"
-        "OwnerKey" = "8:_C8C1CA93127A4CFF84719DC54B07F45A"
+        "OwnerKey" = "8:_4DCF371A3A1D076CF90D60A9BB14DE7A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_730F9A3A0F1A07BA06A442ADAD7A415A"
-        "OwnerKey" = "8:_4DCF371A3A1D076CF90D60A9BB14DE7A"
+        "OwnerKey" = "8:_C8C1CA93127A4CFF84719DC54B07F45A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -160,7 +160,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_02A3E8F5A11247389E2ABAF9C960F248"
+        "OwnerKey" = "8:_730F9A3A0F1A07BA06A442ADAD7A415A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -172,7 +172,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_730F9A3A0F1A07BA06A442ADAD7A415A"
+        "OwnerKey" = "8:_392E7B629F0F9B1D4A57F77B2D08CB9E"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -184,7 +184,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_392E7B629F0F9B1D4A57F77B2D08CB9E"
+        "OwnerKey" = "8:_02A3E8F5A11247389E2ABAF9C960F248"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -421,6 +421,11 @@
             "AssemblyAsmDisplayName" = "8:log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_02A3E8F5A11247389E2ABAF9C960F248"
+                    {
+                    "Name" = "8:log4net.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:log4net.dll"
             "TargetName" = "8:"
@@ -467,6 +472,11 @@
             "AssemblyAsmDisplayName" = "8:Myrtille.Services.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_392E7B629F0F9B1D4A57F77B2D08CB9E"
+                    {
+                    "Name" = "8:Myrtille.Services.Contracts.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Myrtille.Services.Contracts.dll"
             "TargetName" = "8:"
@@ -513,6 +523,11 @@
             "AssemblyAsmDisplayName" = "8:Myrtille.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
+                    "_4DCF371A3A1D076CF90D60A9BB14DE7A"
+                    {
+                    "Name" = "8:Myrtille.Common.dll"
+                    "Attributes" = "3:512"
+                    }
                 }
             "SourcePath" = "8:Myrtille.Common.dll"
             "TargetName" = "8:"
@@ -765,7 +780,7 @@
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.0.5"
+        "ProductVersion" = "8:1.0.6"
         "Manufacturer" = "8:Cedric Coste"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://cedrozor.github.io/myrtille"

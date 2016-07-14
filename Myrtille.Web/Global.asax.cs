@@ -72,20 +72,12 @@ namespace Myrtille.Web
                 var server = new WebSocketServer(string.Format("ws://0.0.0.0:{0}", webSocketServerPort));
                 new RemoteSessionSocketServer(this, server);
 
-                // to use secure websockets, you must first export your IIS SSL certificate in .PFX format, with the private key and a password
-                // save it into the application "ssl" folder under the name "PKCS12Cert.pfx" (or a name matching the Web.config key "WebSocketServerCertificateFilename")
-                // make sure the file have the appropriate rights for IIS/ASP.NET to read it (NETWORK SERVICE and USER granted read access)
-                // then update the Web.config key "WebSocketServerCertificatePassword" with your password (you may encrypt Web.config if you wish...)
-
-                // certificate filename
-                var webSocketServerCertificateFilename = "ssl\\PKCS12Cert.pfx";
-                if (!string.IsNullOrEmpty(WebConfigurationManager.AppSettings["webSocketServerCertificateFilename"]))
-                {
-                    webSocketServerCertificateFilename = WebConfigurationManager.AppSettings["webSocketServerCertificateFilename"];
-                }
+                // the installer creates a self-signed certificate for myrtille, but you can set your own certificate (if you wish) as follow:
+                // - export your SSL certificate in .PFX format, with the private key
+                // - save it into the myrtille "ssl" folder with the name "PKCS12Cert.pfx"
 
                 // check existence of a certificate (note that ".pfx" MIME type is blocked for download for the application...)
-                if (!File.Exists(Path.Combine(Server.MapPath("~"), webSocketServerCertificateFilename)))
+                if (!File.Exists(Path.Combine(Server.MapPath("~"), "ssl", "PKCS12Cert.pfx")))
                 {
                     Application[HttpApplicationStateVariables.WebSocketServerPortSecured.ToString()] = null;
                 }
@@ -100,14 +92,7 @@ namespace Myrtille.Web
                     Application[HttpApplicationStateVariables.WebSocketServerPortSecured.ToString()] = webSocketServerPortSecured;
                     server = new WebSocketServer(string.Format("wss://0.0.0.0:{0}", webSocketServerPortSecured));
 
-                    // certificate password
-                    var WebSocketServerCertificatePassword = "myrtille";
-                    if (!string.IsNullOrEmpty(WebConfigurationManager.AppSettings["WebSocketServerCertificatePassword"]))
-                    {
-                        WebSocketServerCertificatePassword = WebConfigurationManager.AppSettings["WebSocketServerCertificatePassword"];
-                    }
-
-                    server.Certificate = new X509Certificate2(Path.Combine(Server.MapPath("~"), webSocketServerCertificateFilename), WebSocketServerCertificatePassword);
+                    server.Certificate = new X509Certificate2(Path.Combine(Server.MapPath("~"), "ssl", "PKCS12Cert.pfx"), "");
                     new RemoteSessionSocketServer(this, server);
                 }
             }
