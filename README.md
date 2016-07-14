@@ -34,6 +34,9 @@ See DOCUMENTATION.md for more details.
 ## Usage
 Once Myrtille is installed on your server, you can use it at http://yourserver/myrtille. Set the rdp server address, user domain (if defined), name and password then click "Connect!" to log in. "Disconnect" to log out.
 
+The installer creates a self-signed certificate for https://yourserver/myrtille. Like for all self-signed certificates, you will have to add a security exception into your browser (*just ignore the warning message and proceed to the website*).
+Of course, you can avoid that by installing a certificate provided by a trusted Certification Authority (see DOCUMENTATION.md).
+
 If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (logs are saved under the Myrtille "log" folder).
 
 You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall).
