@@ -1,8 +1,6 @@
 ﻿# Introduction
 I worked hard to make Myrtille as straightforward as possible, with commented code, but some points may needs additional information.
 
-I apologize not providing an extensive documentation, diagrams, industry grade architecture models, mockups and unit tests; I wanted to keep things as simple as possible (but I don't exclude doing it in a future release).
-
 If you have any issue, question or suggestion that isn't addressed into this synthetic documentation, FAQ or Wiki, please don't hesitate to contact me (cedrozor@gmail.com) or ask the community (https://groups.google.com/forum/#!forum/myrtille_rdp).
 
 ## History
