@@ -92,6 +92,20 @@
     <Compile Include="src\WebInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="RemoteClipboard.aspx.cs">
+      <DependentUpon>RemoteClipboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="RemoteClipboard.aspx.designer.cs">
+      <DependentUpon>RemoteClipboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ShowDialog.aspx.cs">
+      <DependentUpon>ShowDialog.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ShowDialog.aspx.designer.cs">
+      <DependentUpon>ShowDialog.aspx</DependentUpon>
+    </Compile>
     <Compile Include="VirtualKeyboard.aspx.cs">
       <DependentUpon>VirtualKeyboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -159,6 +173,8 @@
     <Content Include="js\network\longpolling.js" />
     <Content Include="js\network\xmlhttp.js" />
     <Content Include="js\user\touchscreen.js" />
+    <Content Include="RemoteClipboard.aspx" />
+    <Content Include="ShowDialog.aspx" />
     <Content Include="VirtualKeyboard.aspx" />
     <Content Include="css\Default.css" />
     <Content Include="Global.asax" />

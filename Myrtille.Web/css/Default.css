@@ -18,9 +18,41 @@
 
 /* user controls */
 
-#mainForm
+.controlDiv
 {
-    height: 65px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -150px;
+    margin-left: -150px;
+    width: 300px;
+    height: 300px;
+}
+
+.controlLabel
+{
+    float: left;
+    width: 75px;
+    margin-top: 2px;
+}
+
+.controlText
+{
+    width: 200px;
+    margin-top: 2px;
+}
+
+.controlSelect
+{
+    width: 204px;
+    margin-top: 2px;
+}
+
+.controlButton
+{
+    width: 204px;
+    margin-top: 2px;
+    margin-left: 75px;
 }
 
 /* background fader */
@@ -63,15 +95,35 @@
     background-color: transparent;
 }
 
-#toSendText
+#virtualKeyboardPopupText
 {
     width: 425px;
 	height: 150px;
-	padding-left: 2px;
-	padding-right: 2px;
+    margin-bottom: 5px;
     filter: alpha(opacity=70);
     opacity: .70;
     -moz-opacity: 0.7;
+}
+
+/* show dialog popup */
+
+#showDialogPopup
+{
+    width: 450px;
+    height: 225px;
+}
+
+#showDialogPopupDesc
+{
+    font-weight: bold;
+}
+
+#showDialogPopupText
+{
+    width: 425px;
+	height: 150px;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 /* file storage popup */

@@ -223,6 +223,13 @@ function Websocket(config, dialog, display, network)
             
             if (data != null && data != '')
             {
+                // remote clipboard. process first because it may contain one or more comma (used as split delimiter below)
+                if (data.length >= 10 && data.substr(0, 10) == 'clipboard|')
+                {
+                    showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', data.substr(10, data.length - 10), true);
+                    return;
+                }
+
                 var parts = new Array();
                 parts = data.split(',');
                 

@@ -16,7 +16,7 @@
     limitations under the License.
 --%>
 
-<%@ Page Language="C#" Inherits="Myrtille.Web.VirtualKeyboard" Codebehind="VirtualKeyboard.aspx.cs" AutoEventWireup="true" Culture="auto" UICulture="auto" %>
+<%@ Page Language="C#" Inherits="Myrtille.Web.ShowDialog" Codebehind="ShowDialog.aspx.cs" AutoEventWireup="true" Culture="auto" UICulture="auto" %>
 <%@ OutputCache Location="None" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -28,18 +28,33 @@
         <link rel="stylesheet" type="text/css" href="css/Default.css"/>
 	</head>    
 
-    <body>
+    <body onload="displayText();">
         
         <form method="get" runat="server">
             
-            <%-- virtual keyboard. for use on devices with no physical keyboard --%>
+            <%-- generic dialog box --%>
             <div>
-                <textarea id="virtualKeyboardPopupText" rows="10" cols="50"></textarea><br/>
-                <input type="button" id="sendTextButton" value="Send" onclick="parent.sendText(virtualKeyboardPopupText.value);"/>
+                <span id="showDialogPopupDesc"></span><br/>
+                <textarea id="showDialogPopupText" rows="10" cols="50"></textarea><br/>
                 <input type="button" id="closePopupButton" value="Close" onclick="parent.closePopup();"/>
             </div>
 
         </form>
+
+		<script type="text/javascript" language="javascript" defer="defer">
+
+		    function displayText()
+		    {
+		        showDialogPopupDesc.innerText = parent.getShowDialogPopupDesc();
+		        showDialogPopupText.value = parent.getShowDialogPopupText();
+		        if (parent.getShowDialogPopupSelectText())
+		        {
+		            showDialogPopupText.focus();
+		            showDialogPopupText.select();
+		        }
+            }
+
+		</script>
 
 	</body>
 

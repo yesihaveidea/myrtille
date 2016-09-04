@@ -130,6 +130,12 @@ namespace Myrtille.Web
                     {
                         HttpContext.Current.Response.Write("disconnected");
                     }
+                    // the remote clipboard content was requested
+                    else if (remoteSessionManager.ClipboardRequested)
+                    {
+                        HttpContext.Current.Response.Write(string.Format("clipboard|{0}", remoteSessionManager.ClipboardText));
+                        remoteSessionManager.ClipboardRequested = false;
+                    }
                 }
             }
             catch (Exception exc)

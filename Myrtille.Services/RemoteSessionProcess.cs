@@ -87,6 +87,7 @@ namespace Myrtille.Services
                 _process = new Process();
 
                 _process.StartInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FreeRDP.wfreerdp.exe");
+                //_process.StartInfo.FileName = @"C:\Users\CEDRO\Documents\Visual Studio 2015\Projects\myrtille\Myrtille.RDP.FreeRDP\Debug\wfreerdp.exe";
 
                 // ensure the FreeRDP executable does exists
                 if (!File.Exists(_process.StartInfo.FileName))
@@ -102,7 +103,7 @@ namespace Myrtille.Services
 
                 _process.StartInfo.Arguments =
                     "-i " + _remoteSessionId +
-                    " -z"+
+                    " -z" +
                     " -x m" +
                     " -g " + (string.IsNullOrEmpty(clientWidth) ? "1024" : clientWidth) + "x" + (string.IsNullOrEmpty(clientHeight) ? "768" : clientHeight) +
                     " -a 16" +
@@ -113,7 +114,33 @@ namespace Myrtille.Services
                     " --no-tls --no-nla --sec-rdp --no-osb" +
                     (!debug ? " --no-window --no-console" : (!Environment.UserInteractive ? " --no-window --no-console --debug-log-process" : string.Empty));
 
-                if (!debug || !Environment.UserInteractive)
+                //_process.StartInfo.Arguments =
+                //    "/myrtille-sid:" + _remoteSessionId +                                                           // session id
+                //    (!Environment.UserInteractive ? string.Empty : " /myrtille-window") +                           // session window
+                //    (!debug ? string.Empty : " /myrtille-log") +                                                    // session log
+                //    " /v:" + (string.IsNullOrEmpty(serverAddress) ? "localhost" : serverAddress) +                  // server
+                //    (string.IsNullOrEmpty(userDomain) ? string.Empty : " /d:" + userDomain) +                       // domain
+                //    (string.IsNullOrEmpty(userName) ? string.Empty : " /u:" + userName) +                           // user
+                //    (string.IsNullOrEmpty(userPassword) ? string.Empty : " /p:" + userPassword) +                   // password
+                //    " /w:" + (string.IsNullOrEmpty(clientWidth) ? "1024" : clientWidth) +                           // display width
+                //    " /h:" + (string.IsNullOrEmpty(clientHeight) ? "768" : clientHeight) +                          // display height
+                //    " /bpp:16" +                                                                                    // color depth
+                //    //" /gdi:hw" +                                                                                    // gdi mode (sw: software, hw: hardware)
+                //    " /network:modem" +                                                                             // network profile
+                //    " /compression" +                                                                               // bulk compression (level is autodetected from the rdp version)
+                //    " -sec-tls" +                                                                                   // tls encryption
+                //    " -mouse-motion" +                                                                              // mouse motion
+                //    " +bitmap-cache" +                                                                              // bitmap cache
+                //    " -offscreen-cache" +                                                                           // offscreen cache
+                //    " +glyph-cache" +                                                                               // glyph cache
+                //    " -async-input" +                                                                               // async input
+                //    " -async-update" +                                                                              // async update
+                //    " -async-channels" +                                                                            // async channels
+                //    " -async-transport" +                                                                           // async transport
+                //    " /clipboard" +                                                                                 // clipboard support
+                //    " /audio-mode:2";                                                                               // audio mode (not supported for now, 2: do not play)
+
+                if (!Environment.UserInteractive)
                 {
                     _process.StartInfo.UseShellExecute = false;
                     _process.StartInfo.RedirectStandardError = true;

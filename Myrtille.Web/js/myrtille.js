@@ -235,3 +235,19 @@ function sendKey(keyCode, release)
         alert('myrtille sendKey error: ' + exc.Message);
     }
 }
+
+function sendCtrlAltDel()
+{
+    // ctrl
+    sendKey(17, false);
+    window.setTimeout(function()
+    {
+        // alt
+        sendKey(18, false);
+        window.setTimeout(function()
+        {
+            // del
+            sendKey(46, false);
+        }, 100)
+    }, 100);
+}

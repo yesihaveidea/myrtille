@@ -1643,7 +1643,7 @@ DWORD wf_connect_pipes(wfInfo * wfi)
 	}
 	
 	// create images pipe (region and fullscreen updates)
-	if ((wfi->imagesPipe = createRemoteSessionPipe(wfi, "outputs")) == INVALID_HANDLE_VALUE)
+	if ((wfi->imagesPipe = createRemoteSessionPipe(wfi, "updates")) == INVALID_HANDLE_VALUE)
 	{
 		printf("%s wf_connect_pipes: CreateFile failed for images pipe with error %d\n", getCurrentTime().c_str(), GetLastError());
 		return GetLastError();

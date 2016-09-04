@@ -37,7 +37,7 @@
                 Upload file: <input type="file" runat="server" id="fileToUploadText" onchange="onFileToUploadChange(this);"/>
                 <input type="button" runat="server" id="uploadFileButton" value="Upload" disabled="disabled" onserverclick="UploadFileButtonClick"/><br/>
                 Download file: <select runat="server" id="fileToDownloadSelect" onchange="onFileToDownloadChange(this);"/>
-                <input type="button" runat="server" id="downloadFileButton" value="Download" disabled="disabled" onserverclick="DownloadFileButtonClick" /><br/>
+                <input type="button" runat="server" id="downloadFileButton" value="Download" disabled="disabled" onserverclick="DownloadFileButtonClick"/><br/>
                 <input type="button" id="closePopupButton" value="Close" onclick="parent.closePopup();"/>
             </div>
             

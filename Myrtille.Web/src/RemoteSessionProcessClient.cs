@@ -93,9 +93,9 @@ namespace Myrtille.Web
                 _remoteSessionManager.RemoteSession.State = RemoteSessionState.Disconnected;
 
                 // release the communication pipes, if any
-                if (_remoteSessionManager.RemoteSessionPipes != null)
+                if (_remoteSessionManager.Pipes != null)
                 {
-                    _remoteSessionManager.RemoteSessionPipes.DeletePipes();
+                    _remoteSessionManager.Pipes.DeletePipes();
                 }
 
                 // if a websocket is set and available (connection not closed by client), send a disconnect notification

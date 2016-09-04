@@ -33,7 +33,7 @@ function XmlHttp(config, dialog, display, network)
     {
         try
         {
-            createXhr();
+            xhr = this.createXhr();
             cleanup(false);
             //dialog.showDebug('xhr supported');
         }
@@ -45,14 +45,14 @@ function XmlHttp(config, dialog, display, network)
         }
     };
 
-    function createXhr()
+    this.createXhr = function()
     {
         // IE
         if (window.ActiveXObject)
 	    {
 		    try
 		    {
-                xhr = new XMLHttpRequest();
+                return new XMLHttpRequest();
 		    }
 		    catch (exc1)
 		    {
@@ -63,7 +63,7 @@ function XmlHttp(config, dialog, display, network)
                 {
                     try
                     {
-                        xhr = new ActiveXObject(MSXMLXMLHTTPPROGIDS[i]);
+                        return new ActiveXObject(MSXMLXMLHTTPPROGIDS[i]);
                         ok = true;
                     }
                     catch (exc2)
@@ -82,7 +82,7 @@ function XmlHttp(config, dialog, display, network)
 	    {
 		    try
 		    {
-			    xhr = new XMLHttpRequest();
+		        return new XMLHttpRequest();
 		    }
             catch (exc3)
 		    {
@@ -120,7 +120,7 @@ function XmlHttp(config, dialog, display, network)
                 }
             }
 
-            createXhr();
+            xhr = this.createXhr();
 
             if (xhr == null)
             {
@@ -215,8 +215,13 @@ function XmlHttp(config, dialog, display, network)
 
             if (xhrResponseText != '')
             {
+                // remote clipboard. process first because it may contain one or more comma (used as split delimiter below)
+                if (xhrResponseText.length >= 10 && xhrResponseText.substr(0, 10) == 'clipboard|')
+                {
+                    showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', xhrResponseText.substr(10, xhrResponseText.length - 10), true);
+                }
                 // session disconnect
-                if (xhrResponseText == 'disconnected')
+                else if (xhrResponseText == 'disconnected')
                 {
                     // the remote session is disconnected
                     window.location.href = window.location.href.replace('connect', 'disconnect');
@@ -314,4 +319,16 @@ function XmlHttp(config, dialog, display, network)
 
         xhr = null;
     }
+}
+
+/*****************************************************************************************************************************************************************************************************/
+/*** External Calls                                                                                                                                                                                ***/
+/*****************************************************************************************************************************************************************************************************/
+
+function doXhrCall(url)
+{
+    var xmlHttp = new XmlHttp();
+    var xhr = xmlHttp.createXhr();
+    xhr.open('GET', url);
+    xhr.send(null);
 }

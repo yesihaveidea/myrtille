@@ -91,29 +91,55 @@ namespace Myrtille.Web
         {
             if (RemoteSessionManager != null)
             {
+                // control div
+                controlDiv.Attributes["class"] = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected ? "controlDiv" : null;
+
                 // rdp settings
-                server.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
-                domain.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
-                user.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
-                password.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
-                stat.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
-                debug.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
-                render.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
+                serverLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                serverText.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
+                serverText.Attributes["class"] = serverLabel.Visible ? "controlText" : null;
+
+                domainLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                domainText.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
+                domainText.Attributes["class"] = domainLabel.Visible ? "controlText" : null;
+
+                userLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                userText.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
+                userText.Attributes["class"] = userLabel.Visible ? "controlText" : null;
+
+                passwordLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                passwordText.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
+                passwordText.Attributes["class"] = passwordLabel.Visible ? "controlText" : null;
+
+                statsLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                statSelect.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
+                statSelect.Attributes["class"] = statsLabel.Visible ? "controlSelect" : null;
+
+                debugLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                debugSelect.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
+                debugSelect.Attributes["class"] = debugLabel.Visible ? "controlSelect" : null;
+
+                browserLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                browserSelect.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
+                browserSelect.Attributes["class"] = browserLabel.Visible ? "controlSelect" : null;
 
                 // connect/disconnect
-                connect.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
-                disconnect.Disabled = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                connect.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                disconnect.Visible = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
 
                 // virtual keyboard
-                keyboard.Disabled = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                keyboard.Visible = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
+
+                // remote clipboard
+                clipboard.Visible = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
 
                 // file storage
-                files.Disabled = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected ||
-                    (RemoteSessionManager.RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSessionManager.RemoteSession.ServerAddress != "127.0.0.1" && RemoteSessionManager.RemoteSession.ServerAddress != HttpContext.Current.Request.Url.Host && string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserDomain)) ||
-                    string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserName) || string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserPassword);
+                files.Visible = (RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected) &&
+                    (RemoteSessionManager.RemoteSession.ServerAddress.ToLower() == "localhost" || RemoteSessionManager.RemoteSession.ServerAddress == "127.0.0.1" || RemoteSessionManager.RemoteSession.ServerAddress == HttpContext.Current.Request.Url.Host || !string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserDomain)) &&
+                    !string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserName) && !string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserPassword);
 
                 // ctrl+alt+del
-                cad.Disabled = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                cad.Visible = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
             }
         }
 
@@ -173,13 +199,13 @@ namespace Myrtille.Web
                         {
                             Id = remoteSessionsCounter,
                             State = RemoteSessionState.NotConnected,
-                            ServerAddress = server.Value,
-                            UserDomain = domain.Value,
-                            UserName = user.Value,
-                            UserPassword = password.Value,
+                            ServerAddress = serverText.Value,
+                            UserDomain = domainText.Value,
+                            UserName = userText.Value,
+                            UserPassword = passwordText.Value,
                             ClientWidth = width.Value,
                             ClientHeight = height.Value,
-                            DebugMode = debug.Value == "Debug enabled"
+                            DebugMode = debugSelect.Value == "Debug enabled"
                         }
                     );
 
@@ -213,7 +239,7 @@ namespace Myrtille.Web
                     RemoteSessionManager.RemoteSession.State = RemoteSessionState.Connecting;
 
                     // create pipes for this web gateway and the rdp client to talk
-                    RemoteSessionManager.RemoteSessionPipes.CreatePipes();
+                    RemoteSessionManager.Pipes.CreatePipes();
 
                     // the rdp client does connect the pipes when it starts; when it stops (either because it was closed, crashed or because the rdp session had ended), pipes are released
                     // use http://technet.microsoft.com/en-us/sysinternals/dd581625 to track the existing pipes

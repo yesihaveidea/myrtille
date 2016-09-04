@@ -53,34 +53,39 @@
         <%=(RemoteSessionManager != null && (RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected)).ToString(CultureInfo.InvariantCulture).ToLower()%>,
         <%=HttpContext.Current.Application[HttpApplicationStateVariables.WebSocketServerPort.ToString()]%>,
         <%=(HttpContext.Current.Application[HttpApplicationStateVariables.WebSocketServerPortSecured.ToString()] == null ? "null" : HttpContext.Current.Application[HttpApplicationStateVariables.WebSocketServerPortSecured.ToString()])%>,
-        <%=(stat.Value == "Stat enabled").ToString(CultureInfo.InvariantCulture).ToLower()%>,
-        <%=(debug.Value == "Debug enabled").ToString(CultureInfo.InvariantCulture).ToLower()%>,
-        <%=(render.Value == "HTML4").ToString(CultureInfo.InvariantCulture).ToLower()%>);">
+        <%=(statSelect.Value == "Stat enabled").ToString(CultureInfo.InvariantCulture).ToLower()%>,
+        <%=(debugSelect.Value == "Debug enabled").ToString(CultureInfo.InvariantCulture).ToLower()%>,
+        <%=(browserSelect.Value == "HTML4").ToString(CultureInfo.InvariantCulture).ToLower()%>);">
 
         <form method="get" runat="server" id="mainForm">
 
-            <div>
-                <%-- rdp connection settings --%>
-                <input type="text" runat="server" id="server" value="localhost" title="server address"/>
-                <input type="text" runat="server" id="domain" value="" title="user domain"/>
-                <input type="text" runat="server" id="user" value="myrtille" title="user name"/>
-                <input type="password" runat="server" id="password" title="user password. default myrtille password is /Passw1rd/"/>
-                <select runat="server" id="stat" title="display stats bar"><option selected="selected">Stat disabled</option><option>Stat enabled</option></select>
-                <select runat="server" id="debug" title="display (dev) or save session logs"><option selected="selected">Debug disabled</option><option>Debug enabled</option></select>
-                <select runat="server" id="render" title="rendering mode"><option>HTML4</option><option selected="selected">HTML5</option></select>
+            <div runat="server" id="controlDiv" class="controlDiv">
+
+                <%-- connection settings --%>
+                <span runat="server" id="serverLabel" class="controlLabel">Server</span><input type="text" runat="server" id="serverText" class="controlText" value="192.168.0.13" title="server address"/>
+                <span runat="server" id="domainLabel" class="controlLabel">Domain</span><input type="text" runat="server" id="domainText" class="controlText" value="" title="user domain"/>
+                <span runat="server" id="userLabel" class="controlLabel">User</span><input type="text" runat="server" id="userText" class="controlText" value="Administrateur" title="user name"/>
+                <span runat="server" id="passwordLabel" class="controlLabel">Password</span><input type="text" runat="server" id="passwordText" class="controlText" value="/Admin@VM2012!" title="user password"/>
+                <span runat="server" id="statsLabel" class="controlLabel">Stats</span><select runat="server" id="statSelect" class="controlSelect" title="display stats bar"><option selected="selected">Stat disabled</option><option>Stat enabled</option></select>
+                <span runat="server" id="debugLabel" class="controlLabel">Debug</span><select runat="server" id="debugSelect" class="controlSelect" title="display debug info and save session logs"><option selected="selected">Debug disabled</option><option>Debug enabled</option></select>
+                <span runat="server" id="browserLabel" class="controlLabel">Browser</span><select runat="server" id="browserSelect" class="controlSelect" title="rendering mode"><option>HTML4</option><option selected="selected">HTML5</option></select>
                 <input type="hidden" runat="server" id="width"/>
                 <input type="hidden" runat="server" id="height"/>
-                <input type="button" runat="server" id="connect" value="Connect!" onclick="setClientResolution();" onserverclick="ConnectButtonClick" title="login"/>
-                <input type="button" runat="server" id="disconnect" value="Disconnect" disabled="disabled" onserverclick="DisconnectButtonClick" title="logout"/>
+                <input type="button" runat="server" id="connect" class="controlButton" value="Connect!" onclick="setClientResolution();" onserverclick="ConnectButtonClick" title="login"/>
+                <input type="button" runat="server" id="disconnect" value="Disconnect" visible="false" onserverclick="DisconnectButtonClick" title="logout"/>
 
-                <%-- virtual keyboard. for use on devices without a physical keyboard as it will force the virtual keyboard to pop --%>
-                <input type="button" runat="server" id="keyboard" value="Keyboard" disabled="disabled" onclick="openPopup('virtualKeyboardPopup', 'VirtualKeyboard.aspx');" title="force virtual keyboard to pop up (useful when no physical keyboard is available)"/>
-            
+                <%-- virtual keyboard. on devices without a physical keyboard, forces the device virtual keyboard to pop up --%>
+                <input type="button" runat="server" id="keyboard" value="Keyboard" visible="false" onclick="openPopup('virtualKeyboardPopup', 'VirtualKeyboard.aspx');" title="send text to the remote session"/>
+
+                <%-- remote clipboard. display the remote clipboard content and allow to copy it locally (text only) --%>
+                <input type="button" runat="server" id="clipboard" value="Clipboard" visible="false" onclick="doXhrCall('RemoteClipboard.aspx');" title="retrieve the remote clipboard content (text only)"/>
+
                 <%-- upload/download file(s). only enabled if the connected server is localhost or if a domain is specified (so file(s) can be accessed within the rdp session) --%>
-                <input type="button" runat="server" id="files" value="My Documents" disabled="disabled" onclick="openPopup('fileStoragePopup', 'FileStorage.aspx');" title="upload/download files to/from the user documents folder"/>
+                <input type="button" runat="server" id="files" value="My Documents" visible="false" onclick="openPopup('fileStoragePopup', 'FileStorage.aspx');" title="upload/download files to/from the user documents folder"/>
 
                 <%-- send ctrl+alt+del to the rdp session. may be useful to change the user password, for example --%>
-                <input type="button" runat="server" id="cad" value="Ctrl+Alt+Del" disabled="disabled" onclick="sendCtrlAltDel();" title="send Ctrl+Alt+Del to the remote session"/>
+                <input type="button" runat="server" id="cad" value="Ctrl+Alt+Del" visible="false" onclick="sendCtrlAltDel();" title="send Ctrl+Alt+Del to the remote session"/>
+
             </div>
 
             <%-- remote session display --%>
@@ -95,70 +100,15 @@
 
         </form>
 
-		<script type="text/javascript" language="javascript" defer="defer">
-
-            var display = new Display();
+        <script type="text/javascript" language="javascript" defer="defer">
 
 		    // browser size. default 1024x768
 		    function setClientResolution()
 		    {
+		        var display = new Display();
 		        document.getElementById('<%=width.ClientID%>').value = display.getBrowserWidth();
 		        document.getElementById('<%=height.ClientID%>').value = display.getBrowserHeight();
 		    }
-
-		    var popup = null;
-
-            function openPopup(id, src)
-            {
-                // lock background
-                var bgfDiv = document.getElementById('bgfDiv');
-                if (bgfDiv != null)
-                {
-                    bgfDiv.style.visibility = 'visible';
-                    bgfDiv.style.display = 'block';
-                }
-
-                // add popup
-                popup = document.createElement('iframe');
-                popup.id = id;
-                popup.src = src;
-                popup.className = 'modalPopup';
-                
-                document.body.appendChild(popup);
-            }
-
-            function closePopup()
-            {
-                // unlock background
-                var bgfDiv = document.getElementById('bgfDiv');
-                if (bgfDiv != null)
-                {
-                    bgfDiv.style.visibility = 'hidden';
-                    bgfDiv.style.display = 'none';
-                }
-
-                // remove popup
-                if (popup != null)
-                {
-                    document.body.removeChild(popup);
-                }
-            }
-
-            function sendCtrlAltDel()
-            {
-                // ctrl
-                sendKey(17, false);
-                window.setTimeout(function()
-                {
-                    // alt
-                    sendKey(18, false);
-                    window.setTimeout(function()
-                    {
-                        // del
-                        sendKey(46, false);
-                    }, 100)
-                }, 100);
-            }
 
 		</script>
 

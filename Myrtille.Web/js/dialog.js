@@ -377,3 +377,65 @@ function Dialog(config)
         }
     }
 }
+
+/*****************************************************************************************************************************************************************************************************/
+/*** External Calls                                                                                                                                                                                ***/
+/*****************************************************************************************************************************************************************************************************/
+
+var popup = null;
+
+function openPopup(id, src)
+{
+    // lock background
+    var bgfDiv = document.getElementById('bgfDiv');
+    if (bgfDiv != null)
+    {
+        bgfDiv.style.visibility = 'visible';
+        bgfDiv.style.display = 'block';
+    }
+
+    // add popup
+    popup = document.createElement('iframe');
+    popup.id = id;
+    popup.src = src;
+    popup.className = 'modalPopup';
+
+    document.body.appendChild(popup);
+}
+
+function closePopup()
+{
+    // remove popup
+    if (popup != null)
+    {
+        document.body.removeChild(popup);
+    }
+
+    // unlock background
+    var bgfDiv = document.getElementById('bgfDiv');
+    if (bgfDiv != null)
+    {
+        bgfDiv.style.visibility = 'hidden';
+        bgfDiv.style.display = 'none';
+    }
+}
+
+var showDialogPopupDesc = null;
+this.getShowDialogPopupDesc = function() { return showDialogPopupDesc; };
+
+var showDialogPopupText = null;
+this.getShowDialogPopupText = function() { return showDialogPopupText; };
+
+var showDialogPopupSelectText = false;
+this.getShowDialogPopupSelectText = function() { return showDialogPopupSelectText; };
+
+function showDialogPopup(id, src, desc, text, selectText)
+{
+    // properties
+    showDialogPopupDesc = desc;
+    showDialogPopupText = text;
+    showDialogPopupSelectText = selectText;
+
+    // popup
+    openPopup(id, src);
+}

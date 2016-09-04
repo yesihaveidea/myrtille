@@ -16,14 +16,11 @@
     limitations under the License.
 */
 
+using System.Web.UI;
+
 namespace Myrtille.Web
 {
-    public enum RemoteSessionCommand
+    public partial class ShowDialog : Page
     {
-        SendFullscreenUpdate = 0,
-        CloseRdpClient = 1,
-        SetImageEncoding = 2,
-        SetImageQuality = 3,
-        RequestRemoteClipboard = 4
     }
 }

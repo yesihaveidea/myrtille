@@ -33,20 +33,20 @@ namespace Myrtille.Web
         // to keep things simple, using separate pipes...
         private NamedPipeServerStream _inputsPipe;
         public NamedPipeServerStream InputsPipe { get { return _inputsPipe; } }
-        
-        private NamedPipeServerStream _imagesPipe;
-        public NamedPipeServerStream ImagesPipe { get { return _imagesPipe; } }
+
+        private NamedPipeServerStream _updatesPipe;
+        public NamedPipeServerStream UpdatesPipe { get { return _updatesPipe; } }
 
         // the pipes buffers sizes must match the ones defined in the remote session process
         // in order to avoid overloading both the bandwidth and the browser, images are limited to 1024 KB each
         private const int _inputsPipeBufferSize = 131072; // 128 KB
         public int InputsPipeBufferSize { get { return _inputsPipeBufferSize; } }
 
-        private const int _imagesPipeBufferSize = 1048576; // 1024 KB
-        public int ImagesPipeBufferSize { get { return _imagesPipeBufferSize; } }
+        private const int _updatesPipeBufferSize = 1048576; // 1024 KB
+        public int UpdatesPipeBufferSize { get { return _updatesPipeBufferSize; } }
 
-        public delegate void ProcessImagesPipeMessageDelegate(byte[] msg);
-        public ProcessImagesPipeMessageDelegate ProcessImagesPipeMessage { get; set; }
+        public delegate void ProcessUpdatesPipeMessageDelegate(byte[] msg);
+        public ProcessUpdatesPipeMessageDelegate ProcessUpdatesPipeMessage { get; set; }
 
         public RemoteSessionPipes(RemoteSession remoteSession)
         {
@@ -76,19 +76,19 @@ namespace Myrtille.Web
                     InputsPipeBufferSize,
                     pipeSecurity);
 
-                _imagesPipe = new NamedPipeServerStream(
-                    "remotesession_" + RemoteSession.Id + "_outputs",
+                _updatesPipe = new NamedPipeServerStream(
+                    "remotesession_" + RemoteSession.Id + "_updates",
                     PipeDirection.InOut,
                     1,
                     PipeTransmissionMode.Message,
                     PipeOptions.Asynchronous,
-                    ImagesPipeBufferSize,
-                    ImagesPipeBufferSize,
+                    UpdatesPipeBufferSize,
+                    UpdatesPipeBufferSize,
                     pipeSecurity);
 
                 // wait for client connection
                 InputsPipe.BeginWaitForConnection(InputsPipeConnected, InputsPipe.GetHashCode());
-                ImagesPipe.BeginWaitForConnection(ImagesPipeConnected, ImagesPipe.GetHashCode());
+                UpdatesPipe.BeginWaitForConnection(UpdatesPipeConnected, UpdatesPipe.GetHashCode());
             }
             catch (Exception exc)
             {
@@ -99,7 +99,7 @@ namespace Myrtille.Web
         public void DeletePipes()
         {
             DisposePipe("remoteSession_" + RemoteSession.Id + "_inputs", ref _inputsPipe);
-            DisposePipe("remoteSession_" + RemoteSession.Id + "_outputs", ref _imagesPipe);
+            DisposePipe("remoteSession_" + RemoteSession.Id + "_updates", ref _updatesPipe);
         }
 
         public bool PipesConnected
@@ -107,7 +107,7 @@ namespace Myrtille.Web
             get
             {
                 return ((InputsPipe != null) && (InputsPipe.IsConnected) &&
-                        (ImagesPipe != null) && (ImagesPipe.IsConnected));
+                        (UpdatesPipe != null) && (UpdatesPipe.IsConnected));
             }
         }
 
@@ -126,58 +126,58 @@ namespace Myrtille.Web
             }
         }
 
-        private void ImagesPipeConnected(IAsyncResult e)
+        private void UpdatesPipeConnected(IAsyncResult e)
         {
             try
             {
-                if (ImagesPipe != null)
+                if (UpdatesPipe != null)
                 {
-                    ImagesPipe.EndWaitForConnection(e);
-                    ReadImagesPipe();
+                    UpdatesPipe.EndWaitForConnection(e);
+                    ReadUpdatesPipe();
                 }
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to wait for connection on images pipe, remote session {0} ({1})", RemoteSession.Id, exc);
+                Trace.TraceError("Failed to wait for connection on updates pipe, remote session {0} ({1})", RemoteSession.Id, exc);
             }
         }
 
-        private void ReadImagesPipe()
+        private void ReadUpdatesPipe()
         {
             try
             {
-                while (ImagesPipe != null && ImagesPipe.IsConnected && ImagesPipe.CanRead)
+                while (UpdatesPipe != null && UpdatesPipe.IsConnected && UpdatesPipe.CanRead)
                 {
-                    var msg = ReadImagesPipeMessage();
+                    var msg = ReadUpdatesPipeMessage();
                     if (msg != null && msg.Length > 0)
                     {
-                        ProcessImagesPipeMessage(msg);
+                        ProcessUpdatesPipeMessage(msg);
                     }
                 }
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to read images pipe, remote session {0} ({1})", RemoteSession.Id, exc);
+                Trace.TraceError("Failed to read updates pipe, remote session {0} ({1})", RemoteSession.Id, exc);
             }
         }
 
-        private byte[] ReadImagesPipeMessage()
+        private byte[] ReadUpdatesPipeMessage()
         {
             try
             {
                 var memoryStream = new MemoryStream();
-                var buffer = new byte[ImagesPipeBufferSize];
+                var buffer = new byte[UpdatesPipeBufferSize];
 
                 do
                 {
-                    memoryStream.Write(buffer, 0, ImagesPipe.Read(buffer, 0, buffer.Length));
-                } while (ImagesPipe != null && ImagesPipe.IsConnected && ImagesPipe.CanRead && !ImagesPipe.IsMessageComplete);
+                    memoryStream.Write(buffer, 0, UpdatesPipe.Read(buffer, 0, buffer.Length));
+                } while (UpdatesPipe != null && UpdatesPipe.IsConnected && UpdatesPipe.CanRead && !UpdatesPipe.IsMessageComplete);
 
                 return memoryStream.ToArray();
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to read images pipe message, remote session {0} ({1})", RemoteSession.Id, exc);
+                Trace.TraceError("Failed to read updates pipe message, remote session {0} ({1})", RemoteSession.Id, exc);
                 return null;
             }
         }

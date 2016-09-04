@@ -106,6 +106,13 @@ namespace Myrtille.Web
                         HttpContext.Current.Response.Flush();
                         break;
                     }
+                    // the remote clipboard content was requested
+                    else if (remoteSessionManager.ClipboardRequested)
+                    {
+                        HttpContext.Current.Response.Write(string.Format("<script>showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', '{0}', true);</script>", remoteSessionManager.ClipboardText));
+                        HttpContext.Current.Response.Flush();
+                        remoteSessionManager.ClipboardRequested = false;
+                    }
 
                     remainingTime = longPollingDuration - Convert.ToInt32((DateTime.Now - startTime).TotalMilliseconds);
                 }

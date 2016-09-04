@@ -46,8 +46,8 @@ namespace Myrtille.Web
                 Client = new RemoteSessionProcessClient(this, callbackContext);
 
                 // pipes
-                RemoteSessionPipes = new RemoteSessionPipes(RemoteSession);
-                RemoteSessionPipes.ProcessImagesPipeMessage = ProcessImagesPipeMessage;
+                Pipes = new RemoteSessionPipes(RemoteSession);
+                Pipes.ProcessUpdatesPipeMessage = ProcessUpdatesPipeMessage;
 
                 // sockets
                 WebSocket = null;
@@ -74,24 +74,50 @@ namespace Myrtille.Web
 
         #region Pipes
 
-        public RemoteSessionPipes RemoteSessionPipes { get; private set; }
+        public RemoteSessionPipes Pipes { get; private set; }
 
-        private void ProcessImagesPipeMessage(byte[] msg)
+        private void ProcessUpdatesPipeMessage(byte[] msg)
         {
             try
             {
                 var message = Encoding.UTF8.GetString(msg);
 
-                // simple handshaking
-                if (message.Equals("Hello server"))
+                if (RemoteSession.State != RemoteSessionState.Connected)
                 {
-                    PipeHelper.WritePipeMessage(
-                        RemoteSessionPipes.InputsPipe,
-                        "remotesession_" + RemoteSession.Id + "_inputs",
-                        "Hello client");
-                    
-                    // remote session is now connected
-                    RemoteSession.State = RemoteSessionState.Connected;
+                    // simple handshaking
+                    if (message.Equals("Hello server"))
+                    {
+                        PipeHelper.WritePipeMessage(
+                            Pipes.InputsPipe,
+                            "remotesession_" + RemoteSession.Id + "_inputs",
+                            "Hello client");
+
+                        // remote session is now connected
+                        RemoteSession.State = RemoteSessionState.Connected;
+                    }
+                }
+                // remote clipboard
+                else if (message.StartsWith("clipboard|"))
+                {
+                    // if using a websocket, send the clipboard directly
+                    if (WebSocket != null)
+                    {
+                        if (WebSocket.IsAvailable)
+                        {
+                            Trace.TraceInformation("Sending clipboard content {0} on websocket, remote session {1}", message, RemoteSession.Id);
+                            WebSocket.Send(message);
+                        }
+                        else
+                        {
+                            Trace.TraceInformation("Websocket is unavailable (connection closed by client?), remote session {0}, status: {1}", RemoteSession.Id, RemoteSession.State);
+                        }
+                    }
+                    // otherwise store it (will be retrieved later)
+                    else
+                    {
+                        ClipboardText = message.Remove(0, 10);
+                        ClipboardRequested = true;
+                    }
                 }
                 // new image
                 else
@@ -101,7 +127,7 @@ namespace Myrtille.Web
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to process images pipe message, remote session {0} ({1})", RemoteSession.Id, exc);
+                Trace.TraceError("Failed to process updates pipe message, remote session {0} ({1})", RemoteSession.Id, exc);
             }
         }
 
@@ -131,7 +157,7 @@ namespace Myrtille.Web
                 }
 
                 PipeHelper.WritePipeMessage(
-                    RemoteSessionPipes.InputsPipe,
+                    Pipes.InputsPipe,
                     "remotesession_" + RemoteSession.Id + "_inputs",
                     "C" + (int)command + "-" + args + ",");
             }
@@ -190,12 +216,12 @@ namespace Myrtille.Web
                     }
                 }
 
-                if (!string.IsNullOrEmpty(rdpData) && rdpData.Length <= RemoteSessionPipes.InputsPipeBufferSize)
+                if (!string.IsNullOrEmpty(rdpData) && rdpData.Length <= Pipes.InputsPipeBufferSize)
                 {
                     Trace.TraceInformation("Forwarding user input(s) {0}, remote session {1}", rdpData, RemoteSession.Id);
 
                     PipeHelper.WritePipeMessage(
-                        RemoteSessionPipes.InputsPipe,
+                        Pipes.InputsPipe,
                         "remotesession_" + RemoteSession.Id + "_inputs",
                         rdpData + ",");
                 }
@@ -399,6 +425,13 @@ namespace Myrtille.Web
 
         #endregion
 
+        #region Clipboard
+
+        public string ClipboardText { get; private set; }
+        public bool ClipboardRequested { get; set; }
+
+        #endregion
+
         #region Events
 
         // pending fullscreen update
@@ -433,9 +466,9 @@ namespace Myrtille.Web
         public void Dispose()
         {
             GC.SuppressFinalize(this);
-            if (RemoteSessionPipes != null)
+            if (Pipes != null)
             {
-                RemoteSessionPipes.DeletePipes();
+                Pipes.DeletePipes();
             }
             if (WebSocket != null)
             {
