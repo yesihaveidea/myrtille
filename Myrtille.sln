@@ -2,11 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Myrtille.RDP", "Myrtille.RDP", "{D6573F74-1BD5-4165-AC85-3422A4144E2A}"
-	ProjectSection(SolutionItems) = preProject
-		Myrtille.RDP\RDPSetup.reg = Myrtille.RDP\RDPSetup.reg
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Myrtille.Common", "Myrtille.Common\Myrtille.Common.csproj", "{37630774-1321-4E6A-8661-4430A8946E9E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Myrtille.Web", "Myrtille.Web\Myrtille.Web.csproj", "{F00C33EB-EDA4-4980-AC2A-0BF574913A24}"

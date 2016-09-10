@@ -68,8 +68,22 @@ Myrtille uses C#, C++ and pure Javascript code (no additional libraries). Micros
 If you want Visual Studio to load the Myrtille setup project, you have to install the (official and free) Microsoft Visual Studio 2015 Installer Projects extension (https://visualstudiogallery.msdn.microsoft.com/f1cc3f3e-c300-40a7-8797-c509fb8933b9).
 
 The Myrtille build have the two classic solution configurations: "Debug" and "Release", on "Mixed Platforms" ("Win32" for C++ and "Any CPU" for C# projects).
-See https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) (also applicable for VS2015) for the myrtille FreeRDP fork build.
-If you intend to build the myrtille installer, you will need first to build the myrtille FreeRDP fork.
+
+Starting from version 1.1.0, the FreeRDP code (modified for myrtille needs) is no longer part of the myrtille repository.
+
+The (new) myrtille FreeRDP code can be found at https://github.com/cedrozor/FreeRDP
+
+The objectives are:
+- Have a loose coupled dependency between myrtille and FreeRDP (so that FreeRDP could be replaced by another RDP client implementation, if needed)
+- Benefits from the latest FreeRDP changes (bugfixes, new features, latest RDP protocol support, etc.), by synchronizing the fork with the FreeRDP repository (periodically, with a stable branch or after ensuring the master branch is stable)
+- Extends myrtille to other remote access protocols. The gateway is (always was) protocol agnostic. For example, myrtille could be linked to an SSH client (the same way it's linked to an RDP client), modified to handle the user inputs and display updates
+
+Steps to build the FreeRDP fork (and have it working with the gateway):
+- Git clone https://github.com/cedrozor/FreeRDP.git into a "Myrtille.RDP" folder (located into the myrtille solution folder, among with "Myrtille.Common", "Myrtille.Services", etc.)
+- Use cmake on it as detailed here: https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) to generate the Visual Studio solution and projects accordingly to your dev environment (don't forget to install OpenSSL first)
+- Open and build the generated solution
+
+If you plan to build the myrtille installer, you have first to build the FreeRDP fork (or you can add the FreeRDP fork solution to the myrtille solution and use the FreeRDP projects outputs instead of files).
 
 ### Startup projects
 If you want to run Myrtille with Visual Studio, you should set startup projects on the solution in the following order (multiple startup projects):

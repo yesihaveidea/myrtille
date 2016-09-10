@@ -1,5 +1,5 @@
 ﻿2016-09-10 Version 1.1.0 (beta)
-	upgraded freerdp to the latest version.	additionnaly, myrtille and freerdp are now loose coupled (freerdp forked into https://github.com/cedrozor/FreeRDP). see Myrtille.RDP/README for steps to build freerdp
+	upgraded freerdp to the latest version.	additionnaly, myrtille and freerdp are now loose coupled (freerdp forked into https://github.com/cedrozor/FreeRDP)
 	NLA is now supported
 	hardware GDI (auto-detected)
 	added clipboard support

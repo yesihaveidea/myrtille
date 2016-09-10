@@ -61,8 +61,8 @@ namespace Myrtille.Services
 
                 if (Environment.UserInteractive)
                 {
-                    var pathParts = AppDomain.CurrentDomain.BaseDirectory.Split(new[] { "\\" }, StringSplitOptions.RemoveEmptyEntries);
-                    _process.StartInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Myrtille.RDP.FreeRDP", pathParts[pathParts.Length - 1], "wfreerdp.exe");
+                    var pathParts = AppDomain.CurrentDomain.BaseDirectory.Split(new[] { @"\" }, StringSplitOptions.RemoveEmptyEntries);
+                    _process.StartInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Myrtille.RDP", pathParts[pathParts.Length - 1], "wfreerdp.exe");
                 }
                 else
                 {
@@ -72,7 +72,7 @@ namespace Myrtille.Services
                 // ensure the FreeRDP executable does exists
                 if (!File.Exists(_process.StartInfo.FileName))
                 {
-                    var msg = "The FreeRDP executable is missing. Please read Myrtille.RDP\\README for steps to build it";
+                    var msg = "The FreeRDP executable is missing. Please read documentation for steps to build it";
                     if (Environment.UserInteractive)
                     {
                         MessageBox.Show(msg);
