@@ -13,18 +13,18 @@ The implementation is quite straightforward in order to maintain the best speed 
 More information into the DOCUMENTATION.md file.
 
 ## Features
-- HTML4 and HTML5 support
 - HTTP(S) to RDP gateway
-- File transfer
+- File transfer (local and roaming accounts)
+- Remote clipboard support
 - WebP compression
 
 ## Requirements
-- HTTP(S) client: any HTML4 or HTML5 browser (starting from IE6!)
-- HTTP(S) to RDP gateway: IIS 7.0+ and .NET 4.0+ (see DOCUMENTATION.md for gateway prerequisites)
-- RDP server: any RDP enabled computer (preferably Windows Server but can also be Windows XP, 7, 8, 10. see DOCUMENTATION.md for configuration)
+- Browser: any HTML4 or HTML5 browser (starting from IE6!)
+- Gateway: IIS 7.0+, .NET 4.0+ and Microsoft Visual C++ 2015 redistributables (x86)
+- RDP server: any RDP enabled computer (preferably Windows Server but can also be Windows XP, 7, 8, 10)
 
 ## Build
-See DOCUMENTATION.md.
+Microsoft Visual Studio 2015. See DOCUMENTATION.md.
 
 ## Installation
 All releases here: https://github.com/cedrozor/myrtille/releases
@@ -41,16 +41,18 @@ If you want connection information, you can enable stat (displayed on screen or 
 
 You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall).
 
-On touchscreen devices, you can pop the device keyboard with the "Keyboard" button. Then enter some text and click "Send".
+On touchscreen devices, you can pop the device keyboard with the "Keyboard" button. Then enter some text and click "Send". This can be used, for example, to paste the local clipboard content and send it to the server (then it be copied from there, within the rdp session).
 
-You can also upload/download file(s) to/from the user documents folder with the "My documents" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified.
+The remote clipboard content can also be retrieved locally with the "Clipboard" button (text format only).
+
+You can upload/download file(s) to/from the user documents folder with the "My documents" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified.
 
 Myrtille doesn't support the mouse pointer shadow. If enabled for the user, you have to disable it (not much difference anyway and ensure best performance). See "Notes and limitations" into DOCUMENTATION.md.
 
 ## Third-party
 Myrtille uses the following licensed software:
-- RDP client: FreeRDP 0.8.2 (https://github.com/FreeRDP/FreeRDP-old), licensed under Apache 2.0 license.
-- OpenSSL toolkit: 1.0.1f (https://github.com/openssl/openssl), licensed under BSD-style Open Source licenses.
+- RDP client: FreeRDP (https://github.com/FreeRDP/FreeRDP), licensed under Apache 2.0 license. Myrtille uses a fork of FreeRDP (https://github.com/cedrozor/FreeRDP), to enforce a loose coupling architecture and always use the latest version of FreeRDP (the fork is periodically synchronized with the FreeRDP master branch).
+- OpenSSL toolkit (https://github.com/openssl/openssl), licensed under BSD-style Open Source licenses. Precompiled versions of OpenSSL can be obtained here: http://slproweb.com/products/Win32OpenSSL.html.
 - WebP encoding: libWebP 0.5.0 (https://github.com/webmproject/libwebp), licensed under BSD-style Open Source license. Copyright (c) 2010, Google Inc. All rights reserved.
 - HTML5 websockets: Fleck 0.14.0 (https://github.com/statianzo/Fleck), licensed under MIT license. Copyright (c) 2010-2014 Jason Staten.
 - Logging: Log4net 1.2.13.0 (https://logging.apache.org/log4net/), licensed under Apache 2.0 license.

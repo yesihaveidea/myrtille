@@ -62,10 +62,10 @@
             <div runat="server" id="controlDiv" class="controlDiv">
 
                 <%-- connection settings --%>
-                <span runat="server" id="serverLabel" class="controlLabel">Server</span><input type="text" runat="server" id="serverText" class="controlText" value="192.168.0.13" title="server address"/>
-                <span runat="server" id="domainLabel" class="controlLabel">Domain</span><input type="text" runat="server" id="domainText" class="controlText" value="" title="user domain"/>
-                <span runat="server" id="userLabel" class="controlLabel">User</span><input type="text" runat="server" id="userText" class="controlText" value="Administrateur" title="user name"/>
-                <span runat="server" id="passwordLabel" class="controlLabel">Password</span><input type="text" runat="server" id="passwordText" class="controlText" value="/Admin@VM2012!" title="user password"/>
+                <span runat="server" id="serverLabel" class="controlLabel">Server</span><input type="text" runat="server" id="serverText" class="controlText" title="server address"/>
+                <span runat="server" id="domainLabel" class="controlLabel">Domain</span><input type="text" runat="server" id="domainText" class="controlText" title="user domain"/>
+                <span runat="server" id="userLabel" class="controlLabel">User</span><input type="text" runat="server" id="userText" class="controlText" title="user name"/>
+                <span runat="server" id="passwordLabel" class="controlLabel">Password</span><input type="password" runat="server" id="passwordText" class="controlText" title="user password"/>
                 <span runat="server" id="statsLabel" class="controlLabel">Stats</span><select runat="server" id="statSelect" class="controlSelect" title="display stats bar"><option selected="selected">Stat disabled</option><option>Stat enabled</option></select>
                 <span runat="server" id="debugLabel" class="controlLabel">Debug</span><select runat="server" id="debugSelect" class="controlSelect" title="display debug info and save session logs"><option selected="selected">Debug disabled</option><option>Debug enabled</option></select>
                 <span runat="server" id="browserLabel" class="controlLabel">Browser</span><select runat="server" id="browserSelect" class="controlSelect" title="rendering mode"><option>HTML4</option><option selected="selected">HTML5</option></select>

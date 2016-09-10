@@ -1,4 +1,11 @@
-﻿2016-07-14 Version 1.0.6 (stable)
+﻿2016-09-10 Version 1.1.0 (beta)
+	upgraded freerdp to the latest version.	additionnaly, myrtille and freerdp are now loose coupled (freerdp forked into https://github.com/cedrozor/FreeRDP). see Myrtille.RDP/README for steps to build freerdp
+	NLA is now supported
+	hardware GDI (auto-detected)
+	added clipboard support
+	improved myrtille homepage
+
+2016-07-14 Version 1.0.6 (stable)
 	added automatic creation of a myrtille self-signed certificate into IIS
 	removed password for the websocket server certificate as IIS certificate export is done on the gateway machine itself
 

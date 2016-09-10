@@ -19,7 +19,7 @@ Special thanks to Catalin Trifanescu for its support.
 ## Prerequisites
 - IIS 7.0+ (Web Server role on Windows Servers)
 - .NET 4.0+ (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012; can also be installed separately using a standalone .NET 4.x installer)
-- Microsoft Visual C++ 2015 redistributables. **CAUTION ** on Windows Server 2012, it requires the system to be fully updated (Windows updates) first; see notes and limitations
+- Microsoft Visual C++ 2015 redistributables (x86). **CAUTION ** on Windows Server 2012, it requires the system to be fully updated (Windows updates) first; see notes and limitations
 
 ## File transfer
 Myrtille supports both local and network file storage. If you want your domain users to have access to their documents whatever the connected server, follow these steps:
@@ -35,10 +35,10 @@ The installer adds the following rules to the machine firewall:
 - "Myrtille Websockets Secured": allow both directions TCP port 8431 (default)
 
 ## Installation
-First ensure the prerequisites are met (see above).
+First ensure the prerequisites are met (see above). You need at least IIS 7.0+ before running the myrtille setup.
 
 All releases here: https://github.com/cedrozor/myrtille/releases
-- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (if not already installed), then install the Myrtille MSI package
+- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (x86), if not already installed, then install the Myrtille MSI package
 - Myrtille.msi: Myrtille MSI package (x86)
 
 ## Security
@@ -55,10 +55,8 @@ Both the gateway and services have their own .NET config files; the gateway also
 
 You may also play with the gateway "js/config.js" file settings to fine tune the configuration depending on your needs.
 
-Regarding the RDP server(s) configuration, Myrtille requires NLA to be disabled (see notes and limitations below). You can either do it manually or copy and import the Myrtille "RDPSetup.reg" file over the server(s).
-
 ## Code organization
-- Myrtille.RDP: C++ code. FreeRDP rdp client; modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
+- Myrtille.RDP: link to the myrtille FreeRDP fork. C++ code. RDP client, modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
 - Myrtille.Common: C# code. Fleck Websockets library and common helpers.
 - Myrtille.Services: C# code. WCF services, hosted by a Windows Service (or a console application in debug build). start/stop the rdp client and upload/download file(s) to/from the connected user documents folder.
 - Myrtille.Services.Contracts: C# code. WCF contracts (interfaces).
@@ -70,6 +68,8 @@ Myrtille uses C#, C++ and pure Javascript code (no additional libraries). Micros
 If you want Visual Studio to load the Myrtille setup project, you have to install the (official and free) Microsoft Visual Studio 2015 Installer Projects extension (https://visualstudiogallery.msdn.microsoft.com/f1cc3f3e-c300-40a7-8797-c509fb8933b9).
 
 The Myrtille build have the two classic solution configurations: "Debug" and "Release", on "Mixed Platforms" ("Win32" for C++ and "Any CPU" for C# projects).
+See https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) (also applicable for VS2015) for the myrtille FreeRDP fork build.
+If you intend to build the myrtille installer, you will need first to build the myrtille FreeRDP fork.
 
 ### Startup projects
 If you want to run Myrtille with Visual Studio, you should set startup projects on the solution in the following order (multiple startup projects):
@@ -78,11 +78,11 @@ If you want to run Myrtille with Visual Studio, you should set startup projects 
 
 You can choose the browser you want to use by right-clicking an ASPX page into the "Myrtille.Web" project and click "Browse With...".
 
-The FreeRDP executable project is "Myrtille.RDP/FreeRDP.wfreerdp" (others FreeRDP projects under "Myrtille.RDP" are static or dynamic libraries).
+The FreeRDP executable is intended to be run from the "Myrtille.RDP" folder.
 
-You can debug FreeRDP, while an rdp session is active, by attaching the debugger to the process "FreeRDP.wfreerdp.exe" (native code).
+You can debug FreeRDP, while an rdp session is active, by attaching the debugger to the process "wfreerdp.exe" (native code).
 
-Before first run, build all the solution in order to generate "FreeRDP.wfreerdp.exe".
+Before first run, retrieve (git clone) the myrtille FreeRDP fork (https://github.com/cedrozor/FreeRDP) into the "Myrtille.RDP" folder and build it there in order to generate "wfreerdp.exe".
 
 Hit F5 to start debugging.
 
@@ -108,15 +108,9 @@ However, I'm fully aware that it breaks the distributed architecture pattern. Th
 This is a thing to consider if you want to isolate the web gateway from your intranet (into a DMZ for instance) and still be able to connect a machine on it.
 
 ## Notes and limitations
-- On Windows Server 2008, you may have to install (manually) the Microsoft Visual C++ 2008 redistributables, required by OpenSSL (libeay32.dll/ssleay32.dll).
+- On Windows Server 2008, you may have to install (manually) the Microsoft Visual C++ 2008 redistributables (x86), required by OpenSSL (libeay32.dll/ssleay32.dll).
 
-- On Windows Server 2012, you may have issues installing the Microsoft Visual C++ 2015 redistributables (http://stackoverflow.com/questions/31536606/while-installing-vc-redist-x64-exe-getting-error-failed-to-configure-per-machi). To circumvent that, ensure your system is fully updated (Windows updates) first or try to install the package "Windows8.1-KB2999226-x64.msu" manually.
-
-- Myrtille doesn't support clipboard and printer; they could however be enabled through FreeRDP virtual channels, given some additionnal code.
-
-- Myrtille doesn't support the mouse pointer shadow; this is a FreeRDP 0.8.2 issue (it may have been fixed since). An easy workaround is to disable it (Control panel > Hardware > Mouse > Pointers (tab) > uncheck "Enable pointer shadow"). See http://vchips.imutroom.com/2015/04/optimising-windows-8-1-visual-effects/ for more visual effects tweaking through registry and applied via GPOs. If Myrtille is used over a WAN, it may improve performance significantly.
-
-- Myrtille doesn't support NLA (standard RDP authentication only); this may be due to a misuse of FreeRDP or because it's an old version (0.8.2) which lacks full NLA support. Anyway, NLA from a web browser wouldn't make much sense as, by design of the HTTP protocol, the client and the server are not necessarily on the same network. Also, a standard browser doesn't implements CredSSP (required by NLA for RDP, see https://en.wikipedia.org/wiki/Security_Support_Provider_Interface). So, even if the RDP client and server _are_ on the same network, credentials have to be passed using a standard username/password scheme from the browser. Last but not least, NLA has some drawbacks (see https://en.wikipedia.org/wiki/Network_Level_Authentication).
+- On Windows Server 2012, you may have issues installing the Microsoft Visual C++ 2015 redistributables (x86) (http://stackoverflow.com/questions/31536606/while-installing-vc-redist-x64-exe-getting-error-failed-to-configure-per-machi). To circumvent that, ensure your system is fully updated (Windows updates) first or try to install the package "Windows8.1-KB2999226-x64.msu" manually.
 
 - In order to keep the installation simple, both the myrtille gateway and services are installed on the same machine. They do however conform to a distributed architecture; if needed, given some additionnal code, myrtille services could acts as a proxy, so the gateway could be installed and operate separately (this could be handy if the gateway should go into a DMZ).
 
@@ -138,15 +132,12 @@ First at all, ensure the Myrtille prerequisites are met (see "Prerequisites").
 	- Ensure .NET 4.0 is installed and the "MyrtilleAppPool" is running on it.
 	- If using HTTPS with HTML5 rendering (hence secure websockets, WSS), ensure the secured websockets port (default 8431) is opened (see "Security").
 	- Ensure the "Myrtille.Services" Windows service (or console application if running under Visual Studio) is started.
-	- Ensure the RDP client ("FreeRDP.wfreerdp.exe") does exists (into the "Myrtille.Services" output folder, if running under Visual Studio, or into the "bin" folder otherwise); if not, you need to build the "Myrtille.RDP/FreeRDP.wfreerdp" project (or simply build all the solution).
-	- Ensure the Microsoft Visual C++ 2015 redistributables are installed (and also Microsoft Visual C++ 2008 redistributables if on Windows Server 2008); they are required by the RDP client.
-	- Check the RDP server configuration (**ensure NLA is disabled** (Myrtille supports standard RDP authentication only; see notes and limitations), does the user exists, is it a member of the "Remote Desktop Users" group, are Remote Desktop CALs valid?, etc.). You can setup it automatically by importing the Myrtille "RDPSetup.reg" file into registry.
-	- Check the RDP server logs (and also the Windows events logs on the RDP server machine).
-	- Check the Windows events logs ("System", "Application", etc.), particulary regarding .NET.
-	- Retry with Myrtille logs enabled and check them (Myrtille "log" folder). You can change their verbosity level in config (but be warned it will affect peformance and flood the disk if setted too verbose).
-
-- The mouse pointer is weird (malformed)
-	- Myrtille doesn't support the mouse pointer shadow (see "Notes and limitations"). You have to disable it (Control panel > Hardware > Mouse > Pointers (tab) > uncheck "Enable pointer shadow").
+	- Ensure the RDP client ("wfreerdp.exe") does exists (into the "Myrtille.RDP" output folder, if running under Visual Studio, or into the "bin" folder otherwise); if not, you need to retrieve (git clone) the myrtille FreeRDP fork into the "Myrtille.RDP" folder and build it there.
+	- Ensure the Microsoft Visual C++ 2015 redistributables (x86) are installed (and also Microsoft Visual C++ 2008 redistributables (x86) on Windows Server 2008); they are required by the RDP client.
+	- Check the RDP server configuration (does the user exists, is it a member of the "Remote Desktop Users" group, are Remote Desktop CALs valid?, etc.). You can setup it automatically by importing the "Myrtille.RDP\RDPSetup.reg" file into registry.
+	- Check the RDP server windows event logs.
+	- Check the gateway windows event logs, particulary regarding .NET.
+	- Retry with debug enabled and check logs (into the "log" folder). You can change their verbosity level in config (but be warned it will affect peformance and flood the disk if set too verbose).
 
 - The RDP session continues to run after clicking "Disconnect"
 	- Check the RDP server configuration (session disconnect timeout in particular). You can setup it automatically by importing the Myrtille "RDPSetup.reg" file into registry.
