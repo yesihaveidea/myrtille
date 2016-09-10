@@ -47,8 +47,6 @@ The remote clipboard content can also be retrieved locally with the "Clipboard" 
 
 You can upload/download file(s) to/from the user documents folder with the "My documents" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified.
 
-Myrtille doesn't support the mouse pointer shadow. If enabled for the user, you have to disable it (not much difference anyway and ensure best performance). See "Notes and limitations" into DOCUMENTATION.md.
-
 ## Third-party
 Myrtille uses the following licensed software:
 - RDP client: FreeRDP (https://github.com/FreeRDP/FreeRDP), licensed under Apache 2.0 license. Myrtille uses a fork of FreeRDP (https://github.com/cedrozor/FreeRDP), to enforce a loose coupling architecture and always use the latest version of FreeRDP (the fork is periodically synchronized with the FreeRDP master branch).

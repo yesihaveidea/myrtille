@@ -19,7 +19,7 @@ Special thanks to Catalin Trifanescu for its support.
 ## Prerequisites
 - IIS 7.0+ (Web Server role on Windows Servers)
 - .NET 4.0+ (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012; can also be installed separately using a standalone .NET 4.x installer)
-- Microsoft Visual C++ 2015 redistributables (x86). **CAUTION ** on Windows Server 2012, it requires the system to be fully updated (Windows updates) first; see notes and limitations
+- Microsoft Visual C++ 2015 redistributables (x86). **CAUTION** on Windows Server 2012, it requires the system to be fully updated (Windows updates) first; see notes and limitations
 
 ## File transfer
 Myrtille supports both local and network file storage. If you want your domain users to have access to their documents whatever the connected server, follow these steps:
@@ -80,8 +80,8 @@ The objectives are:
 
 Steps to build the FreeRDP fork (and have it working with the gateway):
 - Git clone https://github.com/cedrozor/FreeRDP.git into a "Myrtille.RDP" folder (located into the myrtille solution folder, among with "Myrtille.Common", "Myrtille.Services", etc.)
-- Use cmake on it as detailed here: https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) to generate the Visual Studio solution and projects accordingly to your dev environment (don't forget to install OpenSSL first)
-- Open and build the generated solution
+- Use cmake on it as detailed here: https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) to generate the Visual Studio solution and projects accordingly to your dev environment (don't forget to install OpenSSL first; precompiled installers here: http://slproweb.com/products/Win32OpenSSL.html)
+- Open and build the generated solution. **CAUTION** if OpenSSL is configured standalone (dlls not present into the Windows "System32" folder), you will have to copy *"libeay32.dll"* and *"ssleay32.dll"* files (located into "OpenSSL\bin") into the FreeRDP build output folder
 
 If you plan to build the myrtille installer, you have first to build the FreeRDP fork (or you can add the FreeRDP fork solution to the myrtille solution and use the FreeRDP projects outputs instead of files).
 
