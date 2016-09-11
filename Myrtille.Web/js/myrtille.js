@@ -248,6 +248,13 @@ function sendCtrlAltDel()
         {
             // del
             sendKey(46, false);
+            window.setTimeout(function()
+            {
+                // release all keys at once
+                sendKey(17, true);
+                sendKey(18, true);
+                sendKey(46, true);
+            }, 100)
         }, 100)
     }, 100);
 }
