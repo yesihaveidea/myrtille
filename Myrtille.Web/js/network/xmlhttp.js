@@ -223,8 +223,8 @@ function XmlHttp(config, dialog, display, network)
                 // session disconnect
                 else if (xhrResponseText == 'disconnected')
                 {
-                    // the remote session is disconnected
-                    window.location.href = window.location.href.replace('connect', 'disconnect');
+                    // the remote session is disconnected, back to home page
+                    window.location.href = config.getHttpServerUrl();
                 }
                 // new image
                 else

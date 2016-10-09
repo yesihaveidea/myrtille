@@ -98,30 +98,44 @@ namespace Myrtille.Web
                 serverLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
                 serverText.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
                 serverText.Attributes["class"] = serverLabel.Visible ? "controlText" : null;
+                if (serverText.Disabled)
+                    serverText.Value = RemoteSessionManager.RemoteSession.ServerAddress;
 
                 domainLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
                 domainText.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
                 domainText.Attributes["class"] = domainLabel.Visible ? "controlText" : null;
+                if (domainText.Disabled)
+                    domainText.Value = RemoteSessionManager.RemoteSession.UserDomain;
 
                 userLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
                 userText.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
                 userText.Attributes["class"] = userLabel.Visible ? "controlText" : null;
+                if (userText.Disabled)
+                    userText.Value = RemoteSessionManager.RemoteSession.UserName;
 
                 passwordLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
                 passwordText.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
                 passwordText.Attributes["class"] = passwordLabel.Visible ? "controlText" : null;
+                if (passwordText.Disabled)
+                    passwordText.Value = RemoteSessionManager.RemoteSession.UserPassword;
 
                 statsLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
                 statSelect.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
                 statSelect.Attributes["class"] = statsLabel.Visible ? "controlSelect" : null;
+                if (statSelect.Disabled)
+                    statSelect.Value = RemoteSessionManager.RemoteSession.StatMode ? "Stat enabled" : "Stat disabled";
 
                 debugLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
                 debugSelect.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
                 debugSelect.Attributes["class"] = debugLabel.Visible ? "controlSelect" : null;
+                if (debugSelect.Disabled)
+                    debugSelect.Value = RemoteSessionManager.RemoteSession.DebugMode ? "Debug enabled" : "Debug disabled";
 
                 browserLabel.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
                 browserSelect.Disabled = RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected;
                 browserSelect.Attributes["class"] = browserLabel.Visible ? "controlSelect" : null;
+                if (browserSelect.Disabled)
+                    browserSelect.Value = RemoteSessionManager.RemoteSession.CompatibilityMode ? "HTML4" : "HTML5";
 
                 // connect/disconnect
                 connect.Visible = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
@@ -205,7 +219,9 @@ namespace Myrtille.Web
                             UserPassword = passwordText.Value,
                             ClientWidth = width.Value,
                             ClientHeight = height.Value,
-                            DebugMode = debugSelect.Value == "Debug enabled"
+                            StatMode = statSelect.Value == "Stat enabled",
+                            DebugMode = debugSelect.Value == "Debug enabled",
+                            CompatibilityMode = browserSelect.Value == "HTML4"
                         }
                     );
 

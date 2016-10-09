@@ -57,7 +57,7 @@
         <%=(debugSelect.Value == "Debug enabled").ToString(CultureInfo.InvariantCulture).ToLower()%>,
         <%=(browserSelect.Value == "HTML4").ToString(CultureInfo.InvariantCulture).ToLower()%>);">
 
-        <form method="get" runat="server" id="mainForm">
+        <form method="post" runat="server" id="mainForm">
 
             <div runat="server" id="controlDiv" class="controlDiv">
 
@@ -71,7 +71,7 @@
                 <span runat="server" id="browserLabel" class="controlLabel">Browser</span><select runat="server" id="browserSelect" class="controlSelect" title="rendering mode"><option>HTML4</option><option selected="selected">HTML5</option></select>
                 <input type="hidden" runat="server" id="width"/>
                 <input type="hidden" runat="server" id="height"/>
-                <input type="button" runat="server" id="connect" class="controlButton" value="Connect!" onclick="setClientResolution();" onserverclick="ConnectButtonClick" title="login"/>
+                <input type="submit" runat="server" id="connect" class="controlButton" value="Connect!" onclick="setClientResolution();" onserverclick="ConnectButtonClick" title="login"/>
                 <input type="button" runat="server" id="disconnect" value="Disconnect" visible="false" onserverclick="DisconnectButtonClick" title="logout"/>
 
                 <%-- virtual keyboard. on devices without a physical keyboard, forces the device virtual keyboard to pop up --%>

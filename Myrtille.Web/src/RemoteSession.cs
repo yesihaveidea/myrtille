@@ -28,6 +28,8 @@ namespace Myrtille.Web
         public string UserPassword;
         public string ClientWidth;
         public string ClientHeight;
+        public bool StatMode;
         public bool DebugMode;
+        public bool CompatibilityMode;
     }
 }

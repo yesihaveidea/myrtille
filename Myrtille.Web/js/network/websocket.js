@@ -243,8 +243,8 @@ function Websocket(config, dialog, display, network)
                             'close' +
                             '|' + config.getHttpSessionId());
 
-                        // the remote session is disconnected
-                        window.location.href = window.location.href.replace('connect', 'disconnect');
+                        // the remote session is disconnected, back to home page
+                        window.location.href = config.getHttpServerUrl();
                     }
                 }
                 // server ack

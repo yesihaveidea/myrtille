@@ -82,7 +82,7 @@ function startMyrtille(httpSessionId, remoteSessionActive, webSocketPort, webSoc
         // if no remote session is running, leave
         if (!remoteSessionActive)
             return;
-    
+
         // retrieve the http server url
         var pathname = '';
         var parts = new Array();
@@ -104,6 +104,19 @@ function startMyrtille(httpSessionId, remoteSessionActive, webSocketPort, webSoc
     
         var httpServerUrl = window.location.protocol + '//' + window.location.hostname + '/' + pathname + '/';
         //alert('http server url: ' + httpServerUrl);
+
+        /*
+        the connection settings are posted (form method "post") in order to avoid passing the user credentials within the url
+        using a querystring (form method "get") isn't an issue (from a network point of view) when using https, as the querystring is also encrypted, but it becomes one if someone has access to the browser history
+        the drawback of posting a form is the browser asks the user to confirm the form data resubmission if the page is reloaded, which is a little boring and is a problem if the page needs to be reloaded automatically (ie: DOM cleaning, session disconnected, etc.)
+        to avoid that and still preserve security, the connection settings are saved server side (within the http session) and the page is reloaded with an empty querystring below
+        */
+        if (window.location.href.indexOf('?') == -1)
+        {
+            //alert('reloading page with empty querystring');
+            window.location.href = httpServerUrl + '?';
+            return;
+        }
 
         myrtille = new Myrtille(httpServerUrl, httpSessionId, webSocketPort, webSocketPortSecured, statEnabled, debugEnabled, compatibilityMode);
         myrtille.init();

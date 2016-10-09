@@ -67,7 +67,7 @@ You may also play with the gateway "js/config.js" file settings to fine tune the
 Myrtille uses C#, C++ and pure Javascript code (no additional libraries). Microsoft Visual Studio Community 2015 was used as primary development environment, using the .NET 4.0 framework.
 If you want Visual Studio to load the Myrtille setup project, you have to install the (official and free) Microsoft Visual Studio 2015 Installer Projects extension (https://visualstudiogallery.msdn.microsoft.com/f1cc3f3e-c300-40a7-8797-c509fb8933b9).
 
-The Myrtille build have the two classic solution configurations: "Debug" and "Release", on "Mixed Platforms" ("Win32" for C++ and "Any CPU" for C# projects).
+The Myrtille build have the two classic solution configurations: "Debug" and "Release", on "Any CPU" platform.
 
 Starting from version 1.1.0, the FreeRDP code (modified for myrtille needs) is no longer part of the myrtille repository.
 
