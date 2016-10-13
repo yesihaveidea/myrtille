@@ -428,7 +428,7 @@
         {
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_02157025535C46CD8239CA08F086EF0D"
             {
-            "SourcePath" = "8:..\\Myrtille.RDP\\Release\\freerdp.dll"
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\freerdp.dll"
             "TargetName" = "8:freerdp.dll"
             "Tag" = "8:"
             "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
@@ -479,7 +479,7 @@
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_24B9B8CD3D9F4178B80F65B2A54D6D3E"
             {
-            "SourcePath" = "8:..\\Myrtille.RDP\\Release\\winpr-tools.dll"
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\winpr-tools.dll"
             "TargetName" = "8:winpr-tools.dll"
             "Tag" = "8:"
             "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
@@ -530,7 +530,7 @@
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4261F1CC41574D4AB536F72B3BA7BE26"
             {
-            "SourcePath" = "8:..\\Myrtille.RDP\\Release\\libeay32.dll"
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\libeay32.dll"
             "TargetName" = "8:libeay32.dll"
             "Tag" = "8:"
             "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
@@ -672,7 +672,7 @@
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7D081A913BAE4411BAFD3855305CF234"
             {
-            "SourcePath" = "8:..\\Myrtille.RDP\\Release\\winpr.dll"
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\winpr.dll"
             "TargetName" = "8:winpr.dll"
             "Tag" = "8:"
             "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
@@ -692,7 +692,7 @@
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_92776F3E910D45949AB49109525C282B"
             {
-            "SourcePath" = "8:..\\Myrtille.RDP\\Release\\ssleay32.dll"
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\ssleay32.dll"
             "TargetName" = "8:ssleay32.dll"
             "Tag" = "8:"
             "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
@@ -712,7 +712,7 @@
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BCB905A2CB9E486EB925D1F1BBCE220A"
             {
-            "SourcePath" = "8:..\\Myrtille.RDP\\Release\\freerdp-client.dll"
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\freerdp-client.dll"
             "TargetName" = "8:freerdp-client.dll"
             "Tag" = "8:"
             "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
@@ -732,7 +732,7 @@
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C63E65A2ACEE4793940CCE0D0C7D69E4"
             {
-            "SourcePath" = "8:..\\Myrtille.RDP\\Release\\wfreerdp.exe"
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\wfreerdp.exe"
             "TargetName" = "8:wfreerdp.exe"
             "Tag" = "8:"
             "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
@@ -885,7 +885,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Myrtille"
         "ProductCode" = "8:{B00BCC6F-3958-4726-9D99-DBAC78513C26}"
-        "PackageCode" = "8:{393F56FE-F723-4501-89A1-0B56C4344C21}"
+        "PackageCode" = "8:{1A8F7CB8-1EB3-4A62-A245-9280C13E03FB}"
         "UpgradeCode" = "8:{8B56253E-D535-4891-BA0D-13DE49BB64A0}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
