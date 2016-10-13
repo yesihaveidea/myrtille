@@ -59,10 +59,12 @@ namespace Myrtille.Services
 
                 _process = new Process();
 
+                // see https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#build for information and steps to build FreeRDP along with myrtille
+
                 if (Environment.UserInteractive)
                 {
                     var pathParts = AppDomain.CurrentDomain.BaseDirectory.Split(new[] { @"\" }, StringSplitOptions.RemoveEmptyEntries);
-                    _process.StartInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Myrtille.RDP", pathParts[pathParts.Length - 1], "wfreerdp.exe");
+                    _process.StartInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Myrtille.RDP\FreeRDP", pathParts[pathParts.Length - 1], "wfreerdp.exe");
                 }
                 else
                 {
@@ -92,7 +94,7 @@ namespace Myrtille.Services
                     " /w:" + (string.IsNullOrEmpty(clientWidth) ? "1024" : clientWidth) +                           // display width
                     " /h:" + (string.IsNullOrEmpty(clientHeight) ? "768" : clientHeight) +                          // display height
                     " /bpp:16" +                                                                                    // color depth
-                    //" /gdi:hw" +                                                                                  // gdi mode (sw: software, hw: hardware). auto-detected
+                    " /gdi:sw" +                                                                                    // gdi mode (sw: software, hw: hardware). forced software because there is a palette issue with windows server 2008; also, the performance gain is small and even null on most virtual machines, when hardware isn't available
                     " /network:modem" +                                                                             // network profile
                     " /compression" +                                                                               // bulk compression (level is autodetected from the rdp version)
                     " -sec-tls" +                                                                                   // tls encryption

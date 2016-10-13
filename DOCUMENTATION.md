@@ -78,8 +78,8 @@ The objectives are:
 - Benefits from the latest FreeRDP changes (bugfixes, new features, latest RDP protocol support, etc.), by synchronizing the fork with the FreeRDP repository (periodically, with a stable branch or after ensuring the master branch is stable)
 - Extends myrtille to other remote access protocols. The gateway is (always was) protocol agnostic. For example, myrtille could be linked to an SSH client (the same way it's linked to an RDP client), modified to handle the user inputs and display updates
 
-Steps to build the FreeRDP fork (and have it working with the gateway):
-- Git clone https://github.com/cedrozor/FreeRDP.git into a "Myrtille.RDP" folder (located into the myrtille solution folder, among with "Myrtille.Common", "Myrtille.Services", etc.)
+Steps to build the FreeRDP fork (and have it working with myrtille):
+- Git clone https://github.com/cedrozor/FreeRDP.git into "<myrtille root folder>\Myrtille.RDP\FreeRDP\" (**NOTE** if using TortoiseGit, the contextual menu won't show the "Git clone" option from the "Myrtille.RDP" folder; you will have to do it from elsewhere, outside of the myrtille tree; also, don't create the "FreeRDP" folder manually, just write it into the clone target path)
 - Use cmake on it as detailed here: https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) to generate the Visual Studio solution and projects accordingly to your dev environment (don't forget to install OpenSSL first; precompiled installers here: http://slproweb.com/products/Win32OpenSSL.html)
 - Open and build the generated solution. **CAUTION** if OpenSSL is configured standalone (dlls not present into the Windows "System32" folder), you will have to copy *"libeay32.dll"* and *"ssleay32.dll"* files (located into "OpenSSL\bin") into the FreeRDP build output folder
 

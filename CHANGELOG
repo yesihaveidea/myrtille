@@ -1,5 +1,6 @@
 ﻿2016-10-09 Version 1.1.1 (stable)
 	connection settings are now passed through a posted form instead of url querystring, for security purpose
+	gdi rendering is forced software because there is a palette issue with windows server 2008 and some virtual machines settings
 
 2016-09-10 Version 1.1.0 (beta)
 	upgraded freerdp to the latest version.	additionnaly, myrtille and freerdp are now loose coupled (freerdp forked into https://github.com/cedrozor/FreeRDP)
