@@ -1,4 +1,7 @@
-﻿2016-10-09 Version 1.1.1 (stable)
+﻿2016-10-14 Version 1.2.0 (stable)
+	the packaged FreeRDP and OpenSSL binaries are now statically linked, in order to remove the Microsoft Visual C++ redistributables dependencies
+
+2016-10-09 Version 1.1.1 (stable)
 	connection settings are now passed through a posted form instead of url querystring, for security purpose
 	gdi rendering is forced software because there is a palette issue with windows server 2008 and some virtual machines settings
 

@@ -35,7 +35,7 @@ The installer adds the following rules to the machine firewall:
 - "Myrtille Websockets Secured": allow both directions TCP port 8431 (default)
 
 ## Installation
-First ensure the prerequisites are met (see above). You need at least IIS 7.0+ before running the myrtille setup.
+You need at least IIS 7.0+ before running the myrtille installer. It installs as a role on Windows Servers and as a feature on others Windows versions.
 
 All releases here: https://github.com/cedrozor/myrtille/releases
 - Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (x86), if not already installed, then install the Myrtille MSI package
@@ -69,7 +69,7 @@ If you want Visual Studio to load the Myrtille setup project, you have to instal
 
 The Myrtille build have the two classic solution configurations: "Debug" and "Release", on "Any CPU" platform.
 
-Starting from version 1.1.0, the FreeRDP code (modified for myrtille needs) is no longer part of the myrtille repository.
+Starting from myrtille version 1.1.0, the FreeRDP code (modified for myrtille needs) is no longer part of the myrtille repository.
 
 The (new) myrtille FreeRDP code can be found at https://github.com/cedrozor/FreeRDP
 
@@ -122,18 +122,21 @@ However, I'm fully aware that it breaks the distributed architecture pattern. Th
 This is a thing to consider if you want to isolate the web gateway from your intranet (into a DMZ for instance) and still be able to connect a machine on it.
 
 ## Notes and limitations
-- On Windows Server 2008, you may have to install (manually) the Microsoft Visual C++ 2008 redistributables (x86), required by OpenSSL (libeay32.dll/ssleay32.dll).
+- Starting from myrtille version 1.2.0, the packaged FreeRDP and OpenSSL binaries use a statically-linked runtime; that means there is no longer need for the Microsoft Visual C++ redistributables (x86). It's still a good idea to install them however as they will be required if the build options are changed.
 
 - On Windows Server 2012, you may have issues installing the Microsoft Visual C++ 2015 redistributables (x86) (http://stackoverflow.com/questions/31536606/while-installing-vc-redist-x64-exe-getting-error-failed-to-configure-per-machi). To circumvent that, ensure your system is fully updated (Windows updates) first or try to install the package "Windows8.1-KB2999226-x64.msu" manually.
 
 - In order to keep the installation simple, both the myrtille gateway and services are installed on the same machine. They do however conform to a distributed architecture; if needed, given some additionnal code, myrtille services could acts as a proxy, so the gateway could be installed and operate separately (this could be handy if the gateway should go into a DMZ).
 
 ## Troubleshoot
-First at all, ensure the Myrtille prerequisites are met (see "Prerequisites").
+First at all, ensure the Myrtille prerequisites are met (see "Prerequisites"). Note that IIS must be installed separately, before running the installer (see "Installation").
 
 - The installation fails
-	- Check the Windows events logs ("System", "Application", etc.).
-		
+	- Prerequisites are not downloaded: the installer was run directly using the MSI file; this exclude the bootstrapper (Setup.exe), whose purpose is to check and download/install the prerequisites if necessary
+	- Prerequisites download fails: MSI installers use Internet Explorer for downloads; ensure the Internet Explorer enhanced security is disabled (server administration tools)
+	- Error 1001: an MSI custom action failed (https://blogs.msdn.microsoft.com/vsnetsetup/2012/03/14/msi-installation-fails-while-installing-a-custom-action-with-error-1001-exception-occurred-while-initializing-the-installation/). Ensure the .NET framework is fully installed (http://stackoverflow.com/a/8487214) and the IIS Management Console is enabled (http://stackoverflow.com/a/23263836)
+	- Check the Windows events logs ("System", "Application", etc.)
+
 - I can't access http://yourserver/myrtille
 	- Ensure IIS is started and "Myrtille.Web" application is running on the "MyrtilleAppPool" application pool.
 	- Ensure .NET 4.0 is installed and the "MyrtilleAppPool" is running on it.
@@ -147,7 +150,8 @@ First at all, ensure the Myrtille prerequisites are met (see "Prerequisites").
 	- If using HTTPS with HTML5 rendering (hence secure websockets, WSS), ensure the secured websockets port (default 8431) is opened (see "Security").
 	- Ensure the "Myrtille.Services" Windows service (or console application if running under Visual Studio) is started.
 	- Ensure the RDP client ("wfreerdp.exe") does exists (into the "Myrtille.RDP" output folder, if running under Visual Studio, or into the "bin" folder otherwise); if not, you need to retrieve (git clone) the myrtille FreeRDP fork into the "Myrtille.RDP" folder and build it there.
-	- Ensure the Microsoft Visual C++ 2015 redistributables (x86) are installed (and also Microsoft Visual C++ 2008 redistributables (x86) on Windows Server 2008); they are required by the RDP client.
+	- Ensure the Microsoft Visual C++ 2015 redistributables (x86) are installed (control panel > programs > programs and features); they are required by the RDP client (myrtille\bin\wfreerdp.exe).
+	- Try to run wfreerdp.exe (just double-click it, no params), into the myrtille binaries folder. if there is a missing dll, or another issue, Windows should popup an error message (i.e.: MSVCR120.dll = MSVC 12 = Microsoft Visual C++ 2013 redistributables, MSVCP140.dll = MSVC 14 = Microsoft Visual C++ 2015 redistributables, etc.). Depending on your build environment and options, you will need the appropriate redistributables.
 	- Check the RDP server configuration (does the user exists, is it a member of the "Remote Desktop Users" group, are Remote Desktop CALs valid?, etc.). You can setup it automatically by importing the "Myrtille.RDP\RDPSetup.reg" file into registry.
 	- Check the RDP server windows event logs.
 	- Check the gateway windows event logs, particulary regarding .NET.
