@@ -73,6 +73,8 @@ var display = null;
 var network = null;
 var user = null;
 
+this.getConfig = function() { return config; };
+
 var fullscreenPending = false;
 
 function startMyrtille(httpSessionId, remoteSessionActive, webSocketPort, webSocketPortSecured, statEnabled, debugEnabled, compatibilityMode)

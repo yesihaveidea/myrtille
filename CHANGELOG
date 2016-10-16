@@ -1,4 +1,9 @@
-﻿2016-10-14 Version 1.2.0 (stable)
+﻿2016-10-16 Version 1.2.1 (stable)
+	a failed connection or authentication now have the browser to go back to the login screen
+	fixed javascript calls (parent window) in long polling mode
+	disabled keyboard helper (config.js)
+
+2016-10-14 Version 1.2.0 (stable)
 	the packaged FreeRDP and OpenSSL binaries are now statically linked, in order to remove the Microsoft Visual C++ redistributables dependencies
 
 2016-10-09 Version 1.1.1 (stable)

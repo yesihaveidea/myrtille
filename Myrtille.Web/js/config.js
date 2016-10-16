@@ -34,7 +34,7 @@ function Config(
     // debug
     var debugConsole = false;                           // output the debug messages into the browser javascript console (or on screen otherwise)
     var debugLinesMax = 40;                             // max number of displayed debug lines (rollover) when the output is on screen
-    var keyboardHelperEnabled = true;                   // display a yellow tooltip to show the user inputs on-the-fly
+    var keyboardHelperEnabled = false;                  // display a yellow tooltip to show the user inputs on-the-fly; useful when the latency is high as the user can see a direct result of its action
     var keyboardHelperSize = 75;                        // max number of characters to display into the keyboard helper
     var keyboardHelperDelay = 3000;                     // duration (ms) before removing the keyboard helper
 

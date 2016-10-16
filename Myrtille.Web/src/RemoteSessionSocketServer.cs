@@ -67,9 +67,9 @@ namespace Myrtille.Web
             server.Start(socket =>
                 {
                     socket.OnOpen = () => { Open(socket); };
-                    socket.OnClose = () => { Close(socket); };
                     socket.OnMessage = message => ProcessMessage(socket, message);
                     socket.OnError = exception => { Trace.TraceError("Websocket error {0}", exception); };
+                    socket.OnClose = () => { Close(socket); };
                 });
         }
 
@@ -148,14 +148,25 @@ namespace Myrtille.Web
                             var newSocket = int.Parse(msgParams[8]) == 1;
                             var timestamp = long.Parse(msgParams[9]);
 
-                            // if the socket is new, set it on the remote session manager in order to send images on it
+                            // if the socket is new, bind it to the remote session manager
                             // close the old one, if any
                             if (newSocket)
                             {
+                                // ensure the remote session is still connected
+                                if (remoteSessionManager.RemoteSession.State == RemoteSessionState.Disconnected)
+                                {
+                                    if (socket.IsAvailable)
+                                    {
+                                        socket.Send("disconnected");
+                                    }
+                                    return;
+                                }
+
                                 if (remoteSessionManager.WebSocket != null)
                                 {
                                     remoteSessionManager.WebSocket.Close();
                                 }
+
                                 remoteSessionManager.WebSocket = socket;
                             }
 
