@@ -1,4 +1,11 @@
-﻿2016-10-16 Version 1.2.1 (stable)
+﻿2016-10-28 Version 1.3.0 (stable)
+	added program to run from URL feature
+	fixed image encoding and quality set properties
+	cleaner javascript calls
+	update UI refactoring
+	updated readme and documentation
+
+2016-10-16 Version 1.2.1 (stable)
 	a failed connection or authentication now have the browser to go back to the login screen
 	fixed javascript calls (parent window) in long polling mode
 	disabled keyboard helper (config.js)
