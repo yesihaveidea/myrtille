@@ -16,10 +16,43 @@ I hope you will enjoy Myrtille! :)
 
 Special thanks to Catalin Trifanescu for its support.
 
-## Prerequisites
-- IIS 7.0+ (Web Server role on Windows Servers)
-- .NET 4.0+ (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012; can also be installed separately using a standalone .NET 4.x installer)
-- Microsoft Visual C++ 2015 redistributables (x86). **CAUTION** on Windows Server 2012, it requires the system to be fully updated (Windows updates) first; see notes and limitations
+## Installation
+
+You need at least IIS 7.0+ before installing myrtille (the HTTP(S) to RDP gateway). It installs as a role on Windows Servers and as a feature on others Windows versions.
+
+The .NET 4.0+ framework can be installed automatically by the myrtille installer (Setup.exe), enabled as a feature of IIS (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012) or installed standalone (https://www.microsoft.com/en-us/download/details.aspx?id=17718).
+
+All releases here: https://github.com/cedrozor/myrtille/releases
+- Setup.exe (preferred installation method): setup bootstrapper
+- Myrtille.msi: MSI package (x86)
+
+## Start remote application from URL
+Starting from version 1.3.x, it's possible to run a program automatically, on session start, from an URL. It's a feature comparable to remoteApp, which makes it easy to launch remote applications directly from internet shortcuts (.url) placed on the desktop.
+
+Currently not working with Windows 2008 servers. See notes and limitations.
+
+### Syntax
+https://yourserver/Myrtille/
+?__EVENTTARGET=
+&__EVENTARGUMENT=
+&server=<server>
+&domain=<domain> [optional]
+&user=<username>
+&password=<password>
+&stat=Stat+enabled|disabled [optional]
+&debug=Debug+enabled|disabled [optional]
+&browser=HTML4|HTML5 [optional]
+&program=<executable path, name and parameters (double quotes must be escaped)> [optional]
+&width=<width> [optional]
+&height=<height> [optional]
+&connect=Connect%21
+
+The parameters values *must be URL encoded*. You can use a tool like http://www.url-encode-decode.com/ for that purpose (just copy&paste the encoded parameters into the URL).
+
+**CAUTION** please be aware that the user credentials are passed within the URL! it's unsafe to use this feature from an untrusted device or browser, because it will save the URL (and credentials) into its history.
+
+Fortunaly, it's possible to have browsers into incognito mode (hence not have the URL saved). See http://www.howtogeek.com/137466/how-to-always-start-any-browser-in-private-browsing-mode/
+Additionnaly, usage of *https://* (instead of *http://*) is strongly advised to secure the network communication.
 
 ## File transfer
 Myrtille supports both local and network file storage. If you want your domain users to have access to their documents whatever the connected server, follow these steps:
@@ -33,13 +66,6 @@ Myrtille supports both local and network file storage. If you want your domain u
 The installer adds the following rules to the machine firewall:
 - "Myrtille Websockets": allow both directions TCP port 8181 (default)
 - "Myrtille Websockets Secured": allow both directions TCP port 8431 (default)
-
-## Installation
-You need at least IIS 7.0+ before running the myrtille installer. It installs as a role on Windows Servers and as a feature on others Windows versions.
-
-All releases here: https://github.com/cedrozor/myrtille/releases
-- Setup.exe (preferred installation method): setup bootstrapper; automatically download and install .NET 4.0 and Microsoft Visual C++ 2015 redistributables (x86), if not already installed, then install the Myrtille MSI package
-- Myrtille.msi: Myrtille MSI package (x86)
 
 ## Security
 The installer creates a self-signed certificate for myrtille (so you can use it at https://yourserver/myrtille), but you can set your own certificate (if you wish) as follow:
@@ -123,6 +149,8 @@ This is a thing to consider if you want to isolate the web gateway from your int
 
 ## Notes and limitations
 - Starting from myrtille version 1.2.0, the packaged FreeRDP and OpenSSL binaries use a statically-linked runtime; that means there is no longer need for the Microsoft Visual C++ redistributables (x86). It's still a good idea to install them however as they will be required if the build options are changed.
+
+- On Windows Server 2008, the FreeRDP remoteApp and shell features don't work. It's not possible to start a remote application from URL. https://github.com/FreeRDP/FreeRDP/issues/1669
 
 - On Windows Server 2012, you may have issues installing the Microsoft Visual C++ 2015 redistributables (x86) (http://stackoverflow.com/questions/31536606/while-installing-vc-redist-x64-exe-getting-error-failed-to-configure-per-machi). To circumvent that, ensure your system is fully updated (Windows updates) first or try to install the package "Windows8.1-KB2999226-x64.msu" manually.
 

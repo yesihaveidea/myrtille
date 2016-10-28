@@ -35,6 +35,7 @@ namespace Myrtille.Services.Contracts
             string userPassword,
             string clientWidth,
             string clientHeight,
+            string program,
             bool debug);
 
         /// <summary>

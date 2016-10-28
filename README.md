@@ -14,13 +14,18 @@ More information into the DOCUMENTATION.md file.
 
 ## Features
 - HTTP(S) to RDP gateway
+- Start remote application from URL
 - File transfer (local and roaming accounts)
+- HTML4 and HTML5 support
 - Remote clipboard support
-- WebP compression
+- PNG, JPEG and WEBP compression
+- Realtime connection information
+- On-screen/console/logfile debug information
+- fully parameterizable
 
 ## Requirements
-- Browser: any HTML4 or HTML5 browser (starting from IE6!)
-- Gateway: IIS 7.0+, .NET 4.0+ and Microsoft Visual C++ 2015 redistributables (x86)
+- Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required.
+- Gateway (myrtille): IIS 7.0+ and .NET 4.0+
 - RDP server: any RDP enabled computer (preferably Windows Server but can also be Windows XP, 7, 8, 10)
 
 ## Build
@@ -50,7 +55,7 @@ You can upload/download file(s) to/from the user documents folder with the "My d
 ## Third-party
 Myrtille uses the following licensed software:
 - RDP client: FreeRDP (https://github.com/FreeRDP/FreeRDP), licensed under Apache 2.0 license. Myrtille uses a fork of FreeRDP (https://github.com/cedrozor/FreeRDP), to enforce a loose coupling architecture and always use the latest version of FreeRDP (the fork is periodically synchronized with the FreeRDP master branch).
-- OpenSSL toolkit (https://github.com/openssl/openssl), licensed under BSD-style Open Source licenses. Precompiled versions of OpenSSL can be obtained here: http://slproweb.com/products/Win32OpenSSL.html.
+- OpenSSL toolkit (https://github.com/openssl/openssl), licensed under BSD-style Open Source licenses. Precompiled versions of OpenSSL can be obtained here: https://wiki.openssl.org/index.php/Binaries.
 - WebP encoding: libWebP 0.5.0 (https://github.com/webmproject/libwebp), licensed under BSD-style Open Source license. Copyright (c) 2010, Google Inc. All rights reserved.
 - HTML5 websockets: Fleck 0.14.0 (https://github.com/statianzo/Fleck), licensed under MIT license. Copyright (c) 2010-2014 Jason Staten.
 - Logging: Log4net 1.2.13.0 (https://logging.apache.org/log4net/), licensed under Apache 2.0 license.

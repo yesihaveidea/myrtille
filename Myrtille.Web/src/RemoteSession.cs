@@ -31,5 +31,6 @@ namespace Myrtille.Web
         public bool StatMode;
         public bool DebugMode;
         public bool CompatibilityMode;
+        public string Program;
     }
 }

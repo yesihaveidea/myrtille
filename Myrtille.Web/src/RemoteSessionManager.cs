@@ -141,10 +141,10 @@ namespace Myrtille.Web
 
         #region Commands
 
-        public void SendCommand(RemoteSessionCommand command, string args = "")
+        public bool SendCommand(RemoteSessionCommand command, string args = "")
         {
             if (RemoteSession.State != RemoteSessionState.Connected && RemoteSession.State != RemoteSessionState.Disconnecting)
-                return;
+                return false;
 
             try
             {
@@ -164,7 +164,10 @@ namespace Myrtille.Web
             catch (Exception exc)
             {
                 Trace.TraceError("Failed to send command {0}, remote session {1} ({2})", command, RemoteSession.Id, exc);
+                return false;
             }
+
+            return true;
         }
 
         #endregion
@@ -395,30 +398,28 @@ namespace Myrtille.Web
             return image;
         }
 
-        private ImageEncoding _imageEncoding = ImageEncoding.JPEG;
-        public ImageEncoding ImageEncoding
+        private ImageEncoding? _imageEncoding = null;
+        public ImageEncoding? ImageEncoding
         {
             get { return _imageEncoding; }
             set
             {
-                if (_imageEncoding != value)
+                if ((!_imageEncoding.HasValue || _imageEncoding != value) && SendCommand(RemoteSessionCommand.SetImageEncoding, ((int)value).ToString()))
                 {
                     _imageEncoding = value;
-                    SendCommand(RemoteSessionCommand.SetImageEncoding, ((int)_imageEncoding).ToString());
                 }
             }
         }
 
-        private int _imageQuality = (int)Web.ImageQuality.High;
-        public int ImageQuality
+        private int? _imageQuality = null;
+        public int? ImageQuality
         {
             get { return _imageQuality; }
             set
             {
-                if (_imageQuality != value)
+                if ((!_imageQuality.HasValue || _imageQuality != value) && SendCommand(RemoteSessionCommand.SetImageQuality, value.ToString()))
                 {
                     _imageQuality = value;
-                    SendCommand(RemoteSessionCommand.SetImageQuality, _imageQuality.ToString());
                 }
             }
         }

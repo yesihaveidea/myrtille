@@ -137,7 +137,7 @@ function startMyrtille(httpSessionId, remoteSessionActive, webSocketPort, webSoc
     }
 }
 
-function pushImage(idx, posX, posY, width, height, format, quality, base64Data, fullscreen)
+this.pushImage = function(idx, posX, posY, width, height, format, quality, base64Data, fullscreen)
 {
     try
     {
@@ -190,7 +190,7 @@ function processImage(idx, posX, posY, width, height, format, quality, base64Dat
     }
 }
 
-function sendText(text)
+this.sendText = function(text)
 {
     try
     {

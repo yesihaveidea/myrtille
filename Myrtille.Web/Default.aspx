@@ -53,26 +53,27 @@
         <%=(RemoteSessionManager != null && (RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected)).ToString(CultureInfo.InvariantCulture).ToLower()%>,
         <%=HttpContext.Current.Application[HttpApplicationStateVariables.WebSocketServerPort.ToString()]%>,
         <%=(HttpContext.Current.Application[HttpApplicationStateVariables.WebSocketServerPortSecured.ToString()] == null ? "null" : HttpContext.Current.Application[HttpApplicationStateVariables.WebSocketServerPortSecured.ToString()])%>,
-        <%=(statSelect.Value == "Stat enabled").ToString(CultureInfo.InvariantCulture).ToLower()%>,
-        <%=(debugSelect.Value == "Debug enabled").ToString(CultureInfo.InvariantCulture).ToLower()%>,
-        <%=(browserSelect.Value == "HTML4").ToString(CultureInfo.InvariantCulture).ToLower()%>);">
+        <%=(stat.Value == "Stat enabled").ToString(CultureInfo.InvariantCulture).ToLower()%>,
+        <%=(debug.Value == "Debug enabled").ToString(CultureInfo.InvariantCulture).ToLower()%>,
+        <%=(browser.Value == "HTML4").ToString(CultureInfo.InvariantCulture).ToLower()%>);">
 
         <form method="post" runat="server" id="mainForm">
 
             <div runat="server" id="controlDiv" class="controlDiv">
 
                 <%-- connection settings --%>
-                <span runat="server" id="serverLabel" class="controlLabel">Server</span><input type="text" runat="server" id="serverText" class="controlText" title="server address"/>
-                <span runat="server" id="domainLabel" class="controlLabel">Domain</span><input type="text" runat="server" id="domainText" class="controlText" title="user domain"/>
-                <span runat="server" id="userLabel" class="controlLabel">User</span><input type="text" runat="server" id="userText" class="controlText" title="user name"/>
-                <span runat="server" id="passwordLabel" class="controlLabel">Password</span><input type="password" runat="server" id="passwordText" class="controlText" title="user password"/>
-                <span runat="server" id="statsLabel" class="controlLabel">Stats</span><select runat="server" id="statSelect" class="controlSelect" title="display stats bar"><option selected="selected">Stat disabled</option><option>Stat enabled</option></select>
-                <span runat="server" id="debugLabel" class="controlLabel">Debug</span><select runat="server" id="debugSelect" class="controlSelect" title="display debug info and save session logs"><option selected="selected">Debug disabled</option><option>Debug enabled</option></select>
-                <span runat="server" id="browserLabel" class="controlLabel">Browser</span><select runat="server" id="browserSelect" class="controlSelect" title="rendering mode"><option>HTML4</option><option selected="selected">HTML5</option></select>
+                <span runat="server" id="serverLabel" class="controlLabel">Server</span><input type="text" runat="server" id="server" class="controlText" title="server address"/>
+                <span runat="server" id="domainLabel" class="controlLabel">Domain (optional)</span><input type="text" runat="server" id="domain" class="controlText" title="user domain"/>
+                <span runat="server" id="userLabel" class="controlLabel">User</span><input type="text" runat="server" id="user" class="controlText" title="user name"/>
+                <span runat="server" id="passwordLabel" class="controlLabel">Password</span><input type="password" runat="server" id="password" class="controlText" title="user password"/>
+                <span runat="server" id="statsLabel" class="controlLabel">Stats</span><select runat="server" id="stat" class="controlSelect" title="display stats bar"><option selected="selected">Stat disabled</option><option>Stat enabled</option></select>
+                <span runat="server" id="debugLabel" class="controlLabel">Debug</span><select runat="server" id="debug" class="controlSelect" title="display debug info and save session logs"><option selected="selected">Debug disabled</option><option>Debug enabled</option></select>
+                <span runat="server" id="browserLabel" class="controlLabel">Browser</span><select runat="server" id="browser" class="controlSelect" title="rendering mode"><option>HTML4</option><option selected="selected">HTML5</option></select>
+                <span runat="server" id="programLabel" class="controlLabel">Program to run (optional)</span><input type="text" runat="server" id="program" class="controlText" title="executable path, name and parameters (double quotes must be escaped)"/>
                 <input type="hidden" runat="server" id="width"/>
                 <input type="hidden" runat="server" id="height"/>
-                <input type="submit" runat="server" id="connect" class="controlButton" value="Connect!" onclick="setClientResolution();" onserverclick="ConnectButtonClick" title="login"/>
-                <input type="button" runat="server" id="disconnect" value="Disconnect" visible="false" onserverclick="DisconnectButtonClick" title="logout"/>
+                <input type="submit" runat="server" id="connect" class="controlButton" value="Connect!" onclick="setClientResolution();" onserverclick="ConnectButtonClick" title="open session"/>
+                <input type="button" runat="server" id="disconnect" value="Disconnect" visible="false" onserverclick="DisconnectButtonClick" title="close session"/>
 
                 <%-- virtual keyboard. on devices without a physical keyboard, forces the device virtual keyboard to pop up --%>
                 <input type="button" runat="server" id="keyboard" value="Keyboard" visible="false" onclick="openPopup('virtualKeyboardPopup', 'VirtualKeyboard.aspx');" title="send text to the remote session"/>

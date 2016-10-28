@@ -40,13 +40,13 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl serverLabel;
         
         /// <summary>
-        /// serverText control.
+        /// server control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText serverText;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText server;
         
         /// <summary>
         /// domainLabel control.
@@ -58,13 +58,13 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl domainLabel;
         
         /// <summary>
-        /// domainText control.
+        /// domain control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText domainText;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText domain;
         
         /// <summary>
         /// userLabel control.
@@ -76,13 +76,13 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl userLabel;
         
         /// <summary>
-        /// userText control.
+        /// user control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText userText;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText user;
         
         /// <summary>
         /// passwordLabel control.
@@ -94,13 +94,13 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl passwordLabel;
         
         /// <summary>
-        /// passwordText control.
+        /// password control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputPassword passwordText;
+        protected global::System.Web.UI.HtmlControls.HtmlInputPassword password;
         
         /// <summary>
         /// statsLabel control.
@@ -112,13 +112,13 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl statsLabel;
         
         /// <summary>
-        /// statSelect control.
+        /// stat control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlSelect statSelect;
+        protected global::System.Web.UI.HtmlControls.HtmlSelect stat;
         
         /// <summary>
         /// debugLabel control.
@@ -130,13 +130,13 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl debugLabel;
         
         /// <summary>
-        /// debugSelect control.
+        /// debug control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlSelect debugSelect;
+        protected global::System.Web.UI.HtmlControls.HtmlSelect debug;
         
         /// <summary>
         /// browserLabel control.
@@ -148,13 +148,31 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl browserLabel;
         
         /// <summary>
-        /// browserSelect control.
+        /// browser control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlSelect browserSelect;
+        protected global::System.Web.UI.HtmlControls.HtmlSelect browser;
+        
+        /// <summary>
+        /// programLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl programLabel;
+        
+        /// <summary>
+        /// program control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputText program;
         
         /// <summary>
         /// width control.

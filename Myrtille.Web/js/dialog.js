@@ -429,7 +429,7 @@ this.getShowDialogPopupText = function() { return showDialogPopupText; };
 var showDialogPopupSelectText = false;
 this.getShowDialogPopupSelectText = function() { return showDialogPopupSelectText; };
 
-function showDialogPopup(id, src, desc, text, selectText)
+this.showDialogPopup = function(id, src, desc, text, selectText)
 {
     // properties
     showDialogPopupDesc = desc;

@@ -42,13 +42,14 @@ namespace Myrtille.Web
             string userPassword,
             string clientWidth,
             string clientHeight,
+            string program,
             bool debug)
         {
             Trace.TraceInformation("Calling service start process, remote session {0}", _remoteSessionManager.RemoteSession.Id);
 
             try
             {
-                Channel.StartProcess(remoteSessionId, serverAddress, userDomain, userName, userPassword, clientWidth, clientHeight, debug);
+                Channel.StartProcess(remoteSessionId, serverAddress, userDomain, userName, userPassword, clientWidth, clientHeight, program, debug);
             }
             catch (Exception exc)
             {

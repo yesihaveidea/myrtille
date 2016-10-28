@@ -44,6 +44,7 @@ namespace Myrtille.Services
             string userPassword,
             string clientWidth,
             string clientHeight,
+            string program,
             bool debug)
         {
             try
@@ -107,7 +108,8 @@ namespace Myrtille.Services
                     " -async-channels" +                                                                            // async channels
                     " -async-transport" +                                                                           // async transport
                     " /clipboard" +                                                                                 // clipboard support
-                    " /audio-mode:2";                                                                               // audio mode (not supported for now, 2: do not play)
+                    " /audio-mode:2" +                                                                              // audio mode (not supported for now, 2: do not play)
+                    (string.IsNullOrEmpty(program) ? string.Empty : " /shell:\"" + program + "\"");                 // program to run
 
                 if (!Environment.UserInteractive)
                 {
