@@ -32,24 +32,14 @@ Starting from version 1.3.x, it's possible to run a program automatically, on se
 Currently not working with Windows 2008 servers. See notes and limitations.
 
 ### Syntax
-https://yourserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=
-&server=*server*
-&domain=*domain* [optional]
-&user=*username*
-&password=*password*
-&stat=*Stat+enabled|disabled* [optional]
-&debug=*Debug+enabled|disabled* [optional]
-&browser=*HTML4|HTML5* [optional]
-&program=*executable path, name and parameters (double quotes must be escaped)* [optional]
-&width=*width (px)* [optional]
-&height=*height (px)* [optional]
-&connect=*Connect%21*
+https://yourserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=*server*&domain=*domain* [optional]&user=*username*&password=*password*&stat=*Stat+enabled|disabled* [optional]&debug=*Debug+enabled|disabled* [optional]&browser=*HTML4|HTML5* [optional]&program=*executable path, name and parameters (double quotes must be escaped)* [optional]&width=*width (px)* [optional]&height=*height (px)* [optional]&connect=*Connect%21*
 
 The parameters values **must be URL encoded**. You can use a tool like http://www.url-encode-decode.com/ for that purpose (just copy&paste the encoded parameters into the URL).
 
 **CAUTION!** please be aware that the user credentials are passed within the URL! it's unsafe to use this feature from an untrusted device or browser, because it will save the URL (and credentials) into its history.
 
 Fortunaly, it's possible to have browsers into incognito mode (hence not have the URL saved). See http://www.howtogeek.com/137466/how-to-always-start-any-browser-in-private-browsing-mode/
+
 Additionnaly, usage of **https://** (instead of **http://**) is strongly advised to secure the network communication.
 
 ## File transfer
