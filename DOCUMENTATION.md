@@ -150,7 +150,7 @@ First at all, ensure the Myrtille prerequisites are met (see "Prerequisites"). N
 - The installation fails
 	- Prerequisites are not downloaded: the installer was run directly using the MSI file; this exclude the bootstrapper (Setup.exe), whose purpose is to check and download/install the prerequisites if necessary
 	- Prerequisites download fails: MSI installers use Internet Explorer for downloads; ensure the Internet Explorer enhanced security is disabled (server administration tools)
-	- Error 1001: an MSI custom action failed (https://blogs.msdn.microsoft.com/vsnetsetup/2012/03/14/msi-installation-fails-while-installing-a-custom-action-with-error-1001-exception-occurred-while-initializing-the-installation/). Ensure the .NET framework is fully installed (http://stackoverflow.com/a/8487214) and the IIS Management Console is enabled (http://stackoverflow.com/a/23263836)
+	- Error 1001: an MSI custom action failed (https://blogs.msdn.microsoft.com/vsnetsetup/2012/03/14/msi-installation-fails-while-installing-a-custom-action-with-error-1001-exception-occurred-while-initializing-the-installation/). Ensure IIS and the .NET framework are installed (http://stackoverflow.com/a/8487214) and the IIS Management Console is enabled (http://stackoverflow.com/a/23263836)
 	- Check the Windows events logs ("System", "Application", etc.)
 
 - I can't access http://yourserver/myrtille
