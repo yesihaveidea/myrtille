@@ -17,7 +17,6 @@ I hope you will enjoy Myrtille! :)
 Special thanks to Catalin Trifanescu for its support.
 
 ## Installation
-
 You need at least IIS 7.0+ before installing myrtille (the HTTP(S) to RDP gateway). It installs as a role on Windows Servers and as a feature on others Windows versions.
 
 The .NET 4.0+ framework can be installed automatically by the myrtille installer (Setup.exe), enabled as a feature of IIS (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012) or installed standalone (https://www.microsoft.com/en-us/download/details.aspx?id=17718).
@@ -145,7 +144,7 @@ This is a thing to consider if you want to isolate the web gateway from your int
 - In order to keep the installation simple, both the myrtille gateway and services are installed on the same machine. They do however conform to a distributed architecture; if needed, given some additionnal code, myrtille services could acts as a proxy, so the gateway could be installed and operate separately (this could be handy if the gateway should go into a DMZ).
 
 ## Troubleshoot
-First at all, ensure the Myrtille prerequisites are met (see "Prerequisites"). Note that IIS must be installed separately, before running the installer (see "Installation").
+First at all, ensure the Myrtille prerequisites are met (IIS 7.0+ and .NET 4.0+). Note that IIS must be installed separately, before running the installer (see "Installation").
 
 - The installation fails
 	- Prerequisites are not downloaded: the installer was run directly using the MSI file; this exclude the bootstrapper (Setup.exe), whose purpose is to check and download/install the prerequisites if necessary
