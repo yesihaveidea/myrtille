@@ -56,7 +56,7 @@ namespace Myrtille.Web
                 }
 
                 // update controls
-                UpateControls();
+                UpdateControls();
 
                 // disable the browser cache; in addition to a "noCache" dummy param, with current time, on long-polling and xhr requests
                 Response.Cache.SetCacheability(HttpCacheability.NoCache);
@@ -90,52 +90,61 @@ namespace Myrtille.Web
         /// </summary>
         private void updateControl(
             bool controlEnabled,
+            string controlEnabledClass,
+            string controlDisabledClass,
             HtmlControl controlLabel,
             HtmlControl controlText,
             string controlValue)
         {
             controlLabel.Visible = controlEnabled;
             controlText.Disabled = !controlEnabled;
-            controlText.Attributes["class"] = controlEnabled ? "controlText" : null;
-            if (!controlEnabled)
+            if (controlEnabled)
             {
+                controlText.Attributes["class"] = controlEnabledClass;
+            }
+            else
+            {
+                controlText.Attributes["class"] = controlDisabledClass;
                 if (controlText is HtmlInputText)
+                {
                     (controlText as HtmlInputText).Value = controlValue;
+                }
                 else if (controlText is HtmlSelect)
+                {
                     (controlText as HtmlSelect).Value = controlValue;
+                }
             }
         }
 
         /// <summary>
         /// update the UI
         /// </summary>
-        private void UpateControls()
+        private void UpdateControls()
         {
             if (RemoteSessionManager != null)
             {
                 var loginScreen = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
 
                 // control div
-                controlDiv.Attributes["class"] = loginScreen ? "controlDiv" : null;
+                controlDiv.Attributes["class"] = loginScreen ? "controlDiv" : "controlInfo";
 
                 // rdp settings
-                updateControl(loginScreen, serverLabel, server, RemoteSessionManager.RemoteSession.ServerAddress);
-                updateControl(loginScreen, domainLabel, domain, RemoteSessionManager.RemoteSession.UserDomain);
-                updateControl(loginScreen, userLabel, user, RemoteSessionManager.RemoteSession.UserName);
-                updateControl(loginScreen, passwordLabel, password, RemoteSessionManager.RemoteSession.UserPassword);
+                updateControl(loginScreen, "serverText", "serverInfo", serverLabel, server, RemoteSessionManager.RemoteSession.ServerAddress);
+                updateControl(loginScreen, "domainText", "domainInfo", domainLabel, domain, RemoteSessionManager.RemoteSession.UserDomain);
+                updateControl(loginScreen, "userText", "userInfo", userLabel, user, RemoteSessionManager.RemoteSession.UserName);
+                updateControl(loginScreen, "passwordText", "passwordInfo", passwordLabel, password, RemoteSessionManager.RemoteSession.UserPassword);
 
                 // stats bar
-                updateControl(loginScreen, statsLabel, stat, RemoteSessionManager.RemoteSession.StatMode ? "Stat enabled" : "Stat disabled");
+                updateControl(loginScreen, "statSelect", "statInfo", statsLabel, stat, RemoteSessionManager.RemoteSession.StatMode ? "Stat enabled" : "Stat disabled");
 
                 // debug log
-                updateControl(loginScreen, debugLabel, debug, RemoteSessionManager.RemoteSession.DebugMode ? "Debug enabled" : "Debug disabled");
+                updateControl(loginScreen, "debugSelect", "debugInfo", debugLabel, debug, RemoteSessionManager.RemoteSession.DebugMode ? "Debug enabled" : "Debug disabled");
 
                 // browser mode
-                updateControl(loginScreen, browserLabel, browser, RemoteSessionManager.RemoteSession.CompatibilityMode ? "HTML4" : "HTML5");
+                updateControl(loginScreen, "browserSelect", "browserInfo", browserLabel, browser, RemoteSessionManager.RemoteSession.CompatibilityMode ? "HTML4" : "HTML5");
 
                 // program to run
-                updateControl(loginScreen, programLabel, program, RemoteSessionManager.RemoteSession.Program);
-                program.Visible = loginScreen;
+                updateControl(loginScreen, "programText", "programInfo", programLabel, program, RemoteSessionManager.RemoteSession.Program);
 
                 // connect
                 connect.Visible = loginScreen;
@@ -274,7 +283,7 @@ namespace Myrtille.Web
                         RemoteSessionManager.RemoteSession.DebugMode);
 
                     // update controls
-                    UpateControls();
+                    UpdateControls();
                 }
                 catch (Exception exc)
                 {
@@ -304,7 +313,7 @@ namespace Myrtille.Web
                     RemoteSessionManager.SendCommand(RemoteSessionCommand.CloseRdpClient);
 
                     // update controls
-                    UpateControls();
+                    UpdateControls();
                 }
                 catch (Exception exc)
                 {

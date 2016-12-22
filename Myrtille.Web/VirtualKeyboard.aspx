@@ -28,7 +28,7 @@
         <link rel="stylesheet" type="text/css" href="css/Default.css"/>
 	</head>    
 
-    <body>
+    <body onload="focusText();">
         
         <form method="get" runat="server">
             
@@ -40,6 +40,15 @@
             </div>
 
         </form>
+
+		<script type="text/javascript" language="javascript" defer="defer">
+
+		    function focusText()
+		    {
+		        virtualKeyboardPopupText.focus();
+            }
+
+		</script>
 
 	</body>
 

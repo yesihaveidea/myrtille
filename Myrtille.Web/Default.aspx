@@ -62,30 +62,30 @@
             <div runat="server" id="controlDiv" class="controlDiv">
 
                 <%-- connection settings --%>
-                <span runat="server" id="serverLabel" class="controlLabel">Server</span><input type="text" runat="server" id="server" class="controlText" title="server address"/>
-                <span runat="server" id="domainLabel" class="controlLabel">Domain (optional)</span><input type="text" runat="server" id="domain" class="controlText" title="user domain"/>
-                <span runat="server" id="userLabel" class="controlLabel">User</span><input type="text" runat="server" id="user" class="controlText" title="user name"/>
-                <span runat="server" id="passwordLabel" class="controlLabel">Password</span><input type="password" runat="server" id="password" class="controlText" title="user password"/>
-                <span runat="server" id="statsLabel" class="controlLabel">Stats</span><select runat="server" id="stat" class="controlSelect" title="display stats bar"><option selected="selected">Stat disabled</option><option>Stat enabled</option></select>
-                <span runat="server" id="debugLabel" class="controlLabel">Debug</span><select runat="server" id="debug" class="controlSelect" title="display debug info and save session logs"><option selected="selected">Debug disabled</option><option>Debug enabled</option></select>
-                <span runat="server" id="browserLabel" class="controlLabel">Browser</span><select runat="server" id="browser" class="controlSelect" title="rendering mode"><option>HTML4</option><option selected="selected">HTML5</option></select>
-                <span runat="server" id="programLabel" class="controlLabel">Program to run (optional)</span><input type="text" runat="server" id="program" class="controlText" title="executable path, name and parameters (double quotes must be escaped)"/>
+                <span runat="server" id="serverLabel" class="controlLabel">Server</span><input type="text" runat="server" id="server" class="serverText" title="server address"/>
+                <span runat="server" id="domainLabel" class="controlLabel">Domain (optional)</span><input type="text" runat="server" id="domain" class="domainText" title="user domain"/>
+                <span runat="server" id="userLabel" class="controlLabel">User</span><input type="text" runat="server" id="user" class="userText" title="user name"/>
+                <span runat="server" id="passwordLabel" class="controlLabel">Password</span><input type="password" runat="server" id="password" class="passwordText" title="user password"/>
+                <span runat="server" id="statsLabel" class="controlLabel">Stats</span><select runat="server" id="stat" class="statSelect" title="display stats bar"><option selected="selected">Stat disabled</option><option>Stat enabled</option></select>
+                <span runat="server" id="debugLabel" class="controlLabel">Debug</span><select runat="server" id="debug" class="debugSelect" title="display debug info and save session logs"><option selected="selected">Debug disabled</option><option>Debug enabled</option></select>
+                <span runat="server" id="browserLabel" class="controlLabel">Browser</span><select runat="server" id="browser" class="browserSelect" title="rendering mode"><option>HTML4</option><option selected="selected">HTML5</option></select>
+                <span runat="server" id="programLabel" class="controlLabel">Program to run (optional)</span><input type="text" runat="server" id="program" class="programText" title="executable path, name and parameters (double quotes must be escaped)"/>
                 <input type="hidden" runat="server" id="width"/>
                 <input type="hidden" runat="server" id="height"/>
-                <input type="submit" runat="server" id="connect" class="controlButton" value="Connect!" onclick="setClientResolution();" onserverclick="ConnectButtonClick" title="open session"/>
-                <input type="button" runat="server" id="disconnect" value="Disconnect" visible="false" onserverclick="DisconnectButtonClick" title="close session"/>
+                <input type="submit" runat="server" id="connect" class="connectButton" value="Connect!" onclick="setClientResolution();" onserverclick="ConnectButtonClick" title="open session"/>
+                <input type="button" runat="server" id="disconnect" class="disconnectButton" value="Disconnect" visible="false" onserverclick="DisconnectButtonClick" title="close session"/>
 
                 <%-- virtual keyboard. on devices without a physical keyboard, forces the device virtual keyboard to pop up --%>
-                <input type="button" runat="server" id="keyboard" value="Keyboard" visible="false" onclick="openPopup('virtualKeyboardPopup', 'VirtualKeyboard.aspx');" title="send text to the remote session"/>
+                <input type="button" runat="server" id="keyboard" class="keyboardButton" value="Keyboard" visible="false" onclick="openPopup('virtualKeyboardPopup', 'VirtualKeyboard.aspx');" title="send text to the remote session (tip: can be used to send the local clipboard content (text only))"/>
 
                 <%-- remote clipboard. display the remote clipboard content and allow to copy it locally (text only) --%>
-                <input type="button" runat="server" id="clipboard" value="Clipboard" visible="false" onclick="doXhrCall('RemoteClipboard.aspx');" title="retrieve the remote clipboard content (text only)"/>
+                <input type="button" runat="server" id="clipboard" class="clipboardButton" value="Clipboard" visible="false" onclick="doIFrameCall('RemoteClipboard.aspx');" title="retrieve the remote clipboard content (text only)"/>
 
                 <%-- upload/download file(s). only enabled if the connected server is localhost or if a domain is specified (so file(s) can be accessed within the rdp session) --%>
-                <input type="button" runat="server" id="files" value="My Documents" visible="false" onclick="openPopup('fileStoragePopup', 'FileStorage.aspx');" title="upload/download files to/from the user documents folder"/>
+                <input type="button" runat="server" id="files" class="filesButton" value="My Documents" visible="false" onclick="openPopup('fileStoragePopup', 'FileStorage.aspx');" title="upload/download files to/from the user documents folder"/>
 
                 <%-- send ctrl+alt+del to the rdp session. may be useful to change the user password, for example --%>
-                <input type="button" runat="server" id="cad" value="Ctrl+Alt+Del" visible="false" onclick="sendCtrlAltDel();" title="send Ctrl+Alt+Del to the remote session"/>
+                <input type="button" runat="server" id="cad" class="cadButton" value="Ctrl+Alt+Del" visible="false" onclick="sendCtrlAltDel();" title="send Ctrl+Alt+Del to the remote session"/>
 
             </div>
 
@@ -107,8 +107,8 @@
 		    function setClientResolution()
 		    {
 		        var display = new Display();
-		        document.getElementById('<%=width.ClientID%>').value = display.getBrowserWidth();
-		        document.getElementById('<%=height.ClientID%>').value = display.getBrowserHeight();
+	            document.getElementById('<%=width.ClientID%>').value = display.getBrowserWidth() - display.getHorizontalOffset();
+		        document.getElementById('<%=height.ClientID%>').value = display.getBrowserHeight() - display.getVerticalOffset() - display.getToolbarHeight();
 		    }
 
 		</script>

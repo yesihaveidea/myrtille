@@ -327,8 +327,15 @@ function XmlHttp(config, dialog, display, network)
 
 function doXhrCall(url)
 {
-    var xmlHttp = new XmlHttp();
-    var xhr = xmlHttp.createXhr();
-    xhr.open('GET', url);
-    xhr.send(null);
+    try
+    {
+        var xmlhttp = new XmlHttp();
+        var xhr = xmlhttp.createXhr();
+        xhr.open('GET', url);
+        xhr.send(null);
+    }
+    catch (exc)
+    {
+        alert('doXhrCall error: ' + exc.Message);
+    }
 }
