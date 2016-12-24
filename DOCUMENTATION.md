@@ -21,6 +21,8 @@ You need at least IIS 7.0+ before installing myrtille (the HTTP(S) to RDP gatewa
 
 The .NET 4.0+ framework can be installed automatically by the myrtille installer (Setup.exe), enabled as a feature of IIS (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012) or installed standalone (https://www.microsoft.com/en-us/download/details.aspx?id=17718).
 
+The installer does install myrtille under the IIS default website and creates a custom application pool ("MyrtilleAppPool"). If you want to use another website or application pool, you can change it manually afterward (with the IIS manager).
+
 All releases here: https://github.com/cedrozor/myrtille/releases
 - Setup.exe (preferred installation method): setup bootstrapper
 - Myrtille.msi: MSI package (x86)
