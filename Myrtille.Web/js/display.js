@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -48,57 +48,150 @@ function Display(config, dialog)
                 return;
             }
 
-            // use canvas if enabled; support will be checked on init
-            config.setCanvasEnabled(config.getCanvasEnabled() && !config.getCompatibilityMode());
-            if (config.getCanvasEnabled())
+            /* display mode
+
+            DIV
+            HTML4 compatibility mode; images are loaded as divs background images
+
+            CANVAS
+            HTML5 mode; fallback to divs if not supported
+
+            SVG
+            not implemented but could be an option (see http://stackoverflow.com/questions/5882716/html5-canvas-vs-svg-vs-div)
+
+            AUTO (default)
+            use canvas if possible; divs otherwise
+
+            */
+
+            switch (config.getDisplayMode())
+            {
+                case config.getDisplayModeEnum().DIV:
+                    break;
+
+                case config.getDisplayModeEnum().CANVAS:
+                    if (config.getCompatibilityMode())
+                    {
+                        config.setDisplayMode(config.getDisplayModeEnum().DIV);
+                    }
+                    break;
+                   
+                default:
+                    config.setDisplayMode(config.getCompatibilityMode() ? config.getDisplayModeEnum().DIV : config.getDisplayModeEnum().CANVAS);
+            }
+
+            // canvas support will be checked on init
+            if (config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
             {
                 canvas = new Canvas(config, dialog, this);
                 canvas.init();
             }
 
-            dialog.showStat('canvas', config.getCanvasEnabled());
-
             // if not using canvas, use divs
-            if (!config.getCanvasEnabled())
+            if (config.getDisplayMode() == config.getDisplayModeEnum().DIV)
             {
                 divs = new Divs(config, dialog, this);
                 divs.init();
             }
 
-            // image encoding
-            // PNG is lossless (best quality), less sized for text images but more sized for graphic ones. best suited for office applications
-            // JPEG is lossy, allows automatic quality tweak depending on bandwidth availability, less sized for graphic images but more sized for text ones. best suited for imaging applications
-            // PNG_JPEG will encode both PNG and JPEG and return the lowest sized format; pros: optimize quality and bandwidth usage, cons: slower and higher server CPU. best suited for mixed (text and imaging) applications
-            // WEBP format may reduce the overall images size but at the expense of speed and server CPU; it's also not supported by all browsers (google tech, so mostly supported by chrome). it's mostly an experimental feature; fallback to JPEG if not supported
-            if (config.getImageEncoding() == 'WEBP')
+            dialog.showStat(dialog.getShowStatEnum().DISPLAY_MODE, config.getDisplayMode());
+
+            /* image encoding
+
+            PNG
+            lossless (best quality), less sized for text images but more sized for graphic ones. best suited for office applications
+            
+            JPEG
+            lossy, allows automatic quality tweak depending on bandwidth availability, less sized for graphic images but more sized for text ones. best suited for imaging applications
+            
+            WEBP
+            may reduce the overall images size but at the expense of speed and server CPU; it's also not supported by all browsers (google tech, so mostly supported by chrome). it's mostly an experimental feature; fallback to JPEG if not supported
+            
+            AUTO (default)
+            will encode both PNG and JPEG and return the lowest sized format; pros: optimize quality and bandwidth usage, cons: slower and higher server CPU. best suited for mixed (text and imaging) applications
+
+            */
+
+            if (config.getImageEncoding() == config.getImageEncodingEnum().WEBP)
             {
                 checkWebpSupport();
             }
 
-            // base64
-            // IE6/7: not supported
-            // IE8: supported up to 32KB
-            // IE9: supported in native mode; not supported in compatibility mode (use IE7 engine)
-            // IE10+: supported
-            // please note that, even if base64 data is disabled or not supported by the client, the server will always send them in order to display images size and compute bandwidth usage, and thus be able to tweak the images quality if the bandwidth gets too low
-            // it also workaround a weird glitch in IE7 that prevents script execution if code length is too low (when script code is injected into the DOM through long-polling)
-            config.setImageBase64Enabled(config.getImageBase64Enabled() && (!this.isIEBrowser() || this.getIEVersion() >= 8));
-            dialog.showStat('imageBase64', config.getImageBase64Enabled());
+            /* image mode
+
+            ROUNDTRIP
+            display images from raw data
+            the simplest mode. each image is retrieved using a server call
+            pros: reliable (works in all browsers); cons: slower in case of high latency connection (due to the roundrip time)
+
+            BASE64
+            display images from base64 data
+            pros: avoid server roundtrips to retrieve images (direct injection into the DOM); cons: base64 encoding has an 33% overhead over binary
+            IE6/7: not supported
+            IE8: supported up to 32KB
+            IE9: supported in native mode; not supported in compatibility mode (use IE7 engine)
+            IE10+: supported
+            please note that, even if base64 data is disabled or not supported by the client, the server will always send them in order to display images size and compute bandwidth usage, and thus be able to tweak the images (quality & quantity) if the available bandwidth gets too low
+            it also workaround a weird glitch in IE7 that prevents script execution if code length is too low (when script code is injected into the DOM through long-polling)
+
+            BINARY
+            display images from binary data
+            pros: no bandwidth overhead; cons: requires an HTML5 browser with websocket (and binary type) support
+            
+            AUTO (default)
+            automatic detection of the best available mode (in order: ROUNDTRIP < BASE64 < BINARY)
+
+            */
+
+            var base64Available = this.isBase64Available();
+            var binaryAvailable = (window.WebSocket || window.MozWebSocket) && !config.getCompatibilityMode();
+
+            switch (config.getImageMode())
+            {
+                case config.getImageModeEnum().ROUNDTRIP:
+                    break;
+
+                case config.getImageModeEnum().BASE64:
+                    if (!base64Available)
+                    {
+                        config.setImageMode(config.getImageModeEnum().ROUNDTRIP);
+                    }
+                    break;
+                    
+                case config.getImageModeEnum().BINARY:
+                    if (!binaryAvailable)
+                    {
+                        if (!base64Available)
+                        {
+                            config.setImageMode(config.getImageModeEnum().ROUNDTRIP);
+                        }
+                        else
+                        {
+                            config.setImageMode(config.getImageModeEnum().BASE64);
+                        }
+                    }
+                    break;
+                    
+                default:
+                    config.setImageMode((!binaryAvailable ? (!base64Available ? config.getImageModeEnum().ROUNDTRIP : config.getImageModeEnum().BASE64) : config.getImageModeEnum().BINARY));
+            }
+
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_MODE, config.getImageMode());
            
             // image count per second; currently just an information but could be used for throttling display, if needed
             window.setInterval(function()
             {
                 //dialog.showDebug('checking image count per second');
-                dialog.showStat('imageCountPerSec', imgCountPerSec);
+                dialog.showStat(dialog.getShowStatEnum().IMAGE_COUNT_PER_SEC, imgCountPerSec);
                 imgCountPerSec = 0;
             },
             1000);
 
             // reasonable number of images to display when using divs
-            dialog.showStat('imageCountOk', (config.getCanvasEnabled() ? 'N/A' : config.getImageCountOk()));
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_COUNT_OK, (config.getDisplayMode() == config.getDisplayModeEnum().CANVAS ? 'N/A' : config.getImageCountOk()));
 
             // maximal number of images to display when using divs
-            dialog.showStat('imageCountMax', (config.getCanvasEnabled() ? 'N/A' : config.getImageCountMax()));
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_COUNT_MAX, (config.getDisplayMode() == config.getDisplayModeEnum().CANVAS ? 'N/A' : config.getImageCountMax()));
         }
         catch (exc)
         {
@@ -111,7 +204,7 @@ function Display(config, dialog)
     /*** Browser                                                                                                                                                                                   ***/
     /*************************************************************************************************************************************************************************************************/
 
-	this.getBrowserWidth = function()
+    this.getBrowserWidth = function()
 	{
 		if (self.innerWidth)
 		{
@@ -129,7 +222,7 @@ function Display(config, dialog)
 		return 1024;
 	};
 
-	this.getBrowserHeight = function()
+    this.getBrowserHeight = function()
 	{
         if (self.innerHeight)
         {
@@ -147,20 +240,6 @@ function Display(config, dialog)
         return 768;
     };
 
-    this.getToolbarHeight = function()
-    {
-        var controlInfo = document.createElement('div');
-        controlInfo.className = 'controlInfo';
-        document.body.appendChild(controlInfo);
-
-        var height = controlInfo.clientHeight;
-        //alert('toolbar height: ' + height);
-
-        document.body.removeChild(controlInfo);
-
-        return height;
-	}
-
     this.isFirefoxBrowser = function()
     {
         return /Firefox/.test(navigator.userAgent);
@@ -168,28 +247,64 @@ function Display(config, dialog)
 
     this.isIEBrowser = function()
     {
-        return /MSIE/.test(navigator.userAgent);
+        var ua = navigator.userAgent;
+
+        // IE 10 or older
+        var msie = ua.indexOf('MSIE ');
+        if (msie > 0)
+        {
+            return true;
+        }
+
+        // IE 11
+        var trident = ua.indexOf('Trident/');
+        if (trident > 0)
+        {
+            return true;
+        }
+
+        // Edge (IE 12+)
+        var edge = ua.indexOf('Edge/');
+        if (edge > 0)
+        {
+            return true;
+        }
+
+        return false;
     };
 
     this.getIEVersion = function()
     {
-        var version = -1;
+        var ua = navigator.userAgent;
 
-        if (this.isIEBrowser())
+        // IE 10 or older
+        var msie = ua.indexOf('MSIE ');
+        if (msie > 0)
         {
-            var regExp = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
-            if (regExp.exec(navigator.userAgent) != null)
-            {
-                version = parseFloat(RegExp.$1);
-            }
-	        //dialog.showDebug('IE version: ' + version);
-        }
-        else
-        {
-            //dialog.showDebug('browser is not IE');
+            return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
         }
 
-        return version;
+        // IE 11
+        var trident = ua.indexOf('Trident/');
+        if (trident > 0)
+        {
+            var rv = ua.indexOf('rv:');
+            return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
+        }
+
+        // Edge (IE 12+)
+        var edge = ua.indexOf('Edge/');
+        if (edge > 0)
+        {
+            return parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
+        }
+
+        return 0;
+    };
+
+    this.isBase64Available = function()
+    {
+        return !this.isIEBrowser() || this.getIEVersion() >= 8;
     };
 
     function checkWebpSupport()
@@ -198,14 +313,14 @@ function Display(config, dialog)
         {
             //dialog.showDebug('checking webp image support: ' + config.getHttpServerUrl() + 'webp/test.webp');
             var img = new Image();
-            img.onload = function() { /*dialog.showDebug('webp image loaded');*/if (img.height <= 0 || img.width <= 0) config.setImageEncoding('JPEG'); };
-            img.onerror = function() { /*dialog.showDebug('webp image error');*/config.setImageEncoding('JPEG'); };
+            img.onload = function() { /*dialog.showDebug('webp image loaded');*/if (img.height <= 0 || img.width <= 0) config.setImageEncoding(config.getImageEncodingEnum().AUTO); };
+            img.onerror = function() { /*dialog.showDebug('webp image error');*/config.setImageEncoding(config.getImageEncodingEnum().AUTO); };
             img.src = config.getHttpServerUrl() + 'img/test.webp';
         }
 	    catch (exc)
 	    {
 		    dialog.showDebug('display checkWebpSupport error: ' + exc.message);
-		    config.setImageEncoding('JPEG');
+		    config.setImageEncoding(config.getImageEncodingEnum().AUTO);
 	    }
     }
 
@@ -219,14 +334,20 @@ function Display(config, dialog)
         {
             //dialog.showDebug('updating mouse cursor, xHotSpot: ' + xHotSpot + ', yHotSpot: ' + yHotSpot);
 
-            // IE have issues with mouse cursors:
+            //dialog.showDebug('browser: ' + navigator.userAgent);
+
+            // https://msdn.microsoft.com/library/aa358795(v=vs.85).aspx
+            // IE/Edge have issues with mouse cursors:
             // - it doesn't supports PNG (neither base64 or binary data), only .cur, .ico or .ani
             // - it's not possible to specify an hotspot using CSS (but the .cur format handles it...)
             // - the cursor blinks when it changes, and stays invisible as long as the user doesn't move the mouse (!)
             if (this.isIEBrowser())
+            {
+                //dialog.showDebug('IE/Edge: unable to set a custom mouse cursor');
                 return;
+            }
 
-            if (!config.getImageBase64Enabled() || base64Data == '')
+            if (config.getImageMode() == config.getImageModeEnum().ROUNDTRIP || base64Data == '')
             {
                 if (config.getAdditionalLatency() > 0)
                 {
@@ -247,7 +368,7 @@ function Display(config, dialog)
 	        dialog.showDebug('display setMouseCursor error: ' + exc.message);
 	        throw exc;
 	    }
-    };
+    }
 
     /*************************************************************************************************************************************************************************************************/
     /*** Images                                                                                                                                                                                    ***/
@@ -264,29 +385,29 @@ function Display(config, dialog)
     var imgIdx = 0;
     this.getImgIdx = function() { return imgIdx; };
 
-    this.addImage = function(idx, posX, posY, width, height, format, quality, base64Data, fullscreen)
+    this.addImage = function(idx, posX, posY, width, height, format, quality, fullscreen, data)
     {
         try
         {
-            //dialog.showDebug('new image, idx: ' + idx + ', posX: ' + posX + ', posY: ' + posY + ', width: ' + width + ', height: ' + height + ', format: ' + format + ', quality: ' + quality + ', base64Data: ' + base64Data + ', fullscreen: ' + fullscreen);
+            //dialog.showDebug('new image, idx: ' + idx + ', posX: ' + posX + ', posY: ' + posY + ', width: ' + width + ', height: ' + height + ', format: ' + format + ', quality: ' + quality + ', fullscreen: ' + fullscreen + ', data: ' + data);
 
             // mouse cursor image
             if (format == 'cur')
             {
-                this.setMouseCursor(idx, base64Data, posX, posY);
+                this.setMouseCursor(idx, config.getImageMode() != config.getImageModeEnum().BINARY ? data : this.bytesToBase64(data), posX, posY);
             }
             // region or fullscreen image
             else
             {
                 // canvas
-                if (config.getCanvasEnabled())
+                if (config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
                 {
-                    canvas.addImage(idx, posX, posY, width, height, format, quality, base64Data, fullscreen);
+                    canvas.addImage(idx, posX, posY, width, height, format, quality, fullscreen, data);
                 }
                 // divs
                 else
                 {
-                    divs.addImage(idx, posX, posY, width, height, format, quality, base64Data, fullscreen);
+                    divs.addImage(idx, posX, posY, width, height, format, quality, fullscreen, config.getImageMode() != config.getImageModeEnum().BINARY ? data : this.bytesToBase64(data));
                 }
 
                 // reset or increment image counter
@@ -304,19 +425,48 @@ function Display(config, dialog)
                 imgCountPerSec++;
             }
 
-            dialog.showStat('imageCount', imgCount);
-            dialog.showStat('imageIndex', idx);
-            dialog.showStat('imageFormat', format);
-            dialog.showStat('imageQuality', quality);
-            dialog.showStat('imageBase64', config.getImageBase64Enabled() && base64Data != '');
-            dialog.showStat('imageSize', (base64Data != '' ? Math.ceil(((base64Data.length * 3) / 4) / 1024) : 'N/A'));
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_COUNT, imgCount);
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_INDEX, idx);
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_FORMAT, format);
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_QUALITY, quality);
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_QUANTITY, config.getImageQuantity());
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_MODE, config.getImageMode());
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_SIZE, (config.getImageMode() != config.getImageModeEnum().BINARY ? (config.getImageMode() != config.getImageModeEnum().BASE64 || data == '' ? 'N/A' : Math.ceil(data.length / 1024)) : Math.ceil(data.byteLength / 1024)));
 
-            // update the last processed image index
+            // update the last processed image
             imgIdx = idx;
 	    }
 	    catch (exc)
 	    {
-		    dialog.showDebug('display addImage error: ' + exc.Message);
+		    dialog.showDebug('display addImage error: ' + exc.message);
 	    }
+    };
+
+    this.getFormatText = function(format)
+    {
+        switch (format)
+        {
+            case 0:
+                return 'cur';
+            case 1:
+                return 'png';
+            case 2:
+                return 'jpeg';
+            case 3:
+                return 'webp';
+        }
+    };
+
+    this.bytesToBase64 = function(bytes)
+    {
+        var str = '';
+        var arr = new Uint8Array(bytes);
+
+        for (var i = 0; i < bytes.byteLength; i++)
+        {
+            str += String.fromCharCode(arr[i]);
+        }
+
+        return window.btoa(str);
     };
 }

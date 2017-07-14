@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ namespace Myrtille.Services
 
             this.serviceInstaller = new ServiceInstaller();
             this.serviceInstaller.ServiceName = "Myrtille.Services";
+            this.serviceInstaller.Description = "Handles the rdp client processes and file storage";
             this.serviceInstaller.StartType = ServiceStartMode.Automatic;
 
             this.Installers.AddRange(new Installer[] {

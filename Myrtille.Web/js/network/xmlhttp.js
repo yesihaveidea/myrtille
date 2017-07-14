@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ function XmlHttp(config, dialog, display, network)
         }
         catch (exc)
         {
-            dialog.showDebug('xmlhttp init error: ' + exc.Message);
+            alert('xmlhttp init error: ' + exc.message + ', please ensure it\'s enabled into the browser options');
             xhr = null;
             throw exc;
         }
@@ -108,7 +108,7 @@ function XmlHttp(config, dialog, display, network)
             if (xhr != null)
             {
                 // give priority to fullscreen update requests (by design, unbuffered commands for immediate consideration)
-                if (data == null)
+                if (data.indexOf(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text) != -1)
                 {
                     //dialog.showDebug('xhr fullscreen priority');
                     cleanup(false);
@@ -132,12 +132,8 @@ function XmlHttp(config, dialog, display, network)
 
             xhr.open('GET', config.getHttpServerUrl() + 'SendInputs.aspx' +
                 '?data=' + (data == null ? '' : data) +
-                '&fsu=' + (data == null ? 1 : 0) +
                 '&imgIdx=' + display.getImgIdx() +
-                '&imgEncoding=' + config.getImageEncoding() +
-                '&imgQuality=' + config.getImageQuality() +
-                '&imgReturn=' + (!config.getWebSocketEnabled() && !config.getLongPollingEnabled() ? 1 : 0) +
-                '&bandwidthRatio=' + (network.getBandwidthUsageKBSec() != null && network.getBandwidthSizeKBSec() != null && network.getBandwidthSizeKBSec() > 0 ? Math.round((network.getBandwidthUsageKBSec() * 100) / network.getBandwidthSizeKBSec()) : 0) +
+                '&imgReturn=' + (config.getNetworkMode() == config.getNetworkModeEnum().XHR ? 1 : 0) +
                 '&noCache=' + startTime);
 
             xhrTimeout = window.setTimeout(function()
@@ -145,7 +141,7 @@ function XmlHttp(config, dialog, display, network)
                 //dialog.showDebug('xhr timeout');
                 cleanup(true);
             },
-            config.getXmlHttpTimeoutDelay());
+            config.getXmlHttpTimeout());
 
             xhr.onreadystatechange = function() { callback(); };
 
@@ -158,7 +154,7 @@ function XmlHttp(config, dialog, display, network)
         }
         catch (exc)
         {
-            dialog.showDebug('xmlhttp send error: ' + exc.Message);
+            dialog.showDebug('xmlhttp send error: ' + exc.message);
             cleanup(false);
         }
     };
@@ -199,7 +195,7 @@ function XmlHttp(config, dialog, display, network)
 	    }
 	    catch (exc)
 	    {
-		    dialog.showDebug('xmlhttp callback error: ' + exc.Message);
+		    dialog.showDebug('xmlhttp callback error: ' + exc.message);
             cleanup(false);
 	    }
     }
@@ -208,44 +204,45 @@ function XmlHttp(config, dialog, display, network)
     {
         try
         {
+            //dialog.showDebug('xhr response:' + xhrResponseText);
+
             // update the average "latency"
             network.updateLatency(xhrStartTime);
 
-            //dialog.showDebug('xhr response:' + xhrResponseText);
-
             if (xhrResponseText != '')
             {
-                // remote clipboard. process first because it may contain one or more comma (used as split delimiter below)
-                if (xhrResponseText.length >= 10 && xhrResponseText.substr(0, 10) == 'clipboard|')
+                // reload page
+                if (xhrResponseText == 'reload')
+                {
+                    window.location.href = window.location.href;
+                }
+                // remote clipboard
+                else if (xhrResponseText.length >= 10 && xhrResponseText.substr(0, 10) == 'clipboard|')
                 {
                     showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', xhrResponseText.substr(10, xhrResponseText.length - 10), true);
                 }
-                // session disconnect
+                // disconnected session
                 else if (xhrResponseText == 'disconnected')
                 {
-                    // the remote session is disconnected, back to home page
                     window.location.href = config.getHttpServerUrl();
                 }
                 // new image
                 else
                 {
-                    var parts = xhrResponseText.split(',');
+                    var imgInfo = xhrResponseText.split(',');
                         
-                    var idx = parts[0];
-                    var posX = parts[1];
-                    var posY = parts[2];
-                    var width = parts[3];
-                    var height = parts[4];
-                    var format = parts[5];
-                    var quality = parts[6];
-                    var base64Data = parts[7];
-                    var fullscreen = parts[8] == 'true';
+                    var idx = parseInt(imgInfo[0]);
+                    var posX = parseInt(imgInfo[1]);
+                    var posY = parseInt(imgInfo[2]);
+                    var width = parseInt(imgInfo[3]);
+                    var height = parseInt(imgInfo[4]);
+                    var format = imgInfo[5];
+                    var quality = parseInt(imgInfo[6]);
+                    var fullscreen = imgInfo[7] == 'true';
+                    var base64Data = imgInfo[8];
 
                     // update bandwidth usage
-                    if (base64Data != '')
-                    {
-                        network.setBandwidthUsageB64(network.getBandwidthUsageB64() + base64Data.length);
-                    }
+                    network.setBandwidthUsage(network.getBandwidthUsage() + base64Data.length);
 
                     // if a fullscreen request is pending, release it
                     if (fullscreen && fullscreenPending)
@@ -255,7 +252,7 @@ function XmlHttp(config, dialog, display, network)
                     }
 
                     // add image to display
-                    display.addImage(idx, posX, posY, width, height, format, quality, base64Data, fullscreen);
+                    display.addImage(idx, posX, posY, width, height, format, quality, fullscreen, base64Data);
                 }
             }
             
@@ -271,16 +268,16 @@ function XmlHttp(config, dialog, display, network)
             }
 
             // if using divs and count reached a reasonable number, request a fullscreen update
-            if (!config.getCanvasEnabled() && display.getImgCount() >= config.getImageCountOk() && !fullscreenPending)
+            if (config.getDisplayMode() != config.getDisplayModeEnum().CANVAS && display.getImgCount() >= config.getImageCountOk() && !fullscreenPending)
             {
                 //dialog.showDebug('reached a reasonable number of divs, requesting a fullscreen update');
                 fullscreenPending = true;
-                network.send(null);
+                network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text);
             }
 	    }
 	    catch (exc)
 	    {
-		    dialog.showDebug('xmlhttp processResponse error: ' + exc.Message);
+		    dialog.showDebug('xmlhttp processResponse error: ' + exc.message);
             cleanup(false);
 	    }
     }
@@ -291,7 +288,7 @@ function XmlHttp(config, dialog, display, network)
         {
             if (timeoutElapsed)
             {
-                dialog.showMessage('xhr timeout (' + config.getXmlHttpTimeoutDelay() + ' ms). Please check your network connection', 0);
+                dialog.showMessage('xhr timeout (' + config.getXmlHttpTimeout() + ' ms). Please check your network connection', 0);
                 xhrTimeoutElapsed = true;
             }
 
@@ -314,28 +311,9 @@ function XmlHttp(config, dialog, display, network)
         }
 	    catch (exc)
 	    {
-		    dialog.showDebug('xmlhttp cleanup error: ' + exc.Message);
+		    dialog.showDebug('xmlhttp cleanup error: ' + exc.message);
 	    }
 
         xhr = null;
-    }
-}
-
-/*****************************************************************************************************************************************************************************************************/
-/*** External Calls                                                                                                                                                                                ***/
-/*****************************************************************************************************************************************************************************************************/
-
-function doXhrCall(url)
-{
-    try
-    {
-        var xmlhttp = new XmlHttp();
-        var xhr = xmlhttp.createXhr();
-        xhr.open('GET', url);
-        xhr.send(null);
-    }
-    catch (exc)
-    {
-        alert('doXhrCall error: ' + exc.Message);
     }
 }

@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -44,6 +44,10 @@ namespace Myrtille.Helpers
                     var buffer = Encoding.UTF8.GetBytes(message);
                     pipe.Write(buffer, 0, buffer.Length);
                     pipe.Flush();
+                }
+                else
+                {
+                    Trace.TraceError("Failed to write message to pipe {0} (not ready)", (string.IsNullOrEmpty(pipeName) ? "<unknown>" : pipeName));
                 }
             }
             catch (IOException)

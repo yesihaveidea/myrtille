@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.SessionState;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 
 namespace Myrtille.Web
 {
     public partial class Default : Page
     {
-        protected RemoteSessionManager RemoteSessionManager;
+        protected RemoteSession RemoteSession;
 
         /// <summary>
         /// initialization
@@ -40,18 +40,59 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
+            #region session fixation attack
+
+            // prevent session fixation attack by generating a new session ID upon login
+            // https://www.owasp.org/index.php/Session_Fixation
+            if (!string.IsNullOrEmpty(HttpContext.Current.Request["oldSID"]))
+            {
+                try
+                {
+                    HttpContext.Current.Application.Lock();
+
+                    // retrieve the given (old) http session
+                    var httpSessions = (IDictionary<string, HttpSessionState>)HttpContext.Current.Application[HttpApplicationStateVariables.HttpSessions.ToString()];
+                    var httpSession = httpSessions[HttpContext.Current.Request["oldSID"]];
+
+                    // retrieve the remote session bound to it
+                    var remoteSession = httpSession[HttpSessionStateVariables.RemoteSession.ToString()];
+
+                    // unbind it from the old http session
+                    httpSession[HttpSessionStateVariables.RemoteSession.ToString()] = null;
+
+                    // bind it to the new http session
+                    HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = remoteSession;
+
+                    // cancel the old http session
+                    httpSession.Abandon();
+
+                    // unregister it at application level
+                    httpSessions.Remove(httpSession.SessionID);
+                }
+                catch (Exception exc)
+                {
+                    System.Diagnostics.Trace.TraceError("Failed to generate a new http session upon login ({0})", exc);
+                }
+                finally
+                {
+                    HttpContext.Current.Application.UnLock();
+                }
+            }
+
+            #endregion
+
             try
             {
                 // retrieve the active remote session, if any
-                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSessionManager.ToString()] != null)
+                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] != null)
                 {
                     try
                     {
-                        RemoteSessionManager = (RemoteSessionManager)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSessionManager.ToString()];
+                        RemoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
                     }
                     catch (Exception exc)
                     {
-                        System.Diagnostics.Trace.TraceError("Failed to retrieve remote session manager ({0})", exc);
+                        System.Diagnostics.Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", HttpContext.Current.Session.SessionID, exc);
                     }
                 }
 
@@ -86,85 +127,32 @@ namespace Myrtille.Web
         }
 
         /// <summary>
-        /// update a control
-        /// </summary>
-        private void updateControl(
-            bool controlEnabled,
-            string controlEnabledClass,
-            string controlDisabledClass,
-            HtmlControl controlLabel,
-            HtmlControl controlText,
-            string controlValue)
-        {
-            controlLabel.Visible = controlEnabled;
-            controlText.Disabled = !controlEnabled;
-            if (controlEnabled)
-            {
-                controlText.Attributes["class"] = controlEnabledClass;
-            }
-            else
-            {
-                controlText.Attributes["class"] = controlDisabledClass;
-                if (controlText is HtmlInputText)
-                {
-                    (controlText as HtmlInputText).Value = controlValue;
-                }
-                else if (controlText is HtmlSelect)
-                {
-                    (controlText as HtmlSelect).Value = controlValue;
-                }
-            }
-        }
-
-        /// <summary>
         /// update the UI
         /// </summary>
         private void UpdateControls()
         {
-            if (RemoteSessionManager != null)
+            if (RemoteSession != null)
             {
-                var loginScreen = RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected;
+                // login screen
+                loginScreen.Visible = RemoteSession.State != RemoteSessionState.Connecting && RemoteSession.State != RemoteSessionState.Connected;
 
-                // control div
-                controlDiv.Attributes["class"] = loginScreen ? "controlDiv" : "controlInfo";
-
-                // rdp settings
-                updateControl(loginScreen, "serverText", "serverInfo", serverLabel, server, RemoteSessionManager.RemoteSession.ServerAddress);
-                updateControl(loginScreen, "domainText", "domainInfo", domainLabel, domain, RemoteSessionManager.RemoteSession.UserDomain);
-                updateControl(loginScreen, "userText", "userInfo", userLabel, user, RemoteSessionManager.RemoteSession.UserName);
-                updateControl(loginScreen, "passwordText", "passwordInfo", passwordLabel, password, RemoteSessionManager.RemoteSession.UserPassword);
-
-                // stats bar
-                updateControl(loginScreen, "statSelect", "statInfo", statsLabel, stat, RemoteSessionManager.RemoteSession.StatMode ? "Stat enabled" : "Stat disabled");
-
-                // debug log
-                updateControl(loginScreen, "debugSelect", "debugInfo", debugLabel, debug, RemoteSessionManager.RemoteSession.DebugMode ? "Debug enabled" : "Debug disabled");
-
-                // browser mode
-                updateControl(loginScreen, "browserSelect", "browserInfo", browserLabel, browser, RemoteSessionManager.RemoteSession.CompatibilityMode ? "HTML4" : "HTML5");
-
-                // program to run
-                updateControl(loginScreen, "programText", "programInfo", programLabel, program, RemoteSessionManager.RemoteSession.Program);
-
-                // connect
-                connect.Visible = loginScreen;
-
-                // disconnect
-                disconnect.Visible = !loginScreen;
-
-                // virtual keyboard
-                keyboard.Visible = !loginScreen;
-
-                // remote clipboard
-                clipboard.Visible = !loginScreen;
-
-                // file storage
-                files.Visible = !loginScreen &&
-                    (RemoteSessionManager.RemoteSession.ServerAddress.ToLower() == "localhost" || RemoteSessionManager.RemoteSession.ServerAddress == "127.0.0.1" || RemoteSessionManager.RemoteSession.ServerAddress == HttpContext.Current.Request.Url.Host || !string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserDomain)) &&
-                    !string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserName) && !string.IsNullOrEmpty(RemoteSessionManager.RemoteSession.UserPassword);
-
-                // ctrl+alt+del
-                cad.Visible = !loginScreen;
+                // toolbar
+                toolbar.Style["visibility"] = loginScreen.Visible ? "hidden" : "visible";
+                toolbar.Style["display"] = loginScreen.Visible ? "none" : "block";
+                serverInfo.Value = RemoteSession.ServerAddress;
+                stat.Value = RemoteSession.StatMode ? "Hide Stat" : "Show Stat";
+                stat.Disabled = loginScreen.Visible;
+                debug.Value = RemoteSession.DebugMode ? "Hide Debug" : "Show Debug";
+                debug.Disabled = loginScreen.Visible;
+                browser.Value = RemoteSession.CompatibilityMode ? "HTML5" : "HTML4";
+                browser.Disabled = loginScreen.Visible;
+                scale.Value = RemoteSession.ScaleDisplay ? "Unscale" : "Scale";
+                scale.Disabled = loginScreen.Visible;
+                keyboard.Disabled = loginScreen.Visible;
+                clipboard.Disabled = loginScreen.Visible;
+                files.Disabled = loginScreen.Visible || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != HttpContext.Current.Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain)) || string.IsNullOrEmpty(RemoteSession.UserName) || string.IsNullOrEmpty(RemoteSession.UserPassword);
+                cad.Disabled = loginScreen.Visible;
+                disconnect.Disabled = loginScreen.Visible;
             }
         }
 
@@ -177,22 +165,13 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
-            // remove a previously disconnected remote session
-            if (RemoteSessionManager != null && RemoteSessionManager.RemoteSession.State == RemoteSessionState.Disconnected)
+            // remove the active remote session, if any (disconnected?)
+            if (RemoteSession != null)
             {
                 try
                 {
-                    HttpContext.Current.Application.Lock();
-
-                    // unset the remote session manager for the current http session
-                    HttpContext.Current.Session[HttpSessionStateVariables.RemoteSessionManager.ToString()] = null;
-
-                    // unregister it at application level; used when there is no http context (i.e.: websockets)
-                    var remoteSessionsManagers = (Dictionary<string, RemoteSessionManager>)HttpContext.Current.Application[HttpApplicationStateVariables.RemoteSessionsManagers.ToString()];
-                    if (remoteSessionsManagers.ContainsKey(HttpContext.Current.Session.SessionID))
-                    {
-                        remoteSessionsManagers.Remove(HttpContext.Current.Session.SessionID);
-                    }
+                    // unset the remote session for the current http session
+                    HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = null;
                 }
                 catch (Exception exc)
                 {
@@ -200,94 +179,83 @@ namespace Myrtille.Web
                 }
                 finally
                 {
-                    RemoteSessionManager = null;
-                    HttpContext.Current.Application.UnLock();
+                    RemoteSession = null;
                 }
             }
 
-            // create a new remote session, if none active
-            if (RemoteSessionManager == null)
+            // create a new remote session
+            try
             {
-                try
+                HttpContext.Current.Application.Lock();
+
+                // auto-increment the remote sessions counter
+                // note that it doesn't really count the active remote sessions... it's just an auto-increment for the remote session id, ensuring it's unique...
+                var remoteSessionsCounter = (int)HttpContext.Current.Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()];
+                remoteSessionsCounter++;
+
+                // create the remote session
+                RemoteSession = new RemoteSession
                 {
-                    HttpContext.Current.Application.Lock();
+                    Id = remoteSessionsCounter,
+                    State = RemoteSessionState.NotConnected,
+                    ServerAddress = string.IsNullOrEmpty(server.Value) ? "localhost" : server.Value,
+                    UserDomain = domain.Value,
+                    UserName = user.Value,
+                    UserPassword = password.Value,
+                    ClientWidth = int.Parse(width.Value),
+                    ClientHeight = int.Parse(height.Value),
+                    Program = program.Value
+                };
 
-                    // auto-increment the remote sessions counter
-                    // note that it doesn't really count the active remote sessions... it's just an auto-increment for the remote session id, ensuring it's unique...
-                    // the active remote sessions are registered in HttpContext.Current.Application[HttpApplicationStateVariables.RemoteSessionsManagers.ToString()]; count can be retrieved from there
-                    var remoteSessionsCounter = (int)HttpContext.Current.Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()];
-                    remoteSessionsCounter++;
+                // set the remote session for the current http session
+                HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = RemoteSession;
 
-                    // create the remote session manager
-                    RemoteSessionManager = new RemoteSessionManager(
-                        new RemoteSession
-                        {
-                            Id = remoteSessionsCounter,
-                            State = RemoteSessionState.NotConnected,
-                            ServerAddress = server.Value,
-                            UserDomain = domain.Value,
-                            UserName = user.Value,
-                            UserPassword = password.Value,
-                            ClientWidth = width.Value,
-                            ClientHeight = height.Value,
-                            StatMode = stat.Value == "Stat enabled",
-                            DebugMode = debug.Value == "Debug enabled",
-                            CompatibilityMode = browser.Value == "HTML4",
-                            Program = program.Value
-                        }
-                    );
+                // register the http session at application level
+                var httpSessions = (IDictionary<string, HttpSessionState>)HttpContext.Current.Application[HttpApplicationStateVariables.HttpSessions.ToString()];
+                httpSessions[HttpContext.Current.Session.SessionID] = HttpContext.Current.Session;
 
-                    // set the remote session manager for the current http session
-                    HttpContext.Current.Session[HttpSessionStateVariables.RemoteSessionManager.ToString()] = RemoteSessionManager;
-
-                    // register it at application level; used when there is no http context (i.e.: websockets)
-                    var remoteSessionsManagers = (Dictionary<string, RemoteSessionManager>)HttpContext.Current.Application[HttpApplicationStateVariables.RemoteSessionsManagers.ToString()];
-                    remoteSessionsManagers[HttpContext.Current.Session.SessionID] = RemoteSessionManager;
-
-                    // update the remote sessions auto-increment counter
-                    HttpContext.Current.Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()] = remoteSessionsCounter;
-                }
-                catch (Exception exc)
-                {
-                    System.Diagnostics.Trace.TraceError("Failed to create remote session ({0})", exc);
-                    RemoteSessionManager = null;
-                }
-                finally
-                {
-                    HttpContext.Current.Application.UnLock();
-                }
+                // update the remote sessions auto-increment counter
+                HttpContext.Current.Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()] = remoteSessionsCounter;
+            }
+            catch (Exception exc)
+            {
+                System.Diagnostics.Trace.TraceError("Failed to create remote session ({0})", exc);
+                RemoteSession = null;
+            }
+            finally
+            {
+                HttpContext.Current.Application.UnLock();
             }
 
             // connect it
-            if (RemoteSessionManager != null && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connecting && RemoteSessionManager.RemoteSession.State != RemoteSessionState.Connected)
+            if (RemoteSession != null)
             {
                 try
                 {
                     // update the remote session state
-                    RemoteSessionManager.RemoteSession.State = RemoteSessionState.Connecting;
+                    RemoteSession.State = RemoteSessionState.Connecting;
 
-                    // create pipes for this web gateway and the rdp client to talk
-                    RemoteSessionManager.Pipes.CreatePipes();
+                    // create pipes for the web gateway and the rdp client to talk
+                    RemoteSession.Manager.Pipes.CreatePipes();
 
                     // the rdp client does connect the pipes when it starts; when it stops (either because it was closed, crashed or because the rdp session had ended), pipes are released
                     // use http://technet.microsoft.com/en-us/sysinternals/dd581625 to track the existing pipes
-                    RemoteSessionManager.Client.StartProcess(
-                        RemoteSessionManager.RemoteSession.Id,
-                        RemoteSessionManager.RemoteSession.ServerAddress,
-                        RemoteSessionManager.RemoteSession.UserDomain,
-                        RemoteSessionManager.RemoteSession.UserName,
-                        RemoteSessionManager.RemoteSession.UserPassword,
-                        RemoteSessionManager.RemoteSession.ClientWidth,
-                        RemoteSessionManager.RemoteSession.ClientHeight,
-                        RemoteSessionManager.RemoteSession.Program,
-                        RemoteSessionManager.RemoteSession.DebugMode);
+                    RemoteSession.Manager.Client.StartProcess(
+                        RemoteSession.Id,
+                        RemoteSession.ServerAddress,
+                        RemoteSession.UserDomain,
+                        RemoteSession.UserName,
+                        RemoteSession.UserPassword,
+                        RemoteSession.ClientWidth,
+                        RemoteSession.ClientHeight,
+                        RemoteSession.Program);
 
                     // update controls
                     UpdateControls();
                 }
                 catch (Exception exc)
                 {
-                    System.Diagnostics.Trace.TraceError("Failed to connect remote session {0} ({1})", RemoteSessionManager.RemoteSession.Id, exc);
+                    System.Diagnostics.Trace.TraceError("Failed to connect the remote session {0} ({1})", RemoteSession.Id, exc);
                 }
             }
         }
@@ -302,22 +270,22 @@ namespace Myrtille.Web
             EventArgs e)
         {
             // disconnect the active remote session, if any and connected
-            if (RemoteSessionManager != null && (RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || RemoteSessionManager.RemoteSession.State == RemoteSessionState.Connected))
+            if (RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected))
             {
                 try
                 {
                     // update the remote session state
-                    RemoteSessionManager.RemoteSession.State = RemoteSessionState.Disconnecting;
+                    RemoteSession.State = RemoteSessionState.Disconnecting;
 
                     // send a disconnect command to the rdp client
-                    RemoteSessionManager.SendCommand(RemoteSessionCommand.CloseRdpClient);
+                    RemoteSession.Manager.SendCommand(RemoteSessionCommand.CloseRdpClient);
 
                     // update controls
                     UpdateControls();
                 }
                 catch (Exception exc)
                 {
-                    System.Diagnostics.Trace.TraceError("Failed to disconnect remote session {0} ({1})", RemoteSessionManager.RemoteSession.Id, exc);
+                    System.Diagnostics.Trace.TraceError("Failed to disconnect the remote session {0} ({1})", RemoteSession.Id, exc);
                 }
             }
         }

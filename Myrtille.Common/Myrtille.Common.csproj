@@ -15,7 +15,7 @@
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <PublishUrl>http://localhost/Common/</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
@@ -43,6 +43,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -53,6 +54,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -62,6 +64,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\Release\</OutputPath>
@@ -71,14 +74,16 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net">
-      <HintPath>Log\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Web.Administration, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\Windows\System32\inetsrv\Microsoft.Web.Administration.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Web.Administration.7.0.0.0\lib\net20\Microsoft.Web.Administration.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -93,15 +98,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fleck\ConnectionNotAvailableException.cs" />
-    <Compile Include="Fleck\Handlers\FlashSocketPolicyRequestHandler.cs" />
-    <Compile Include="Fleck\Helpers\MonoHelper.cs" />
-    <Compile Include="Fleck\QueuedStream.cs" />
-    <Compile Include="Fleck\SubProtocolNegotiationFailureException.cs" />
-    <Compile Include="Fleck\SubProtocolNegotiator.cs" />
-    <Compile Include="Fleck\WebSocketHttpRequest.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Helpers\CertificateHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Helpers\FirewallHelper.cs" />
@@ -113,27 +109,6 @@
     <Compile Include="Log\Log4netTraceFilter.cs" />
     <Compile Include="Log\Log4netTraceListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Fleck\FleckLog.cs" />
-    <Compile Include="Fleck\FrameType.cs" />
-    <Compile Include="Fleck\HandlerFactory.cs" />
-    <Compile Include="Fleck\Handlers\ComposableHandler.cs" />
-    <Compile Include="Fleck\Handlers\Draft76Handler.cs" />
-    <Compile Include="Fleck\Handlers\Hybi13Handler.cs" />
-    <Compile Include="Fleck\HandshakeException.cs" />
-    <Compile Include="Fleck\Interfaces\IHandler.cs" />
-    <Compile Include="Fleck\Interfaces\ISocket.cs" />
-    <Compile Include="Fleck\Interfaces\IWebSocketConnection.cs" />
-    <Compile Include="Fleck\Interfaces\IWebSocketConnectionInfo.cs" />
-    <Compile Include="Fleck\Interfaces\IWebSocketServer.cs" />
-    <Compile Include="Fleck\IntExtensions.cs" />
-    <Compile Include="Fleck\ReadState.cs" />
-    <Compile Include="Fleck\RequestParser.cs" />
-    <Compile Include="Fleck\SocketWrapper.cs" />
-    <Compile Include="Fleck\WebSocketConnection.cs" />
-    <Compile Include="Fleck\WebSocketConnectionInfo.cs" />
-    <Compile Include="Fleck\WebSocketException.cs" />
-    <Compile Include="Fleck\WebSocketServer.cs" />
-    <Compile Include="Fleck\WebSocketStatusCodes.cs" />
     <Compile Include="Helpers\AccountHelper.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -154,10 +129,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Fleck\readme.markdown" />
-    <None Include="Fleck\VERSION" />
-  </ItemGroup>
-  <ItemGroup>
     <COMReference Include="CERTENROLLLib">
       <Guid>{728AB348-217D-11DA-B2A4-000E7BBB2B09}</Guid>
       <VersionMajor>1</VersionMajor>
@@ -176,6 +147,9 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

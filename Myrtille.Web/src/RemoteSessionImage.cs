@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,35 +18,20 @@
 
 namespace Myrtille.Web
 {
-    public enum ImageFormat
-    {
-        PNG = 0,
-        JPEG = 1,
-        WEBP = 2,
-        CUR = 3
-    }
-
     public enum ImageEncoding
     {
-        PNG = 0,
-        JPEG = 1,       // default
-        PNG_JPEG = 2,
+        AUTO = 0,   // default
+        PNG = 1,
+        JPEG = 2,
         WEBP = 3
     }
 
-    public enum ImageQuality
+    public enum ImageFormat
     {
-        Low = 10,
-        Medium = 25,
-        High = 50,      // default; may be tweaked dynamically depending on image encoding and client bandwidth
-        Higher = 75,    // used for fullscreen updates
-        Highest = 100
-    }
-
-    public enum ImageQualityTweakBandwidthRatio
-    {
-        LowerBound = 50,
-        HigherBound = 90
+        CUR = 0,
+        PNG = 1,
+        JPEG = 2,
+        WEBP = 3
     }
 
     public class RemoteSessionImage
@@ -58,7 +43,7 @@ namespace Myrtille.Web
         public int Height;
         public ImageFormat Format;
         public int Quality;
-        public string Base64Data;
         public bool Fullscreen;
+        public byte[] Data;
     }
 }

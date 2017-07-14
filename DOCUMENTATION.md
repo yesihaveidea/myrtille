@@ -17,9 +17,11 @@ I hope you will enjoy Myrtille! :)
 Special thanks to Catalin Trifanescu for its support.
 
 ## Installation
-You need at least IIS 7.0+ before installing myrtille (the HTTP(S) to RDP gateway). It installs as a role on Windows Servers and as a feature on others Windows versions.
+You need at least IIS 8+ before installing myrtille (the HTTP(S) to RDP gateway). It installs as a role on Windows Servers and as a feature on others Windows versions.
 
-The .NET 4.0+ framework can be installed automatically by the myrtille installer (Setup.exe), enabled as a feature of IIS (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012) or installed standalone (https://www.microsoft.com/en-us/download/details.aspx?id=17718).
+**CAUTION! If you want to use websockets**, you need to enable the websocket protocol into IIS (disabled by default; see https://www.iis.net/configreference/system.webserver/websocket).
+
+The .NET 4.5+ framework can be installed automatically by the myrtille installer (Setup.exe), enabled as a feature of IIS (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012) or installed separately (https://www.microsoft.com/en-us/download/details.aspx?id=30653).
 
 The installer does install myrtille under the IIS default website and creates a custom application pool ("MyrtilleAppPool"). If you want to use another website or application pool, you can change it manually afterward (with the IIS manager).
 
@@ -33,7 +35,7 @@ Starting from version 1.3.x, it's possible to run a program automatically, on se
 Currently not working with Windows 2008 servers. See notes and limitations.
 
 ### Syntax
-https://yourserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=*server*&domain=*domain* [optional]&user=*username*&password=*password*&stat=*Stat+enabled|disabled* [optional]&debug=*Debug+enabled|disabled* [optional]&browser=*HTML4|HTML5* [optional]&program=*executable path, name and parameters (double quotes must be escaped)* [optional]&width=*width (px)* [optional]&height=*height (px)* [optional]&connect=*Connect%21*
+https://myserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=*server*&domain=*domain* [optional]&user=*username*&password=*password*&stat=*Stat+enabled|disabled* [optional]&debug=*Debug+enabled|disabled* [optional]&browser=*HTML4|HTML5* [optional]&program=*executable path, name and parameters (double quotes must be escaped)* [optional]&width=*width (px)* [optional]&height=*height (px)* [optional]&connect=*Connect%21*
 
 The parameters values **must be URL encoded**. You can use a tool like http://www.url-encode-decode.com/ for that purpose (just copy&paste the encoded parameters into the URL).
 
@@ -51,19 +53,8 @@ Myrtille supports both local and network file storage. If you want your domain u
 - In the target tab, select basic configuration to redirect everyone's folder to the same location, with create a folder for each user under the root path (the network share)
 - In the settings tab, ensure the user doesn't have exclusive rights to the documents folder (otherwise Myrtille won't be able to access it)
 
-## Network
-The installer adds the following rules to the machine firewall:
-- "Myrtille Websockets": allow both directions TCP port 8181 (default)
-- "Myrtille Websockets Secured": allow both directions TCP port 8431 (default)
-
 ## Security
-The installer creates a self-signed certificate for myrtille (so you can use it at https://yourserver/myrtille), but you can set your own certificate (if you wish) as follow:
-- export your SSL certificate in .PFX format, with the private key
-- save it into the myrtille "ssl" folder with the name "PKCS12Cert.pfx"
-
-If not using Google Chrome (client side), see detailed comments regarding the security configuration into the Myrtille "Web.Config" file. You may have to add an exception for the secured websockets port (default 8431) into your browser.
-
-In case of issues, ensure the secured websockets port (default 8431) is not blocked by your firewall (or proxy, reverse proxy, VPN, etc.).
+The installer creates a self-signed certificate for myrtille (so you can use it at https://myserver/myrtille), but you can set your own certificate (if you wish).
 
 ## Configuration
 Both the gateway and services have their own .NET config files; the gateway also uses XDT transform files to adapt the settings depending on the current solution configuration.
@@ -72,14 +63,14 @@ You may also play with the gateway "js/config.js" file settings to fine tune the
 
 ## Code organization
 - Myrtille.RDP: link to the myrtille FreeRDP fork. C++ code. RDP client, modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
-- Myrtille.Common: C# code. Fleck Websockets library and common helpers.
+- Myrtille.Common: C# code. Common helpers.
 - Myrtille.Services: C# code. WCF services, hosted by a Windows Service (or a console application in debug build). start/stop the rdp client and upload/download file(s) to/from the connected user documents folder.
 - Myrtille.Services.Contracts: C# code. WCF contracts (interfaces).
 - Myrtille.Web: C# code. Link between the browser and the rdp client; maintain correlation between http and rdp sessions.
 - Myrtille.Setup: MSI installer.
 
 ## Build
-Myrtille uses C#, C++ and pure Javascript code (no additional libraries). Microsoft Visual Studio Community 2015 was used as primary development environment, using the .NET 4.0 framework.
+Myrtille uses C#, C++ and vanilla Javascript code (no additional libraries). Microsoft Visual Studio Community 2015 was used as primary development environment, using the .NET 4.5 framework.
 If you want Visual Studio to load the Myrtille setup project, you have to install the (official and free) Microsoft Visual Studio 2015 Installer Projects extension (https://visualstudiogallery.msdn.microsoft.com/f1cc3f3e-c300-40a7-8797-c509fb8933b9).
 
 The Myrtille build have the two classic solution configurations: "Debug" and "Release", on "Any CPU" platform.
@@ -143,28 +134,29 @@ This is a thing to consider if you want to isolate the web gateway from your int
 
 - On Windows Server 2012, you may have issues installing the Microsoft Visual C++ 2015 redistributables (x86) (http://stackoverflow.com/questions/31536606/while-installing-vc-redist-x64-exe-getting-error-failed-to-configure-per-machi). To circumvent that, ensure your system is fully updated (Windows updates) first or try to install the package "Windows8.1-KB2999226-x64.msu" manually.
 
+- Safari 5.1.7 doesn't support the IIS 8+ websocket implementation because it's based on an older version of the websocket standard (hybi instead of RFC6455) (http://stackoverflow.com/questions/32628211/connecting-to-iis-8-from-safari-5-1-7-by-websocket). Myrtille does fallback to long-polling if websockets aren't supported or fail.
+
 - In order to keep the installation simple, both the myrtille gateway and services are installed on the same machine. They do however conform to a distributed architecture; if needed, given some additionnal code, myrtille services could acts as a proxy, so the gateway could be installed and operate separately (this could be handy if the gateway should go into a DMZ).
 
 ## Troubleshoot
-First at all, ensure the Myrtille prerequisites are met (IIS 7.0+ and .NET 4.0+). Note that IIS must be installed separately, before running the installer (see "Installation").
+First at all, ensure the Myrtille prerequisites are met (IIS 8+ with websocket protocol enabled and .NET 4.5+). Note that IIS must be installed separately, before running the installer (see "Installation").
 
 - The installation fails
 	- Prerequisites are not downloaded: the installer was run directly using the MSI file; this exclude the bootstrapper (Setup.exe), whose purpose is to check and download/install the prerequisites if necessary
-	- Prerequisites download fails: MSI installers use Internet Explorer for downloads; ensure the Internet Explorer enhanced security is disabled (server administration tools)
-	- Error 1001: an MSI custom action failed (https://blogs.msdn.microsoft.com/vsnetsetup/2012/03/14/msi-installation-fails-while-installing-a-custom-action-with-error-1001-exception-occurred-while-initializing-the-installation/). Ensure IIS and the .NET framework are installed (http://stackoverflow.com/a/8487214) and the IIS Management Console is enabled (http://stackoverflow.com/a/23263836)
+	- Prerequisites download fails: MSI installers use Internet Explorer for downloads; ensure the Internet Explorer enhanced security is disabled (server administration tools) and your system clock is up to date
+	- Error 1001: an MSI custom action failed (https://blogs.msdn.microsoft.com/vsnetsetup/2012/03/14/msi-installation-fails-while-installing-a-custom-action-with-error-1001-exception-occurred-while-initializing-the-installation/). Ensure the IIS Management Console is enabled (http://stackoverflow.com/a/23263836).
 	- Check the Windows events logs ("System", "Application", etc.)
 
-- I can't access http://yourserver/myrtille
+- I can't access http://myserver/myrtille
 	- Ensure IIS is started and "Myrtille.Web" application is running on the "MyrtilleAppPool" application pool.
-	- Ensure .NET 4.0 is installed and the "MyrtilleAppPool" is running on it.
-	- If using HTTPS, ensure a valid SSL certificate is installed on IIS and exported as .PFX into Myrtille "ssl" folder (see "Security").
+	- Ensure IIS websocket protocol is enabled.
+	- Ensure .NET 4.5 is installed and the "MyrtilleAppPool" is running on it.
+	- You may have to register .NET 4.5 against IIS (https://stackoverflow.com/questions/13749138/asp-net-4-5-has-not-been-registered-on-the-web-server)
+	- Ensure the "Myrtille.Web" target folder does have enough privileges (should be set automatically by the installer but may depend on specific configurations)
 
 - Nothing happens when I click "Connect!"
 	- Ensure you entered valid connection information (server address, user credentials, etc.).
 	- Ensure the network traffic (websockets and xmlhttp in particular) is not blocked by a firewall, proxy, reverse proxy, VPN or whatever.
-	- Ensure IIS is started and "Myrtille.Web" application is running on the "MyrtilleAppPool" application pool.
-	- Ensure .NET 4.0 is installed and the "MyrtilleAppPool" is running on it.
-	- If using HTTPS with HTML5 rendering (hence secure websockets, WSS), ensure the secured websockets port (default 8431) is opened (see "Security").
 	- Ensure the "Myrtille.Services" Windows service (or console application if running under Visual Studio) is started.
 	- Ensure the RDP client ("wfreerdp.exe") does exists (into the "Myrtille.RDP" output folder, if running under Visual Studio, or into the "bin" folder otherwise); if not, you need to retrieve (git clone) the myrtille FreeRDP fork into the "Myrtille.RDP" folder and build it there.
 	- Ensure the Microsoft Visual C++ 2015 redistributables (x86) are installed (control panel > programs > programs and features); they are required by the RDP client (myrtille\bin\wfreerdp.exe).

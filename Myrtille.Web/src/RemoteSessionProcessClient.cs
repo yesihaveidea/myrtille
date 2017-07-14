@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 using System;
 using System.Diagnostics;
 using System.ServiceModel;
-using System.Threading;
 using Myrtille.Services.Contracts;
 
 namespace Myrtille.Web
@@ -40,16 +39,15 @@ namespace Myrtille.Web
             string userDomain,
             string userName,
             string userPassword,
-            string clientWidth,
-            string clientHeight,
-            string program,
-            bool debug)
+            int clientWidth,
+            int clientHeight,
+            string program)
         {
             Trace.TraceInformation("Calling service start process, remote session {0}", _remoteSessionManager.RemoteSession.Id);
 
             try
             {
-                Channel.StartProcess(remoteSessionId, serverAddress, userDomain, userName, userPassword, clientWidth, clientHeight, program, debug);
+                Channel.StartProcess(remoteSessionId, serverAddress, userDomain, userName, userPassword, clientWidth, clientHeight, program);
             }
             catch (Exception exc)
             {
@@ -99,28 +97,18 @@ namespace Myrtille.Web
                     _remoteSessionManager.Pipes.DeletePipes();
                 }
 
-                // if a websocket is set and available (connection not closed by client), send a disconnect notification
+                // if using a websocket, send a disconnect notification
                 if (_remoteSessionManager.WebSocket != null)
                 {
-                    if (_remoteSessionManager.WebSocket.IsAvailable)
-                    {
-                        _remoteSessionManager.WebSocket.Send("disconnected");
-                    }
+                    _remoteSessionManager.WebSocket.Send("disconnected");
                 }
                 // no websocket at this step can mean using xhr (with long-polling or not),
                 // but it can also be because the browser wasn't fast enough to open a websocket before the rdp client was closed (due to a crash, connection or authentication issue, etc.)
-                // a disconnect notification will be sent to the browser by the socket server if the remote session is disconnected in the context of a newly opened socket
+                // a disconnect notification will be sent to the browser by the socket handler if the remote session is disconnected in the context of a newly opened socket
                 else
                 {
-                    lock (_remoteSessionManager.ImageEventLock)
-                    {
-                        // if waiting for a new image, leave
-                        if (_remoteSessionManager.ImageEventPending)
-                        {
-                            _remoteSessionManager.ImageEventPending = false;
-                            Monitor.Pulse(_remoteSessionManager.ImageEventLock);
-                        }
-                    }
+                    // if waiting for a new image, leave
+                    _remoteSessionManager.StopWaitForImageEvent();
                 }
             }
             catch (Exception exc)

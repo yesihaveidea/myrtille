@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -56,8 +56,8 @@ function LongPolling(config, dialog, display, network)
         }
 	    catch (exc)
 	    {
-		    dialog.showDebug('long-polling init error: ' + exc.message);
-            config.setLongPollingEnabled(false);
+	        dialog.showDebug('long-polling init error: ' + exc.message + ', falling back to xhr');
+		    config.setNetworkMode(config.getNetworkModeEnum().XHR);
             lpIFrame = null;
 	    }
     };
@@ -97,46 +97,3 @@ function LongPolling(config, dialog, display, network)
 	    }
     }
 }
-
-/*****************************************************************************************************************************************************************************************************/
-/*** External Calls                                                                                                                                                                                ***/
-/*****************************************************************************************************************************************************************************************************/
-
-var iframe = null;
-
-function doIFrameCall(url)
-{
-    try
-    {
-        // browsers are limited to a given number of simultaneous xhrs or websockets calls; iframes are a nice hack to circumvent that (mainly useful on old browsers)
-        iframe = document.createElement('iframe');
-        iframe.src = url;
-
-        document.body.appendChild(iframe);
-
-        var display = new Display();
-
-        // IE < 9
-        if (display.isIEBrowser() && display.getIEVersion() < 9)
-        {
-            iframe.attachEvent('onload', function() { removeIframe(); });
-        }
-        // others
-        else
-        {
-            iframe.onload = function() { removeIframe(); };
-        }
-    }
-    catch (exc)
-    {
-        alert('doIFrameCall error: ' + exc.Message);
-    }
-}
-
-function removeIframe()
-{
-    if (iframe != null)
-    {
-        document.body.removeChild(iframe);
-    }
-};

@@ -1,7 +1,7 @@
 ﻿<%--
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright (c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@
         
         <form method="get" runat="server">
             
-            <%-- generic dialog box --%>
+            <!-- generic dialog box -->
             <div>
-                <span id="showDialogPopupDesc"></span><br/>
+                <span id="showDialogPopupDesc"></span><hr/>
                 <textarea id="showDialogPopupText" rows="10" cols="50"></textarea><br/>
                 <input type="button" id="closePopupButton" value="Close" onclick="parent.closePopup();"/>
             </div>
@@ -45,13 +45,22 @@
 
 		    function displayText()
 		    {
-		        showDialogPopupDesc.innerText = parent.getShowDialogPopupDesc();
-		        showDialogPopupText.value = parent.getShowDialogPopupText();
-		        if (parent.getShowDialogPopupSelectText())
+		        var showDialogPopupDesc = document.getElementById('showDialogPopupDesc');
+		        if (showDialogPopupDesc != null)
 		        {
-		            showDialogPopupText.focus();
-		            showDialogPopupText.select();
+		            showDialogPopupDesc.innerText = parent.getShowDialogPopupDesc();
 		        }
+
+		        var showDialogPopupText = document.getElementById('showDialogPopupText');
+		        if (showDialogPopupText != null)
+                {
+		            showDialogPopupText.value = parent.getShowDialogPopupText();
+		            if (parent.getShowDialogPopupSelectText())
+		            {
+		                showDialogPopupText.focus();
+		                showDialogPopupText.select();
+		            }
+                }
             }
 
 		</script>

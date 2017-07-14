@@ -17,6 +17,7 @@ More information into the DOCUMENTATION.md file.
 - Start remote application from URL
 - File transfer (local and roaming accounts)
 - HTML4 and HTML5 support
+- Responsive design
 - Remote clipboard support
 - PNG, JPEG and WEBP compression
 - Realtime connection information
@@ -25,8 +26,13 @@ More information into the DOCUMENTATION.md file.
 
 ## Requirements
 - Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required.
-- Gateway (myrtille): IIS 7.0+ and .NET 4.0+
+- Gateway (myrtille): IIS 8+ with websocket protocol enabled and .NET 4.5+
 - RDP server: any RDP enabled computer (preferably Windows Server but can also be Windows XP, 7, 8, 10)
+
+## Resources
+Myrtille does support multiple users sessions/tabs. There is no limitation about the maximal number of concurrent users beside what the rdp server(s) can handle (number of CALs, CPU, RAM?).
+Regarding the gateway, a simple dual core CPU with 4GB RAM can handle up to 50 simultaneous sessions (about 50MB RAM by rdp client process).
+Each session uses about 20KB/sec bandwidth with the browser.
 
 ## Build
 Microsoft Visual Studio 2015. See DOCUMENTATION.md.
@@ -37,16 +43,17 @@ All releases here: https://github.com/cedrozor/myrtille/releases
 See DOCUMENTATION.md for more details.
 
 ## Usage
-Once Myrtille is installed on your server, you can use it at http://yourserver/myrtille. Set the rdp server address, user domain (if defined), name and password then click "Connect!" to log in. "Disconnect" to log out.
+Once Myrtille is installed on your server, you can use it at http://myserver/myrtille. Set the rdp server address, user domain (if any), name and password then click "Connect!" to log in. "Disconnect" to log out.
 
-The installer creates a self-signed certificate for https://yourserver/myrtille. Like for all self-signed certificates, you will have to add a security exception into your browser (just ignore the warning message and proceed to the website).
+The installer creates a self-signed certificate for https://myserver/myrtille. Like for all self-signed certificates, you will have to add a security exception into your browser (just ignore the warning message and proceed to the website).
 Of course, you can avoid that by installing a certificate provided by a trusted Certification Authority (see DOCUMENTATION.md).
 
-If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (logs are saved under the Myrtille "log" folder).
+If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (logs are saved under the Myrtille "log" folder). *Hidden from version 1.5.x (can be enabled into default.css)*.
 
-You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall).
+You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall). *Hidden (autodetected) from version 1.5.x (can be enabled into default.css)*.
 
-On touchscreen devices, you can pop the device keyboard with the "Keyboard" button. Then enter some text and click "Send". This can be used, for example, to paste the local clipboard content and send it to the server (then it be copied from there, within the rdp session).
+On touchscreen devices, you can pop the device keyboard with the "Keyboard" button. Then enter some text and click "Send". This can be used, for example, to paste the local clipboard content and send it to the server (then it be copied from there, within the remote session).
+Alternatively, you can run **osk.exe** (the Windows on screen keyboard, located into %SystemRoot%\System32) within the remote session. It can even be run automatically on session start (https://www.cybernetman.com/kb/index.cfm/fuseaction/home.viewArticles/articleId/197).
 
 The remote clipboard content can also be retrieved locally with the "Clipboard" button (text format only).
 
@@ -57,14 +64,14 @@ Myrtille uses the following licensed software:
 - RDP client: FreeRDP (https://github.com/FreeRDP/FreeRDP), licensed under Apache 2.0 license. Myrtille uses a fork of FreeRDP (https://github.com/cedrozor/FreeRDP), to enforce a loose coupling architecture and always use the latest version of FreeRDP (the fork is periodically synchronized with the FreeRDP master branch).
 - OpenSSL toolkit (https://github.com/openssl/openssl), licensed under BSD-style Open Source licenses. Precompiled versions of OpenSSL can be obtained here: https://wiki.openssl.org/index.php/Binaries.
 - WebP encoding: libWebP 0.5.1 (https://developers.google.com/speed/webp/), licensed under BSD-style Open Source license. Copyright (c) 2010, Google Inc. All rights reserved.
-- HTML5 websockets: Fleck 0.14.0 (https://github.com/statianzo/Fleck), licensed under MIT license. Copyright (c) 2010-2014 Jason Staten.
-- Logging: Log4net 1.2.13.0 (https://logging.apache.org/log4net/), licensed under Apache 2.0 license.
+- HTML5 websockets: Microsoft.WebSockets 0.2.3.1 (https://www.nuget.org/packages/Microsoft.WebSockets/0.2.3.1), licensed under MIT license. Copyright (c) Microsoft 2012.
+- Logging: Log4net 2.0.8 (https://logging.apache.org/log4net/), licensed under Apache 2.0 license.
 
 See DISCLAIMERS.md file.
 
 The Myrtille code in FreeRDP is surrounded by region tags "#pragma region Myrtille" and "#pragma endregion".
 
-libWebP are official Google's WebP precompiled binaries, and are left unmodified. Same for Fleck websockets.
+libWebP are official Google's WebP precompiled binaries, and are left unmodified.
 
 ## License
 Myrtille is licensed under Apache 2.0 license.

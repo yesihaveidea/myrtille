@@ -1,7 +1,7 @@
 ﻿<%--
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright (c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -32,8 +32,14 @@
         
         <form method="get" runat="server">
             
-            <%-- virtual keyboard. for use on devices with no physical keyboard --%>
+            <!-- virtual keyboard. for use on devices with no physical keyboard -->
+            <!-- alternatively, osk.exe (the Windows on screen keyboard, located into %SystemRoot%\System32) can be used within the remote session -->
+            <!-- it's especially handy on touchscreen devices and can even be run automatically on session start (https://www.cybernetman.com/kb/index.cfm/fuseaction/home.viewArticles/articleId/197) -->
             <div>
+                <span id="virtualKeyboardPopupDesc">
+                    Type or paste some text then click send<br/>
+                    Alternatively, you can use the Windows on screen keyboard (%SystemRoot%\System32\osk.exe) within the session
+                </span><hr/>
                 <textarea id="virtualKeyboardPopupText" rows="10" cols="50"></textarea><br/>
                 <input type="button" id="sendTextButton" value="Send" onclick="parent.sendText(virtualKeyboardPopupText.value);"/>
                 <input type="button" id="closePopupButton" value="Close" onclick="parent.closePopup();"/>
@@ -45,7 +51,11 @@
 
 		    function focusText()
 		    {
-		        virtualKeyboardPopupText.focus();
+		        var virtualKeyboardPopupText = document.getElementById('virtualKeyboardPopupText');
+		        if (virtualKeyboardPopupText != null)
+                {
+		            virtualKeyboardPopupText.focus();
+                }
             }
 
 		</script>

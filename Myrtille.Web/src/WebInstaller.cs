@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ using System.IO;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
-using System.Xml;
 using Myrtille.Helpers;
 
 namespace Myrtille.Web
@@ -77,10 +76,6 @@ namespace Myrtille.Web
                 // bind it to the default website
                 IISHelper.BindCertificate(cert);
 
-                // export it to the targetdir "ssl" folder, for secure websocket communication
-                var certBytes = cert.Export(X509ContentType.Pfx, "");
-                File.WriteAllBytes(Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "ssl", "PKCS12Cert.pfx"), certBytes);
-
                 // add write permission to the targetdir "log" folder for MyrtilleAppPool, so that Myrtille.Web can save logs into it
                 PermissionsHelper.AddDirectorySecurity(
                     Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log"),
@@ -89,41 +84,6 @@ namespace Myrtille.Web
                     InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
                     PropagationFlags.None,
                     AccessControlType.Allow);
-
-                // websockets ports
-                int wsPort;
-                if (!int.TryParse(Context.Parameters["WSPort"], out wsPort))
-                {
-                    wsPort = 8181;
-                }
-
-                int wssPort;
-                if (!int.TryParse(Context.Parameters["WSSPort"], out wssPort))
-                {
-                    wssPort = 8431;
-                }
-
-                // load config
-                var config = new XmlDocument();
-                var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Web.config");
-                config.Load(configPath);
-
-                // update settings
-                var navigator = config.CreateNavigator();
-
-                var node = XmlTools.GetNode(navigator, "/configuration/appSettings");
-                if (node != null)
-                {
-                    XmlTools.WriteConfigKey(node, "WebSocketServerPort", wsPort.ToString());
-                    XmlTools.WriteConfigKey(node, "WebSocketServerPortSecured", wssPort.ToString());
-                }
-
-                // save config
-                config.Save(configPath);
-
-                // open ports
-                FirewallHelper.OpenFirewallPort(wsPort, "Myrtille Websockets");
-                FirewallHelper.OpenFirewallPort(wssPort, "Myrtille Websockets Secured");
 
                 Trace.TraceInformation("Installed Myrtille.Web");
             }
@@ -199,36 +159,6 @@ namespace Myrtille.Web
                 }
 
                 store.Close();
-
-                // websockets ports
-                int wsPort = 8181;
-                int wssPort = 8431;
-
-                // load config
-                var config = new XmlDocument();
-                var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Web.config");
-                config.Load(configPath);
-
-                // read settings
-                var navigator = config.CreateNavigator();
-
-                var node = XmlTools.GetNode(navigator, "/configuration/appSettings");
-                if (node != null)
-                {
-                    if (!int.TryParse(XmlTools.ReadConfigKey(node, "WebSocketServerPort"), out wsPort))
-                    {
-                        wsPort = 8181;
-                    }
-
-                    if (!int.TryParse(XmlTools.ReadConfigKey(node, "WebSocketServerPortSecured"), out wssPort))
-                    {
-                        wssPort = 8431;
-                    }
-                }
-
-                // close ports
-                FirewallHelper.CloseFirewallPort(wsPort);
-                FirewallHelper.CloseFirewallPort(wssPort);
 
                 Trace.TraceInformation("Uninstalled Myrtille.Web");
             }

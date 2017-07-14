@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@
 function Websocket(config, dialog, display, network)
 {
     var ws = null;
-    var wsNew = true;
     var wsOpened = false;
     var wsError = false;
 
@@ -33,30 +32,42 @@ function Websocket(config, dialog, display, network)
     {
         try
         {
-            // websocket server url
-            var wsUrl;
-            if (window.location.protocol == 'http:')
-            {
-                wsUrl = 'ws://' + window.location.hostname + ':' + config.getWebSocketPort();
-            }
-            else
-            {
-                // undefined secure websocket port means that there is no available secure websocket server (missing .pfx certificate?); disable websocket
-                // note that it's no longer possible to use unsecure websocket (ws://) when using https for the page... nowadays browsers block it...
-                if (config.getWebSocketPortSecured() == null)
-                {
-                    alert('no available secure websocket server. Please ensure a .pfx certificate is installed on the server');
-                    config.setWebSocketEnabled(false);
-                    return;
-                }
-                wsUrl = 'wss://' + window.location.hostname + ':' + config.getWebSocketPortSecured();
-            }
+            // using the IIS 8+ websockets support, the websocket server url is the same as http (there is just a protocol scheme change and a specific handler; standard and secured ports are the same)
+            var wsUrl = config.getHttpServerUrl().replace('http', 'ws') + 'SocketHandler.ashx?type=' + (config.getImageMode() != config.getImageModeEnum().BINARY ? 'text' : 'binary');
 
             //dialog.showDebug('websocket server url: ' + wsUrl);
 
             var wsImpl = window.WebSocket || window.MozWebSocket;
             ws = new wsImpl(wsUrl);
+        }
+        catch (exc)
+        {
+            dialog.showDebug('websocket init error: ' + exc.message + ', falling back to long-polling');
+            config.setNetworkMode(config.getNetworkModeEnum().LONGPOLLING);
+            ws = null;
+            return;
+        }
 
+        // websocket binary transfer, instead of text, removes the base64 33% bandwidth overhead (preferred)
+        if (config.getImageMode() == config.getImageModeEnum().BINARY)
+        {
+            try
+            {
+                // the another possible value is 'blob'; but it involves asynchronous processing whereas we need images to be displayed sequentially
+                ws.binaryType = 'arraybuffer';
+            }
+            catch (exc)
+            {
+                dialog.showDebug('websocket binary init error: ' + exc.message + ', falling back to base64 (or roundtrip if not available)');
+                config.setImageMode(display.isBase64Available() ? config.getImageModeEnum().BASE64 : config.getImageModeEnum().ROUNDTRIP);
+                dialog.showStat(dialog.getShowStatEnum().IMAGE_MODE, config.getImageMode());
+            }
+        }
+
+        //dialog.showDebug('using ' + (config.getImageMode() != config.getImageModeEnum().BINARY ? 'text' : 'binary') + ' websocket');
+
+        try
+        {
             ws.onopen = function() { open(); };
             ws.onmessage = function(e) { message(e); };
             ws.onerror = function() { error(); };
@@ -64,8 +75,8 @@ function Websocket(config, dialog, display, network)
         }
         catch (exc)
         {
-            dialog.showDebug('websocket init error: ' + exc.Message);
-            config.setWebSocketEnabled(false);
+            dialog.showDebug('websocket events init error: ' + exc.message + ', falling back to long-polling');
+            config.setNetworkMode(config.getNetworkModeEnum().LONGPOLLING);
             ws = null;
         }
     };
@@ -75,20 +86,17 @@ function Websocket(config, dialog, display, network)
         //dialog.showDebug('websocket connection opened');
         wsOpened = true;
 
-        // as websocket is now active, long-polling is disabled (both can't be active at the same time...)
-        dialog.showStat('longpolling', false);
-
         // as websockets don't involve any standard http communication, the http session will timeout after a given time (default 20mn)
-        // below is a dummy call, using xhr, to keep it alive
+        // below is a periodical dummy call, using xhr, to keep it alive
         window.setInterval(function()
         {
             //dialog.showDebug('http session keep alive');
-            network.getXmlhttp().send('', new Date().getTime());
+            network.getXmlhttp().send(null, new Date().getTime());
         },
-        config.getHttpSessionKeepAliveIntervalDelay());
+        config.getHttpSessionKeepAliveInterval());
 
-        //dialog.showDebug('initial fullscreen update');
-        network.send(null);
+        // send settings and request a fullscreen update
+        network.initClient();
     }
 
     function message(e)
@@ -111,57 +119,30 @@ function Websocket(config, dialog, display, network)
 
     function close(e)
     {
-        wsOpened = false;
-
-        if (!wsError)
+        if (wsOpened && !wsError)
         {
             //dialog.showDebug('websocket connection closed');
         }
         else
         {
-            alert('websocket connection closed with error (code ' + e.code + '). Please ensure the port ' + (window.location.protocol == 'http:' ? config.getWebSocketPort() + ' (standard' : config.getWebSocketPortSecured() + ' (secured') + ' port) is opened on your firewall and no third party program is blocking the network traffic');
+            // the websocket failed, fallback to long-polling
+            alert('websocket connection closed with error code ' + e.code + ' (is the websocket protocol enabled into IIS8+?), falling back to long-polling');
+            config.setNetworkMode(config.getNetworkModeEnum().LONGPOLLING);
+            network.init();
+        }
 
-            // the websocket failed, disable it
-            config.setWebSocketEnabled(false);
-            dialog.showStat('websocket', config.getWebSocketEnabled());
+        wsOpened = false;
+    }
 
-            // if long-polling is enabled, start it
-            if (config.getLongPollingEnabled())
-            {
-                alert('falling back to long-polling');
-                dialog.showStat('longpolling', true);
-                // as a websocket was used, long-polling should be null at this step; ensure it
-                if (network.getLongPolling() == null)
-                {
-                    network.setLongPolling(new LongPolling(config, dialog, display, network));
-                    network.getLongPolling().init();
-                }
-                else
-                {
-                    dialog.showDebug('network inconsistency... both websocket and long-polling were active at the same time; now using long-polling only');
-                    network.getLongPolling().reset();
-                }
-            }
-
-            // otherwise, both websocket and long-polling are disabled, fallback to xhr only
-            else
-            {
-                alert('falling back to xhr only');
-                // if using xhr only, force enable the user inputs buffer in order to allow polling update(s) even if the user does nothing ("send empty" feature, see comments in buffer.js)
-                config.setBufferEnabled(true);
-                // create a buffer if not already exists
-                if (network.getBuffer() == null)
-                {
-                    network.setBuffer(new Buffer(config, dialog, network));
-                    network.getBuffer().init();
-                }
-                // otherwise just enable its "send empty" feature
-                else
-                {
-                    network.getBuffer().setBufferDelay(config.getBufferDelayEmpty());
-                    network.getBuffer().setSendEmptyBuffer(true);
-                }
-            }
+    function wsSend(text)
+    {
+        if (config.getImageMode() != config.getImageModeEnum().BINARY)
+        {
+            ws.send(text);
+        }
+        else
+        {
+            ws.send(strToBytes(text));
         }
     }
 
@@ -190,19 +171,10 @@ function Websocket(config, dialog, display, network)
                 return;
             }
 
-            ws.send(
-                'input' +
-                '|' + config.getHttpSessionId() +
-                '|' + (data == null ? '' : data) +
-                '|' + (data == null ? 1 : 0) +
+            wsSend(
+                (data == null ? '' : data) +
                 '|' + display.getImgIdx() +
-                '|' + config.getImageEncoding() +
-                '|' + config.getImageQuality() +
-                '|' + (network.getBandwidthUsageKBSec() != null && network.getBandwidthSizeKBSec() != null && network.getBandwidthSizeKBSec() > 0 ? Math.round((network.getBandwidthUsageKBSec() * 100) / network.getBandwidthSizeKBSec()) : 0) +
-                '|' + (wsNew ? 1 : 0) +
                 '|' + startTime);
-
-            wsNew = false;
 
             if (buffer != null)
             {
@@ -211,7 +183,7 @@ function Websocket(config, dialog, display, network)
         }
         catch (exc)
         {
-            dialog.showDebug('websocket send error: ' + exc.Message);
+            dialog.showDebug('websocket send error: ' + exc.message);
         }
     };
 
@@ -219,63 +191,87 @@ function Websocket(config, dialog, display, network)
     {
         try
         {
-            //dialog.showDebug('received websocket message: ' + data);
-            
+            //dialog.showDebug('received websocket data: ' + data + ', length: ' + data.Length + ', byteLength: ' + data.byteLength);
+
             if (data != null && data != '')
             {
-                // remote clipboard. process first because it may contain one or more comma (used as split delimiter below)
-                if (data.length >= 10 && data.substr(0, 10) == 'clipboard|')
+                var message = '';
+
+                if (config.getImageMode() != config.getImageModeEnum().BINARY)
                 {
-                    showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', data.substr(10, data.length - 10), true);
-                    return;
+                    message = data;
+                }
+                else
+                {
+                    var imgTag = new Uint32Array(data, 0, 1);
+
+                    //dialog.showDebug('image tag: ' + imgTag[0]);
+                    if (imgTag[0] != 0)
+                    {
+                        message = bytesToStr(data);
+                    }
                 }
 
-                var parts = new Array();
-                parts = data.split(',');
-                
-                // session disconnect
-                if (parts.length == 1)
+                // reload page
+                if (message == 'reload')
                 {
-                    if (parts[0] == 'disconnected')
-                    {
-                        // the websocket can now be closed server side
-                        ws.send(
-                            'close' +
-                            '|' + config.getHttpSessionId());
-
-                        // the remote session is disconnected, back to home page
-                        window.location.href = config.getHttpServerUrl();
-                    }
+                    window.location.href = window.location.href;
+                }
+                // remote clipboard
+                else if (message.length >= 10 && message.substr(0, 10) == 'clipboard|')
+                {
+                    showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', message.substr(10, message.length - 10), true);
+                }
+                // disconnected session
+                else if (message == 'disconnected')
+                {
+                    window.location.href = config.getHttpServerUrl();
                 }
                 // server ack
-                else if (parts.length == 2)
+                else if (message.length >= 4 && message.substr(0, 4) == 'ack,')
                 {
-                    if (parts[0] == 'ack')
-                    {
-                        //dialog.showDebug('websocket server ack');
-                        
-                        // update the average "latency"
-                        network.updateLatency(parseInt(parts[1]));
-                    }
+                    var ackInfo = message.split(',');
+                    //dialog.showDebug('websocket ack: ' + ackInfo[1]);
+
+                    // update the average "latency"
+                    network.updateLatency(parseInt(ackInfo[1]));
                 }
                 // new image
                 else
                 {
-                    var idx = parts[0];
-                    var posX = parts[1];
-                    var posY = parts[2];
-                    var width = parts[3];
-                    var height = parts[4];
-                    var format = parts[5];
-                    var quality = parts[6];
-                    var base64Data = parts[7];
-                    var fullscreen = parts[8] == 'true';
+                    var imgInfo, idx, posX, posY, width, height, format, quality, fullscreen, imgData;
+
+                    if (config.getImageMode() != config.getImageModeEnum().BINARY)
+                    {
+                        imgInfo = message.split(',');
+
+                        idx = parseInt(imgInfo[0]);
+                        posX = parseInt(imgInfo[1]);
+                        posY = parseInt(imgInfo[2]);
+                        width = parseInt(imgInfo[3]);
+                        height = parseInt(imgInfo[4]);
+                        format = imgInfo[5];
+                        quality = parseInt(imgInfo[6]);
+                        fullscreen = imgInfo[7] == 'true';
+                        imgData = imgInfo[8];
+                    }
+                    else
+                    {
+                        imgInfo = new Uint32Array(data, 4, 8);
+
+                        idx = imgInfo[0];
+                        posX = imgInfo[1];
+                        posY = imgInfo[2];
+                        width = imgInfo[3];
+                        height = imgInfo[4];
+                        format = display.getFormatText(imgInfo[5]);
+                        quality = imgInfo[6];
+                        fullscreen = imgInfo[7] == 1;
+                        imgData = new Uint8Array(data, 36, data.byteLength - 36);
+                    }
 
                     // update bandwidth usage
-                    if (base64Data != '')
-                    {
-                        network.setBandwidthUsageB64(network.getBandwidthUsageB64() + base64Data.length);
-                    }
+                    network.setBandwidthUsage(network.getBandwidthUsage() + imgData.length);
 
                     // if a fullscreen request is pending, release it
                     if (fullscreen && fullscreenPending)
@@ -285,21 +281,47 @@ function Websocket(config, dialog, display, network)
                     }
 
                     // add image to display
-                    display.addImage(idx, posX, posY, width, height, format, quality, base64Data, fullscreen);
+                    display.addImage(idx, posX, posY, width, height, format, quality, fullscreen, imgData);
 
                     // if using divs and count reached a reasonable number, request a fullscreen update
-                    if (!config.getCanvasEnabled() && display.getImgCount() >= config.getImageCountOk() && !fullscreenPending)
+                    if (config.getDisplayMode() != config.getDisplayModeEnum().CANVAS && display.getImgCount() >= config.getImageCountOk() && !fullscreenPending)
                     {
                         //dialog.showDebug('reached a reasonable number of divs, requesting a fullscreen update');
                         fullscreenPending = true;
-                        network.send(null);
+                        network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text);
                     }
                 }
             }
         }
         catch (exc)
         {
-            dialog.showDebug('websocket receive error: ' + exc.Message);
+            dialog.showDebug('websocket receive error: ' + exc.message);
         }
+    }
+
+    function strToBytes(str)
+    {
+        var bytes = new ArrayBuffer(str.length);
+        var arr = new Uint8Array(bytes);
+
+        for (var i = 0; i < str.length; i++)
+        {
+            arr[i] = str.charCodeAt(i);
+        }
+
+        return bytes;
+    }
+
+    function bytesToStr(bytes)
+    {
+        var str = '';
+        var arr = new Uint8Array(bytes);
+
+        for (var i = 0; i < bytes.byteLength; i++)
+        {
+            str += String.fromCharCode(arr[i]);
+        }
+
+        return str;
     }
 }

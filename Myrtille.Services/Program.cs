@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -39,14 +39,14 @@ namespace Myrtille.Services
                 serviceHost.Open();
 
                 var description = serviceHost.Description;
-                Console.WriteLine(string.Format("Service: {0}", description.ConfigurationName));
+                Trace.TraceInformation(string.Format("Service: {0}", description.ConfigurationName));
                 foreach (var endpoint in description.Endpoints)
                 {
-                    Console.WriteLine(string.Format("Endpoint: {0}", endpoint.Name));
-                    Console.WriteLine(string.Format("Address: {0}", endpoint.Address));
-                    Console.WriteLine(string.Format("Binding: {0}", endpoint.Binding.Name));
-                    Console.WriteLine(string.Format("Contract: {0}", endpoint.Contract.ConfigurationName));
-                    Console.WriteLine("");
+                    Trace.TraceInformation(string.Format("Endpoint: {0}", endpoint.Name));
+                    Trace.TraceInformation(string.Format("Address: {0}", endpoint.Address));
+                    Trace.TraceInformation(string.Format("Binding: {0}", endpoint.Binding.Name));
+                    Trace.TraceInformation(string.Format("Contract: {0}", endpoint.Contract.ConfigurationName));
+                    Trace.TraceInformation("");
                 }
             }
             catch (Exception exc)

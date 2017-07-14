@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,15 +27,15 @@ namespace Myrtille.Web
 {
     public class FileStorageClient : ClientBase<IFileStorage>, IFileStorage
     {
-        public List<string> GetUserDocumentsFolderFiles(string domain, string userName, string userPassword)
+        public List<string> GetUserDocumentsFolderFiles(int remoteSessionId, string userDomain, string userName, string userPassword)
         {
             try
             {
-                return Channel.GetUserDocumentsFolderFiles(domain, userName, userPassword);
+                return Channel.GetUserDocumentsFolderFiles(remoteSessionId, userDomain, userName, userPassword);
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to list file(s) from user {0} documents folder ({1})", userName, exc);
+                Trace.TraceError("Failed to list file(s) from user {0} documents folder, remote session {1} ({2})", userName, remoteSessionId, exc);
                 throw;
             }
         }
@@ -48,20 +48,20 @@ namespace Myrtille.Web
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to upload file {0} to user {1} documents folder ({2})", uploadRequest.FileName, uploadRequest.UserName, exc);
+                Trace.TraceError("Failed to upload file {0} to user {1} documents folder, remote session {2} ({3})", uploadRequest.FileName, uploadRequest.UserName, uploadRequest.RemoteSessionId, exc);
                 throw;
             }
         }
 
-        public Stream DownloadFileFromUserDocumentsFolder(string domain, string userName, string userPassword, string fileName)
+        public Stream DownloadFileFromUserDocumentsFolder(int remoteSessionId, string userDomain, string userName, string userPassword, string fileName)
         {
             try
             {
-                return Channel.DownloadFileFromUserDocumentsFolder(domain, userName, userPassword, fileName);
+                return Channel.DownloadFileFromUserDocumentsFolder(remoteSessionId, userDomain, userName, userPassword, fileName);
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to download file {0} from user {1} documents folder ({2})", fileName, userName, exc);
+                Trace.TraceError("Failed to download file {0} from user {1} documents folder, remote session {2} ({3})", fileName, userName, remoteSessionId, exc);
                 throw;
             }
         }

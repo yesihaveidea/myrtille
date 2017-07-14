@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ namespace Myrtille.Helpers
     {
         public static X509Certificate2 CreateSelfSignedCertificate(string issuer, string name)
         {
+            // CAUTION! this method fails under "vanilla" Windows 2008 and requires an adaptation for a Windows 10 build
+            // see http://stackoverflow.com/questions/33001983/issues-compiling-in-windows-10/35365099#35365099
+
             try
             {
                 // create a DN for issuer and subject
@@ -34,7 +37,7 @@ namespace Myrtille.Helpers
                 dn.Encode("CN=" + issuer, X500NameFlags.XCN_CERT_NAME_STR_NONE);
 
                 // create a private key for the certificate
-                var privateKey = new CX509PrivateKey();
+                var privateKey = (IX509PrivateKey)Activator.CreateInstance(Type.GetTypeFromProgID("X509Enrollment.CX509PrivateKey"));
                 privateKey.ProviderName = "Microsoft Base Cryptographic Provider v1.0";
                 privateKey.MachineContext = true;
                 privateKey.Length = 2048;
@@ -55,8 +58,11 @@ namespace Myrtille.Helpers
                 eku.InitializeEncode(oidlist);
 
                 // create the self signing request
-                var cert = new CX509CertificateRequestCertificate();
-                cert.InitializeFromPrivateKey(X509CertificateEnrollmentContext.ContextMachine, privateKey, "");
+                var cert = (IX509CertificateRequestCertificate)Activator.CreateInstance(Type.GetTypeFromProgID("X509Enrollment.CX509CertificateRequestCertificate"));
+                // Windows 2008 R2 and above
+                cert.InitializeFromPrivateKey(X509CertificateEnrollmentContext.ContextMachine, (CX509PrivateKey)privateKey, "");
+                // Windows 10
+                //cert.InitializeFromPrivateKey(X509CertificateEnrollmentContext.ContextMachine, privateKey, "");
                 cert.Issuer = dn;
                 cert.Subject = dn;
                 cert.NotBefore = DateTime.Now;
@@ -66,7 +72,7 @@ namespace Myrtille.Helpers
                 cert.Encode();
 
                 // do the final enrollment process
-                var enroll = new CX509Enrollment();
+                var enroll = (IX509Enrollment)Activator.CreateInstance(Type.GetTypeFromProgID("X509Enrollment.CX509Enrollment"));
                 enroll.InitializeFromRequest(cert);
                 enroll.CertificateFriendlyName = name;
                 string csr = enroll.CreateRequest();

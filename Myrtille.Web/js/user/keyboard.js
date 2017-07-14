@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ function Keyboard(config, dialog, display, network, user)
         if (e == null)
             return false;
 
-        if (config.getAdaptiveFullscreenTimeoutDelay() > 0)
+        if (config.getAdaptiveFullscreenTimeout() > 0)
             user.triggerActivity();
 
         return true;
@@ -244,8 +244,8 @@ function Keyboard(config, dialog, display, network, user)
             // a key event is composed of 2 parts: key code and state
             // the key code is prefixed to indicate the server to process it as unicode (character key) or scancode (non character key)
             // the key state is either 1 (down) or 0 (up)
-            var keyEvent = (keyIsChar ? 'U' : 'K') + keyCode + '-' + (keyPressed ? '1' : '0');
-            
+            var keyEvent = (keyIsChar ? network.getCommandEnum().SEND_KEY_UNICODE.text : network.getCommandEnum().SEND_KEY_SCANCODE.text) + keyCode + '-' + (keyPressed ? '1' : '0');
+
             // pass the event to the network
             network.processUserEvent('keyboard', keyEvent);
         }

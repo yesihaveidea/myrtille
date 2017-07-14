@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,16 +37,19 @@ namespace Myrtille.Web
             // if cookies are enabled, the http session id is added to the http request headers; otherwise, it's added to the http request url
             // in both cases, the given http session is automatically bound to the current http context
 
-            RemoteSessionManager remoteSessionManager = null;
+            RemoteSession remoteSession = null;
 
             try
             {
-                // retrieve the remote session manager for the current http session
-                remoteSessionManager = (RemoteSessionManager)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSessionManager.ToString()];
+                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                    throw new NullReferenceException();
+
+                // retrieve the remote session for the current http session
+                remoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
             }
             catch (Exception exc)
             {
-                System.Diagnostics.Trace.TraceError("Failed to retrieve the remote session manager for the http session {0}, ({1})", HttpContext.Current.Session.SessionID, exc);
+                System.Diagnostics.Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", HttpContext.Current.Session.SessionID, exc);
                 return;
             }
 
@@ -56,15 +59,6 @@ namespace Myrtille.Web
                 var longPollingDuration = int.Parse(HttpContext.Current.Request.QueryString["longPollingDuration"]);
                 var imgIdx = int.Parse(HttpContext.Current.Request.QueryString["imgIdx"]);
 
-                // if a websocket is set at this step, the client had probably changed the rendering mode (html5 -> html4) or configuration while the remote session is active, then reloaded the page (F5)
-                // close the websocket (a new one will be set if the client change back to html5 again...)
-                if (remoteSessionManager.WebSocket != null)
-                {
-                    System.Diagnostics.Trace.TraceInformation("Removing no longer used websocket (the client had probably changed the rendering mode from HTML5 to HTML4 then reloaded the page (F5)), remote session {0}", remoteSessionManager.RemoteSession.Id);
-                    remoteSessionManager.WebSocket.Close();
-                    remoteSessionManager.WebSocket = null;
-                }
-
                 // stream image(s) data within the response for the given duration
                 // the connection will be automatically reseted by the client when the request ends
                 var startTime = DateTime.Now;
@@ -73,27 +67,34 @@ namespace Myrtille.Web
 
                 while (remainingTime > 0)
                 {
-                    // ensure the remote session is still connected
-                    if (remoteSessionManager.RemoteSession.State == RemoteSessionState.Disconnected)
+                    // reload page
+                    if (remoteSession.Manager.ReloadPage)
                     {
-                        // the remote session is disconnected, back to home page
+                        HttpContext.Current.Response.Write("<script>parent.location.href = parent.location.href;</script>");
+                        HttpContext.Current.Response.Flush();
+                        remoteSession.Manager.ReloadPage = false;
+                        break;
+                    }
+                    // remote clipboard
+                    else if (remoteSession.Manager.ClipboardAvailable)
+                    {
+                        HttpContext.Current.Response.Write(string.Format("<script>parent.showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', '{0}', true);</script>", remoteSession.Manager.ClipboardText));
+                        HttpContext.Current.Response.Flush();
+                        remoteSession.Manager.ClipboardAvailable = false;
+                    }
+                    // disconnected session
+                    else if (remoteSession.State == RemoteSessionState.Disconnected)
+                    {
                         HttpContext.Current.Response.Write("<script>parent.location.href = parent.getConfig().getHttpServerUrl();</script>");
                         HttpContext.Current.Response.Flush();
                         break;
                     }
-                    // the remote clipboard content was requested
-                    else if (remoteSessionManager.ClipboardRequested)
-                    {
-                        HttpContext.Current.Response.Write(string.Format("<script>parent.showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', '{0}', true);</script>", remoteSessionManager.ClipboardText));
-                        HttpContext.Current.Response.Flush();
-                        remoteSessionManager.ClipboardRequested = false;
-                    }
 
                     // retrieve the next update, if available; otherwise, wait it for the remaining time
-                    var image = remoteSessionManager.GetNextUpdate(currentImgIdx, remainingTime);
+                    var image = remoteSession.Manager.GetNextUpdate(currentImgIdx, remainingTime);
                     if (image != null)
                     {
-                        System.Diagnostics.Trace.TraceInformation("Pushing image {0} ({1}), remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), remoteSessionManager.RemoteSession.Id);
+                        System.Diagnostics.Trace.TraceInformation("Pushing image {0} ({1}), remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), remoteSession.Id);
 
                         var imgData =
                             image.Idx + "," +
@@ -103,8 +104,8 @@ namespace Myrtille.Web
                             image.Height + "," +
                             "'" + image.Format.ToString().ToLower() + "'," +
                             image.Quality + "," +
-                            "'" + image.Base64Data + "'," +
-                            image.Fullscreen.ToString().ToLower();
+                            image.Fullscreen.ToString().ToLower() + "," +
+                            "'" + Convert.ToBase64String(image.Data) + "'";
 
                         imgData = "<script>parent.pushImage(" + imgData + ");</script>";
 
@@ -124,7 +125,7 @@ namespace Myrtille.Web
             }
             catch (Exception exc)
             {
-                System.Diagnostics.Trace.TraceError("Failed to push display update(s), remote session {0} ({1})", remoteSessionManager.RemoteSession.Id, exc);
+                System.Diagnostics.Trace.TraceError("Failed to push display update(s), remote session {0} ({1})", remoteSession.Id, exc);
             }
         }
     }

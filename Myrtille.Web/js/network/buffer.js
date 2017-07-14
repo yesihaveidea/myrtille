@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ function Buffer(config, dialog, network)
             // to work that out, the user inputs buffer should be sent *even if empty* in order to allow retrieving the latest updates
             // problem is, on a low latency network, this will generate alot of xhr trafic which may interfere with others xhr's such as periodical and adaptative fullscreen updates!
             // to avoid that, and because there is no need for a frantic polling, a small timing is added
-            if (!config.getWebSocketEnabled() && !config.getLongPollingEnabled())
+            if (config.getNetworkMode() == config.getNetworkModeEnum().XHR)
             {
                 bufferDelay = config.getBufferDelayEmpty();
                 sendEmptyBuffer = true;
@@ -100,7 +100,7 @@ function Buffer(config, dialog, network)
         }
         catch (exc)
         {
-            dialog.showDebug('buffer flush error: ' + exc.Message);
+            dialog.showDebug('buffer flush error: ' + exc.message);
         }
     }
 }

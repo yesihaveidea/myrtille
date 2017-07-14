@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -36,16 +36,19 @@ namespace Myrtille.Web
             // if cookies are enabled, the http session id is added to the http request headers; otherwise, it's added to the http request url
             // in both cases, the given http session is automatically bound to the current http context
 
-            RemoteSessionManager remoteSessionManager = null;
+            RemoteSession remoteSession = null;
 
             try
             {
-                // retrieve the remote session manager for the current http session
-                remoteSessionManager = (RemoteSessionManager)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSessionManager.ToString()];
+                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                    throw new NullReferenceException();
+
+                // retrieve the remote session for the current http session
+                remoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
             }
             catch (Exception exc)
             {
-                System.Diagnostics.Trace.TraceError("Failed to retrieve the remote session manager for the http session {0}, ({1})", HttpContext.Current.Session.SessionID, exc);
+                System.Diagnostics.Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", HttpContext.Current.Session.SessionID, exc);
                 return;
             }
 
@@ -55,8 +58,15 @@ namespace Myrtille.Web
                 var imgIdx = int.Parse(HttpContext.Current.Request.QueryString["imgIdx"]);
 
                 // retrieve image data
-                var img = remoteSessionManager.GetCachedUpdate(imgIdx);
-                var imgData = img != null ? Convert.FromBase64String(img.Base64Data) : null;
+                var img = remoteSession.Manager.GetCachedUpdate(imgIdx);
+
+                // if the image isn't available (removed from cache?), request a fullscreen update (resync display)
+                if (img == null)
+                {
+                    remoteSession.Manager.SendCommand(RemoteSessionCommand.RequestFullscreenUpdate);
+                }
+
+                var imgData = img != null ? img.Data : null;
                 if (imgData != null && imgData.Length > 0)
                 {
                     // write the output
@@ -65,7 +75,7 @@ namespace Myrtille.Web
             }
             catch (Exception exc)
             {
-                System.Diagnostics.Trace.TraceError("Failed to get display update, remote session {0} ({1})", remoteSessionManager.RemoteSession.Id, exc);
+                System.Diagnostics.Trace.TraceError("Failed to get display update, remote session {0} ({1})", remoteSession.Id, exc);
             }
         }
     }

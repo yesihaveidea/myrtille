@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ function Touchscreen(config, dialog, display, network, user)
 
             // sampling debug: display a dot at the current touch move position (green: move sent, red: dropped) - only if canvas is enabled
             /*
-            if (config.getDebugEnabled() && config.getCanvasEnabled())
+            if (config.getDebugEnabled() && config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
             {
                 display.getCanvas().getCanvasContext().fillStyle = send ? '#00FF00' : '#FF0000';
                 display.getCanvas().getCanvasContext().fillRect(touchX, touchY, 1, 1);
@@ -135,10 +135,10 @@ function Touchscreen(config, dialog, display, network, user)
 
             if (send)
             {
-                if (config.getAdaptiveFullscreenTimeoutDelay() > 0)
+                if (config.getAdaptiveFullscreenTimeout() > 0)
                     user.triggerActivity();
 
-                sendEvent('MMO' + touchX + '-' + touchY);  // same event as mouse move
+                sendEvent(network.getCommandEnum().SEND_MOUSE_MOVE.text + touchX + '-' + touchY);  // same event as mouse move
             }
 
             // update the last touch position
@@ -167,11 +167,11 @@ function Touchscreen(config, dialog, display, network, user)
             if (!processEvent(e))
                 return false;
 
-            if (config.getAdaptiveFullscreenTimeoutDelay() > 0)
+            if (config.getAdaptiveFullscreenTimeout() > 0)
                 user.triggerActivity();
 
             //dialog.showDebug('touch ' + (start ? 'start' : 'end'));
-            sendEvent('MLB' + start + touchX + '-' + touchY);   // same event as mouse left button
+            sendEvent(network.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + start + touchX + '-' + touchY);   // same event as mouse left button
         }
         catch (exc)
         {

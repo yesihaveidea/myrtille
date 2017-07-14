@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ function Divs(config, dialog, display)
         }
     };
 
-    this.addImage = function(idx, posX, posY, width, height, format, quality, base64Data, fullscreen)
+    this.addImage = function(idx, posX, posY, width, height, format, quality, fullscreen, base64Data)
     {
         try
         {
@@ -55,10 +55,11 @@ function Divs(config, dialog, display)
     	        div.style.border = 'red 1px solid';
     	    }
 
-            display.getDisplayDiv().appendChild(div);
+            // disable drag & drop
+            div.setAttribute('draggable', false);
 
             // IE8 supports base64 data up to 32KB; above, retrieve the update through a standard roundtrip
-            if (!config.getImageBase64Enabled() || base64Data == '' || (display.isIEBrowser() && display.getIEVersion() == 8 && base64Data.length >= 32768))
+            if (config.getImageMode() == config.getImageModeEnum().ROUNDTRIP || base64Data == '' || (display.isIEBrowser() && display.getIEVersion() == 8 && base64Data.length >= 32768))
             {
                 if (config.getAdditionalLatency() > 0)
                 {
@@ -73,6 +74,8 @@ function Divs(config, dialog, display)
             {
                 div.style.backgroundImage = 'url(\'data:image/' + format + ';base64,' + base64Data + '\')';
             }
+
+            display.getDisplayDiv().appendChild(div);
 
             // a fullscreen update covers all existing images, which can safely be removed
             if (fullscreen)
@@ -105,7 +108,7 @@ function Divs(config, dialog, display)
 	    }
 	    catch (exc)
 	    {
-	        dialog.showDebug('divs addImage error: ' + exc.Message);
+	        dialog.showDebug('divs addImage error: ' + exc.message);
 	        throw exc;
 	    }
     };
@@ -124,7 +127,7 @@ function Divs(config, dialog, display)
         }
 	    catch (exc)
 	    {
-		    dialog.showDebug('divs removeImage error: ' + exc.Message);
+		    dialog.showDebug('divs removeImage error: ' + exc.message);
 	    }
     }
 }

@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,17 +20,28 @@ namespace Myrtille.Web
 {
     public class RemoteSession
     {
+        public RemoteSessionManager Manager { get; private set; }
+
         public int Id;
         public RemoteSessionState State;
         public string ServerAddress;
         public string UserDomain;
         public string UserName;
         public string UserPassword;
-        public string ClientWidth;
-        public string ClientHeight;
+        public int ClientWidth;
+        public int ClientHeight;
+        public bool ScaleDisplay;
+        public ImageEncoding? ImageEncoding;            // provided by the client
+        public int? ImageQuality;                       // provided by the client
+        public int? ImageQuantity;                      // provided by the client
         public bool StatMode;
         public bool DebugMode;
         public bool CompatibilityMode;
         public string Program;
+
+        public RemoteSession()
+        {
+            Manager = new RemoteSessionManager(this);
+        }
     }
 }

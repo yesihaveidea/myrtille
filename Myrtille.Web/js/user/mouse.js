@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ function Mouse(config, dialog, display, network, user)
 
             // sampling debug: display a dot at the current mouse move position (green: move sent, red: dropped) - only if canvas is enabled
             /*
-            if (config.getDebugEnabled() && config.getCanvasEnabled())
+            if (config.getDebugEnabled() && config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
             {
                 display.getCanvas().getCanvasContext().fillStyle = send ? '#00FF00' : '#FF0000';
                 display.getCanvas().getCanvasContext().fillRect(mouseX, mouseY, 1, 1);
@@ -135,10 +135,10 @@ function Mouse(config, dialog, display, network, user)
 
             if (send)
             {
-                if (config.getAdaptiveFullscreenTimeoutDelay() > 0)
+                if (config.getAdaptiveFullscreenTimeout() > 0)
                     user.triggerActivity();
 
-                sendEvent('MMO' + mouseX + '-' + mouseY);
+                sendEvent(network.getCommandEnum().SEND_MOUSE_MOVE.text + mouseX + '-' + mouseY);
             }
 
             // update the last mouse position
@@ -167,7 +167,7 @@ function Mouse(config, dialog, display, network, user)
             if (!processEvent(e))
                 return false;
 
-            if (config.getAdaptiveFullscreenTimeoutDelay() > 0)
+            if (config.getAdaptiveFullscreenTimeout() > 0)
                 user.triggerActivity();
 
             // IE
@@ -177,15 +177,15 @@ function Mouse(config, dialog, display, network, user)
                 {
                     case 1:
                         //dialog.showDebug('mouse left click ' + (down ? 'down' : 'up'));
-                        sendEvent('MLB' + down + mouseX + '-' + mouseY);   // left
+                        sendEvent(network.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + down + mouseX + '-' + mouseY);
                         break;
                     case 4:
                         //dialog.showDebug('mouse middle click ' + (down ? 'down' : 'up'));
-                        sendEvent('MMB' + down + mouseX + '-' + mouseY);   // middle
+                        sendEvent(network.getCommandEnum().SEND_MOUSE_MIDDLE_BUTTON.text + down + mouseX + '-' + mouseY);
                         break;
                     case 2:
                         //dialog.showDebug('mouse right click ' + (down ? 'down' : 'up'));
-                        sendEvent('MRB' + down + mouseX + '-' + mouseY);   // right
+                        sendEvent(network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + down + mouseX + '-' + mouseY);
                         break;
                 }
             }
@@ -196,15 +196,15 @@ function Mouse(config, dialog, display, network, user)
                 {
                     case 0:
                         //dialog.showDebug('mouse left click ' + (down ? 'down' : 'up'));
-                        sendEvent('MLB' + down + mouseX + '-' + mouseY);   // left
+                        sendEvent(network.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + down + mouseX + '-' + mouseY);
                         break;
                     case 1:
                         //dialog.showDebug('mouse middle click ' + (down ? 'down' : 'up'));
-                        sendEvent('MMB' + down + mouseX + '-' + mouseY);   // middle
+                        sendEvent(network.getCommandEnum().SEND_MOUSE_MIDDLE_BUTTON.text + down + mouseX + '-' + mouseY);
                         break;
                     case 2:
                         //dialog.showDebug('mouse right click ' + (down ? 'down' : 'up'));
-                        sendEvent('MRB' + down + mouseX + '-' + mouseY);   // right
+                        sendEvent(network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + down + mouseX + '-' + mouseY);
                         break;
                 }
             }
@@ -216,7 +216,7 @@ function Mouse(config, dialog, display, network, user)
 
         // the canvas needs to be focused in order to capture keyboard events
         // so, if using it, the mouse click event must be propagated; it can be cancelled otherwise
-        if (!config.getCanvasEnabled())
+        if (config.getDisplayMode() != config.getDisplayModeEnum().CANVAS)
         {
             user.cancelEvent(e);
             return false;
@@ -238,7 +238,7 @@ function Mouse(config, dialog, display, network, user)
             if (!processEvent(e))
                 return false;
         
-            if (config.getAdaptiveFullscreenTimeoutDelay() > 0)
+            if (config.getAdaptiveFullscreenTimeout() > 0)
                 user.triggerActivity();
 
             var delta = 0;
@@ -251,12 +251,12 @@ function Mouse(config, dialog, display, network, user)
             if (delta > 0)
             {
                 //dialog.showDebug('mouse scroll up');
-                sendEvent('MWU' + mouseX + '-' + mouseY);  // up
+                sendEvent(network.getCommandEnum().SEND_MOUSE_WHEEL_UP.text + mouseX + '-' + mouseY);
             }
             else if (delta < 0)
             {
                 //dialog.showDebug('mouse scroll down');
-                sendEvent('MWD' + mouseX + '-' + mouseY);  // down
+                sendEvent(network.getCommandEnum().SEND_MOUSE_WHEEL_DOWN.text + mouseX + '-' + mouseY);
             }
         }
         catch (exc)

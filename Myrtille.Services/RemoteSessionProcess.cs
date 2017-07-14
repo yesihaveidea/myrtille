@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 */
 
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -42,10 +43,9 @@ namespace Myrtille.Services
             string userDomain,
             string userName,
             string userPassword,
-            string clientWidth,
-            string clientHeight,
-            string program,
-            bool debug)
+            int clientWidth,
+            int clientHeight,
+            string program)
         {
             try
             {
@@ -84,20 +84,29 @@ namespace Myrtille.Services
                     return;
                 }
 
+                // log remote session events into a file (located into <Myrtille folder>\log)
+                var remoteSessionLog = false;
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["RemoteSessionLog"]))
+                {
+                    remoteSessionLog = bool.Parse(ConfigurationManager.AppSettings["RemoteSessionLog"]);
+                }
+
+                // https://github.com/FreeRDP/FreeRDP/wiki/CommandLineInterface
+                // Syntax: /flag enables flag, +toggle or -toggle enables or disables toggle. /toggle and +toggle are the same. Options with values work like this: /option:<value>
                 _process.StartInfo.Arguments =
                     "/myrtille-sid:" + _remoteSessionId +                                                           // session id
                     (!Environment.UserInteractive ? string.Empty : " /myrtille-window") +                           // session window
-                    (!debug ? string.Empty : " /myrtille-log") +                                                    // session log
+                    (!remoteSessionLog ? string.Empty : " /myrtille-log") +                                         // session log
                     " /v:" + (string.IsNullOrEmpty(serverAddress) ? "localhost" : serverAddress) +                  // server
                     (string.IsNullOrEmpty(userDomain) ? string.Empty : " /d:" + userDomain) +                       // domain
                     (string.IsNullOrEmpty(userName) ? string.Empty : " /u:" + userName) +                           // user
                     (string.IsNullOrEmpty(userPassword) ? string.Empty : " /p:" + userPassword) +                   // password
-                    " /w:" + (string.IsNullOrEmpty(clientWidth) ? "1024" : clientWidth) +                           // display width
-                    " /h:" + (string.IsNullOrEmpty(clientHeight) ? "768" : clientHeight) +                          // display height
+                    " /w:" + clientWidth +                                                                          // display width
+                    " /h:" + clientHeight +                                                                         // display height
                     " /bpp:16" +                                                                                    // color depth
                     " /gdi:sw" +                                                                                    // gdi mode (sw: software, hw: hardware). forced software because there is a palette issue with windows server 2008; also, the performance gain is small and even null on most virtual machines, when hardware isn't available
                     " /network:modem" +                                                                             // network profile
-                    " /compression" +                                                                               // bulk compression (level is autodetected from the rdp version)
+                    " +compression" +                                                                               // bulk compression (level is autodetected from the rdp version)
                     " -sec-tls" +                                                                                   // tls encryption
                     " -mouse-motion" +                                                                              // mouse motion
                     " +bitmap-cache" +                                                                              // bitmap cache
@@ -107,7 +116,7 @@ namespace Myrtille.Services
                     " -async-update" +                                                                              // async update
                     " -async-channels" +                                                                            // async channels
                     " -async-transport" +                                                                           // async transport
-                    " /clipboard" +                                                                                 // clipboard support
+                    " +clipboard" +                                                                                 // clipboard support
                     " /audio-mode:2" +                                                                              // audio mode (not supported for now, 2: do not play)
                     (string.IsNullOrEmpty(program) ? string.Empty : " /shell:\"" + program + "\"");                 // program to run
 
@@ -131,7 +140,7 @@ namespace Myrtille.Services
 
                 _process.Start();
 
-                Trace.TraceInformation("Started rdp client process, remote session {0}", _remoteSessionId);
+                Trace.TraceInformation("Started remote session {0}", _remoteSessionId);
             }
             catch (Exception exc)
             {
@@ -179,7 +188,7 @@ namespace Myrtille.Services
             // also interesting to note, it's possible to set a MaxConnectionTime for the rdp session (registry: HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp, "MaxConnectionTime" (DWORD, value in msecs))
             // an alternative to alter the registry directly (which impact the whole server) is to define group policies strategies (GPOs) into the Active Directory; it's a bit more complicated to handle, but proper...
 
-            Trace.TraceInformation("Stopped rdp client process, remote session {0}", _remoteSessionId);
+            Trace.TraceInformation("Stopped remote session {0}", _remoteSessionId);
 
             try
             {

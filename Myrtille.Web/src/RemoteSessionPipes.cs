@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ namespace Myrtille.Web
 
         // the pipes buffers sizes must match the ones defined in the remote session process
         // in order to avoid overloading both the bandwidth and the browser, images are limited to 1024 KB each
-        private const int _inputsPipeBufferSize = 131072; // 128 KB
+        private const int _inputsPipeBufferSize = 131072;   // 128 KB
         public int InputsPipeBufferSize { get { return _inputsPipeBufferSize; } }
 
         private const int _updatesPipeBufferSize = 1048576; // 1024 KB
@@ -102,15 +102,6 @@ namespace Myrtille.Web
             DisposePipe("remoteSession_" + RemoteSession.Id + "_updates", ref _updatesPipe);
         }
 
-        public bool PipesConnected
-        {
-            get
-            {
-                return ((InputsPipe != null) && (InputsPipe.IsConnected) &&
-                        (UpdatesPipe != null) && (UpdatesPipe.IsConnected));
-            }
-        }
-
         private void InputsPipeConnected(IAsyncResult e)
         {
             try
@@ -118,6 +109,22 @@ namespace Myrtille.Web
                 if (InputsPipe != null)
                 {
                     InputsPipe.EndWaitForConnection(e);
+
+                    // remote session is now connected
+                    RemoteSession.State = RemoteSessionState.Connected;
+
+                    // send client settings, if defined (they will be otherwise send later by the client)
+                    if (RemoteSession.ImageEncoding.HasValue)
+                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.SetImageEncoding, ((int)RemoteSession.ImageEncoding).ToString());
+
+                    if (RemoteSession.ImageQuality.HasValue)
+                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.SetImageQuality, RemoteSession.ImageQuality.ToString());
+
+                    if (RemoteSession.ImageQuantity.HasValue)
+                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.SetImageQuantity, RemoteSession.ImageQuantity.ToString());
+
+                    if (RemoteSession.Manager.FullscreenEventPending)
+                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.RequestFullscreenUpdate);
                 }
             }
             catch (Exception exc)

@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -30,6 +30,9 @@ function Canvas(config, dialog, display)
     var canvasContext = null;
     this.getCanvasContext = function() { return canvasContext; };
 
+    // blob support
+    var blobAvailable = false;
+
     this.init = function()
     {
         try
@@ -45,10 +48,15 @@ function Canvas(config, dialog, display)
             }
             else
             {
-                // set canvas properties (same size as browser and a tab index so it can be focused)
-                canvasObject.width = display.getBrowserWidth() - display.getHorizontalOffset();
-                canvasObject.height = display.getBrowserHeight() - display.getVerticalOffset();
-                canvasObject.setAttribute('tabindex', '0');
+                // set canvas properties (same size as browser if scaling display or original (unscaled) size otherwise)
+                canvasObject.width = config.getScaleDisplay() ? display.getBrowserWidth() - display.getHorizontalOffset() : config.getDisplayWidth();
+                canvasObject.height = config.getScaleDisplay() ? display.getBrowserHeight() - display.getVerticalOffset() : config.getDisplayHeight();
+
+                // set a tab index so the canvas can be focused
+                canvasObject.setAttribute('tabindex', 0);
+
+                // disable drag & drop
+                canvasObject.setAttribute('draggable', false);
 
                 display.getDisplayDiv().appendChild(canvasObject);
 
@@ -65,24 +73,45 @@ function Canvas(config, dialog, display)
         }
 	    catch (exc)
 	    {
-		    dialog.showDebug('canvas init error: ' + exc.message);
-            config.setCanvasEnabled(false);
+	        dialog.showDebug('canvas init error: ' + exc.message + ', falling back to divs');
+		    config.setDisplayMode(config.getDisplayModeEnum().DIV);
+		    return;
+	    }
+
+        try
+        {
+            // blob support check
+            var blob = new Blob();
+            blobAvailable = true;
+        }
+	    catch (exc)
+	    {
+		    dialog.showDebug('blob support check failed (' + exc.message + '), using base64');
+		    blobAvailable = false;
 	    }
     };
 
-    this.addImage = function(idx, posX, posY, width, height, format, quality, base64Data, fullscreen)
+    this.addImage = function(idx, posX, posY, width, height, format, quality, fullscreen, data)
     {
         try
         {
             var img = new Image();
+            var url;
 
             img.onload = function()
             {
                 //dialog.showDebug('canvas image ' + idx + ' loaded');
-                canvasContext.drawImage(img, parseInt(posX), parseInt(posY), parseInt(width), parseInt(height));
+                canvasContext.drawImage(this, parseInt(posX), parseInt(posY), parseInt(width), parseInt(height));
+
                 if (config.getImageDebugEnabled())
                 {
                     canvasContext.strokeRect(parseInt(posX), parseInt(posY), parseInt(width), parseInt(height));
+                }
+
+                if (blobAvailable)
+                {
+                    //dialog.showDebug('revoking url: ' + url);
+                    URL.revokeObjectURL(url);
                 }
             };
 
@@ -96,25 +125,49 @@ function Canvas(config, dialog, display)
                 dialog.showDebug('canvas image ' + idx + ' error');
             };
 
-            if (!config.getImageBase64Enabled() || base64Data == '')
+            if (config.getImageMode() != config.getImageModeEnum().BINARY)
             {
-                if (config.getAdditionalLatency() > 0)
+                if (config.getImageMode() != config.getImageModeEnum().BASE64 || data == '')
                 {
-                    window.setTimeout(function() { img.src = config.getHttpServerUrl() + 'GetUpdate.aspx?imgIdx=' + idx + '&noCache=' + new Date().getTime(); }, Math.round(config.getAdditionalLatency() / 2));
+                    if (config.getAdditionalLatency() > 0)
+                    {
+                        window.setTimeout(function() { img.src = config.getHttpServerUrl() + 'GetUpdate.aspx?imgIdx=' + idx + '&noCache=' + new Date().getTime(); }, Math.round(config.getAdditionalLatency() / 2));
+                    }
+                    else
+                    {
+                        img.src = config.getHttpServerUrl() + 'GetUpdate.aspx?imgIdx=' + idx + '&noCache=' + new Date().getTime();
+                    }
                 }
                 else
                 {
-                    img.src = config.getHttpServerUrl() + 'GetUpdate.aspx?imgIdx=' + idx + '&noCache=' + new Date().getTime();
+                    img.src = 'data:image/' + format + ';base64,' + data;
                 }
             }
             else
             {
-                img.src = 'data:image/' + format + ';base64,' + base64Data;
+                // it's possible to draw binary images directly on the canvas (using createImageData and putImageData)
+                // however, it only works with raw RGBA data, not with already compressed PNG or JPEG images
+
+                // after sending the image in raw binary, having to convert it to base64 to draw it on canvas feels quite weird
+                // another option is to make a blob and create an url from it (cached locally)
+                // after some tests, both solutions behave similarly... base64 is however more backward compatible...
+
+                if (!blobAvailable)
+                {
+                    url = 'data:image/' + format + ';base64,' + display.bytesToBase64(data);
+                }
+                else
+                {
+                    url = URL.createObjectURL(new Blob([data], { type: 'image/' + format }));
+                }
+
+                //dialog.showDebug('image url: ' + url);
+                img.src = url;
             }
         }
         catch (exc)
         {
-            dialog.showDebug('canvas addImage error: ' + exc.Message);
+            dialog.showDebug('canvas addImage error: ' + exc.message);
             throw exc;
         }
     };

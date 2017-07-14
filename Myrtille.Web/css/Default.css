@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,9 +16,35 @@
     limitations under the License.
 */
 
-/* user controls: login screen (before connection) */
+/* Windows style UI */
 
-.controlDiv
+body
+{
+    padding: 0px;
+    margin: 0px;
+    background-color: #34495e;
+    color: #ecf0f1;
+}
+
+a
+{
+    text-decoration: none;
+    color: #ecf0f1;
+}
+
+a img
+{
+    border: 0;
+}
+
+*
+{
+    font-family: "Segoe UI";
+}
+
+/* user controls: login screen */
+
+#loginScreen
 {
     position: absolute;
     top: 50%;
@@ -29,73 +55,94 @@
     height: 300px;
 }
 
-.controlLabel
+/* customizable logo (replace the background image by yours) */
+/* remote desktop logo, credits BlackVariant (Patrick) http://blackvariant.deviantart.com */
+#logo
+{
+    background-image: url("../img/RemoteDesktop.png");
+    width: 128px;
+    height: 128px;
+    margin-bottom: 20px;
+}
+
+.inputDiv
+{
+    display: inline-block;
+}
+
+label
 {
     float: left;
     width: 200px;
     margin-top: 2px;
 }
 
-/* to customize a specific control, remove it below and redefine its css */
-.serverText,
-.domainText,
-.userText,
-.passwordText,
-.programText
+#server,
+#domain,
+#user,
+#password,
+#program
 {
     width: 200px;
     margin-top: 2px;
 }
 
-/* to customize a specific control, remove it below and redefine its css */
-.statSelect,
-.debugSelect,
-.browserSelect
+/* program to run is better defined into an URL, but can be enabled into the login screen */
+#programLabel,
+#program
 {
-    width: 204px;
-    margin-top: 2px;
+    visibility: hidden;
+    display: none;
 }
 
-.connectButton
+#connect
 {
     width: 204px;
     margin-top: 2px;
     margin-left: 200px;
+    display: inline-block;
 }
 
-/* user controls: connection info and control (after connection) */
-
-/* if you don't want any info and control, enable the css below (remove the whole toolbar above the session display) */
-.controlInfo
+#version
 {
-    /*
-    visibility: hidden;
-    display: none;
-    */
-    height: 28px;       /* fixed size */
-    overflow: auto;     /* scroll on small displays */
+    font-size: 10px;
+    display: inline-block;
 }
 
-/* shown info and control */
-/* to customize a specific control, remove it below and redefine its css */
-.serverInfo,
-.disconnectButton,
-.keyboardButton,
-.clipboardButton,
-.filesButton,
-.cadButton
+/* user controls: toolbar */
+
+#toolbar
 {
-    /* customize me */
+    overflow: auto;
+    display: inline-block;
 }
 
-/* hidden info and control */
-.domainInfo,
-.userInfo,
-.passwordInfo,
-.programInfo,
-.statInfo,
-.debugInfo,
-.browserInfo
+/* server info */
+#serverInfo
+{
+    float: left;
+    width: 14%;
+}
+
+/* controls */
+#stat,
+#debug,
+#browser,
+#scale,
+#keyboard,
+#clipboard,
+#files,
+#cad,
+#disconnect
+{
+    float: left;
+    width: 14%;
+}
+
+/* stat, debug and browser mode are now disabled by default (to enable for test or diagnostic, just comment out the css below and tweak the controls width above) */
+#stat,
+#debug,
+#browser
 {
     visibility: hidden;
     display: none;
@@ -119,7 +166,7 @@
     z-index: 300;
 }
 
-/* modal popup */
+/* popups */
 
 .modalPopup
 {
@@ -133,52 +180,42 @@
     z-index: 400;
 }
 
-/* virtual keyboard popup */
-
 #virtualKeyboardPopup
 {
     width: 470px;
-    height: 230px;
-    background-color: transparent;
+    height: 290px;
 }
-
-#virtualKeyboardPopupText
-{
-    width: 425px;
-	height: 150px;
-    margin-bottom: 5px;
-    filter: alpha(opacity=70);
-    opacity: .70;
-    -moz-opacity: 0.7;
-}
-
-/* show dialog popup */
 
 #showDialogPopup
 {
     width: 470px;
-    height: 250px;
+    height: 240px;
 }
 
-#showDialogPopupDesc
+#fileStoragePopup
+{
+    width: 470px;
+    height: 130px;
+}
+
+#virtualKeyboardPopupDesc,
+#showDialogPopupDesc,
+#fileStoragePopupDesc
 {
     font-weight: bold;
 }
 
+#virtualKeyboardPopupText,
 #showDialogPopupText
 {
     width: 425px;
 	height: 150px;
-    margin-top: 5px;
     margin-bottom: 5px;
 }
 
-/* file storage popup */
-
-#fileStoragePopup
+#fileToDownloadSelect
 {
-    width: 450px;
-    height: 100px;
+    width: 250px;
 }
 
 /* remote session display */

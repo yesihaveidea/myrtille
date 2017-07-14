@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,7 +26,10 @@ namespace Myrtille.Services.Contracts
     public class UploadRequest
     {
         [MessageHeader(MustUnderstand = true)]
-        public string Domain { get; set; }
+        public int RemoteSessionId { get; set; }
+
+        [MessageHeader(MustUnderstand = true)]
+        public string UserDomain { get; set; }
 
         [MessageHeader(MustUnderstand = true)]
         public string UserName { get; set; }
@@ -38,7 +41,7 @@ namespace Myrtille.Services.Contracts
         public string FileName { get; set; }
      
         [MessageBodyMember(Order = 1)]
-        public Stream Stream { get; set; }
+        public Stream FileStream { get; set; }
     }
 
     [ServiceContract]
@@ -49,7 +52,8 @@ namespace Myrtille.Services.Contracts
         /// </summary>
         [OperationContract]
         List<string> GetUserDocumentsFolderFiles(
-            string domain,
+            int remoteSessionId,
+            string userDomain,
             string userName,
             string userPassword);
 
@@ -65,7 +69,8 @@ namespace Myrtille.Services.Contracts
         /// </summary>
         [OperationContract]
         Stream DownloadFileFromUserDocumentsFolder(
-            string domain,
+            int remoteSessionId,
+            string userDomain,
             string userName,
             string userPassword,
             string fileName);

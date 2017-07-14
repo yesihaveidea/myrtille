@@ -1,4 +1,4 @@
-/*
+﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
     Copyright(c) 2014-2017 Cedric Coste
@@ -16,11 +16,28 @@
     limitations under the License.
 */
 
-using System.Web.UI;
+using System.Web;
+using System.Web.SessionState;
+using Microsoft.Web.WebSockets;
 
 namespace Myrtille.Web
 {
-    public partial class ShowDialog : Page
+    public class SocketHandler : IHttpHandler, IReadOnlySessionState
     {
+        public void ProcessRequest(HttpContext context)
+        {
+            if (context.IsWebSocketRequest)
+            {
+                context.AcceptWebSocketRequest(new RemoteSessionSocketHandler(context.Session, string.IsNullOrEmpty(context.Request["type"]) ? true : context.Request["type"] == "binary"));
+            }
+        }
+
+        public bool IsReusable
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

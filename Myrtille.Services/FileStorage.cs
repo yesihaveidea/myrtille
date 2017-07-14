@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -28,11 +28,12 @@ namespace Myrtille.Services
     public class FileStorage : IFileStorage
     {
         public List<string> GetUserDocumentsFolderFiles(
-            string domain,
+            int remoteSessionId,
+            string userDomain,
             string userName,
             string userPassword)
         {
-            var documentsFolder = AccountHelper.GetUserDocumentsFolder(domain, userName, userPassword);
+            var documentsFolder = AccountHelper.GetUserDocumentsFolder(userDomain, userName, userPassword);
 
             try
             {
@@ -45,7 +46,7 @@ namespace Myrtille.Services
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to retrieve file(s) from user {0} documents folder {1} ({2})", userName, documentsFolder, exc);
+                Trace.TraceError("Failed to retrieve file(s) from user {0} documents folder {1}, remote session {2} ({3})", userName, documentsFolder, remoteSessionId, exc);
                 throw;
             }
         }
@@ -53,7 +54,7 @@ namespace Myrtille.Services
         public void UploadFileToUserDocumentsFolder(
             UploadRequest uploadRequest)
         {
-            var documentsFolder = AccountHelper.GetUserDocumentsFolder(uploadRequest.Domain, uploadRequest.UserName, uploadRequest.UserPassword);
+            var documentsFolder = AccountHelper.GetUserDocumentsFolder(uploadRequest.UserDomain, uploadRequest.UserName, uploadRequest.UserPassword);
 
             try
             {
@@ -68,42 +69,47 @@ namespace Myrtille.Services
                 int bytesRead;
                 var buffer = new byte[4096];
 
-                while ((bytesRead = uploadRequest.Stream.Read(buffer, 0, buffer.Length)) > 0)
+                while ((bytesRead = uploadRequest.FileStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     fileStream.Write(buffer, 0, bytesRead);
                 }
 
                 fileStream.Close();
-                uploadRequest.Stream.Close();
+                uploadRequest.FileStream.Close();
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to upload file {0} to user {1} documents folder {2} ({3})", uploadRequest.FileName, uploadRequest.UserName, documentsFolder, exc);
+                Trace.TraceError("Failed to upload file {0} to user {1} documents folder {2}, remote session {3} ({4})", uploadRequest.FileName, uploadRequest.UserName, documentsFolder, uploadRequest.RemoteSessionId, exc);
                 throw;
             }
 
-            Trace.TraceInformation("Uploaded file {0} to user {1} documents folder {2}", uploadRequest.FileName, uploadRequest.UserName, documentsFolder);
+            Trace.TraceInformation("Uploaded file {0} to user {1} documents folder {2}, remote session {3}", uploadRequest.FileName, uploadRequest.UserName, documentsFolder, uploadRequest.RemoteSessionId);
         }
 
         public Stream DownloadFileFromUserDocumentsFolder(
-            string domain,
+            int remoteSessionId,
+            string userDomain,
             string userName,
             string userPassword,
             string fileName)
         {
-            var documentsFolder = AccountHelper.GetUserDocumentsFolder(domain, userName, userPassword);
+            var documentsFolder = AccountHelper.GetUserDocumentsFolder(userDomain, userName, userPassword);
 
-            Trace.TraceInformation("Downloading file {0} from user {1} documents folder {2}", fileName, userName, documentsFolder);
+            Stream fileStream = null;
 
             try
             {
-                return File.Open(Path.Combine(documentsFolder, fileName), FileMode.Open, FileAccess.Read, FileShare.Read);
+                fileStream = File.Open(Path.Combine(documentsFolder, fileName), FileMode.Open, FileAccess.Read, FileShare.Read);
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to download file {0} from user {1} documents folder {2} ({3})", fileName, userName, documentsFolder, exc);
+                Trace.TraceError("Failed to download file {0} from user {1} documents folder {2}, remote session {3} ({4})", fileName, userName, documentsFolder, remoteSessionId, exc);
                 throw;
             }
+
+            Trace.TraceInformation("Downloaded file {0} from user {1} documents folder {2}, remote session {3}", fileName, userName, documentsFolder, remoteSessionId);
+
+            return fileStream;
         }
     }
 }

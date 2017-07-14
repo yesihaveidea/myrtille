@@ -1,4 +1,24 @@
-﻿2016-12-22 Version 1.4.0 (stable)
+﻿2017-07-14 Version 1.5.0 (beta)
+	changed prerequisites: IIS 8+ with websocket protocol enabled and .NET 4.5 (instead of .NET 4.0)
+	replaced Fleck websocket server by IIS 8+ websocket handler (now using standard 80 and 443 ports)
+	added websocket binary communication (no more base64 33% bandwidth overhead)
+	added session fixation protection (a new session ID is generated upon login)
+	added custom port support (i.e.: IIS Express uses port 2323)
+	fixed installer issue if both IIS and IIS Express are available on the target machine
+	fixed building issue with CERTENROLLLib (COM object) under Windows 10 (thanks mak1311)
+	fixed the blue mouse pointer shadow
+	fixed remote clipboard under IE (wasn't displayed into the popup)
+	increased max file upload size up to 1GB
+	improved UI (stat, debug and rendering mode are now hidden by default into default.css, customizable logo, myrtille version, etc.)
+	the remote session log is now configurable into Myrtille.Services config (disabled by default)
+	the remote session display is now responsive (scale to browser size, disabled by default)
+	commands can now be sent directly from the browser (i.e.: image quality tweak depending on the available bandwidth)
+	simplified config.js (added enums and autodetection for major settings)
+	customizable framerate (into config.js)
+	resynced the myrtille FreeRDP fork with the FreeRDP master repository
+	refactoring
+
+2016-12-22 Version 1.4.0 (stable)
 	the login screen and connection toolbar appearance are now fully customizable in css (also removed unnecessary info from the connection toolbar)
 	the remote session desktop is now sized to fit the browser container exactly (no scrollbars at start)
 	fixed user event binding on old and modern browsers (attachEvent vs addEventListener)

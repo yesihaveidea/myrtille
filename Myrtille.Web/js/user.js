@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -49,15 +49,25 @@ function User(config, dialog, display, network)
                 eventListener = window.addEventListener;
             }
             // IE < 9
-            else if (document.attachEvent)
+            else if (window.attachEvent && document.attachEvent)
             {
-                //dialog.showDebug('event handling: using document.attachEvent');
+                //dialog.showDebug('event handling: using window.attachEvent and document.attachEvent');
                 eventListener = function(eventType, listener, useCapture)
                 {
                     // attachEvent wants 'oneventType' instead of 'eventType'
-                    document.attachEvent('on' + eventType, listener, useCapture);
+                    if (eventType == 'resize')
+                    {
+                        window.attachEvent('on' + eventType, listener, useCapture);
+                    }
+                    else
+                    {
+                        document.attachEvent('on' + eventType, listener, useCapture);
+                    }
                 };
             }
+
+            // responsive display
+            eventListener('resize', function() { browserResize(); });
 
             keyboard = new Keyboard(config, dialog, display, network, this);
             keyboard.init();
@@ -77,6 +87,59 @@ function User(config, dialog, display, network)
         }
     };
 
+    function browserResize()
+    {
+        try
+        {
+            if (!config.getScaleDisplay())
+                return;
+
+            var width = display.getBrowserWidth() - display.getHorizontalOffset();
+            var height = display.getBrowserHeight() - display.getVerticalOffset();
+
+            // if scaling display and using a canvas, resize it
+            if (config.getScaleDisplay() && config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
+            {
+                // in order to avoid flicker when resizing, creates a temporary canvas (same size as the actual canvas)
+                var tempCanvas = document.createElement('canvas');
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+
+                // draw the temporary canvas over the actual canvas
+                var tempContext = tempCanvas.getContext('2d');
+                tempContext.drawImage(display.getCanvas().getCanvasObject(), 0, 0);
+
+                // resize the actual canvas
+                display.getCanvas().getCanvasObject().width = width;
+                display.getCanvas().getCanvasObject().height = height;
+
+                // restore the actual canvas context properties
+                if (config.getImageDebugEnabled())
+                {
+                    display.getCanvas().getCanvasContext().lineWidth = 1;
+                    display.getCanvas().getCanvasContext().strokeStyle = 'red';
+                }
+
+                // switch the canvas
+                display.getCanvas().getCanvasContext().drawImage(tempCanvas, 0, 0);
+            }
+
+            var commands = new Array();
+
+            // send the new browser resolution
+            commands.push(network.getCommandEnum().SEND_BROWSER_RESIZE.text + width + 'x' + height);
+
+            //dialog.showDebug('scale fullscreen update');
+            commands.push(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text);
+
+            network.send(commands.toString());
+        }
+        catch (exc)
+        {
+            dialog.showDebug('user browserResize error: ' + exc.message);
+        }
+    }
+
     this.triggerActivity = function()
     {
         try
@@ -92,9 +155,9 @@ function User(config, dialog, display, network)
             adaptiveFullscreenTimeout = window.setTimeout(function()
             {
                 //dialog.showDebug('adaptive fullscreen update');
-                network.send(null);
+                network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text);
             },
-            config.getAdaptiveFullscreenTimeoutDelay());
+            config.getAdaptiveFullscreenTimeout());
         }
         catch (exc)
         {

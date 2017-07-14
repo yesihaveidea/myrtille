@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 */
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Web;
 using System.Web.UI;
@@ -27,7 +28,7 @@ namespace Myrtille.Web
 {
     public partial class FileStorage : Page
     {
-        private RemoteSessionManager _remoteSessionManager;
+        private RemoteSession _remoteSession;
         private FileStorageClient _fileStorageClient;
 
         /// <summary>
@@ -42,15 +43,18 @@ namespace Myrtille.Web
             try
             {
                 // retrieve the active remote session, if any
-                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSessionManager.ToString()] != null)
+                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] != null)
                 {
                     try
                     {
-                        _remoteSessionManager = (RemoteSessionManager)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSessionManager.ToString()];
+                        if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                            throw new NullReferenceException();
+
+                        _remoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
                     }
                     catch (Exception exc)
                     {
-                        System.Diagnostics.Trace.TraceError("Failed to retrieve remote session manager ({0})", exc);
+                        System.Diagnostics.Trace.TraceError("Failed to retrieve the remote session ({0})", exc);
                     }
                 }
 
@@ -59,16 +63,17 @@ namespace Myrtille.Web
                 // file storage is synchronized with the user "My documents" folder (will use folder redirection if defined)
                 // user credentials will be checked prior to any file operation
                 // if possible, use SSL to communicate with the service
-                if (_remoteSessionManager != null && (_remoteSessionManager.RemoteSession.State == RemoteSessionState.Connecting || _remoteSessionManager.RemoteSession.State == RemoteSessionState.Connected) &&
-                   (_remoteSessionManager.RemoteSession.ServerAddress.ToLower() == "localhost" || _remoteSessionManager.RemoteSession.ServerAddress == "127.0.0.1" || _remoteSessionManager.RemoteSession.ServerAddress == HttpContext.Current.Request.Url.Host || !string.IsNullOrEmpty(_remoteSessionManager.RemoteSession.UserDomain)) &&
-                   !string.IsNullOrEmpty(_remoteSessionManager.RemoteSession.UserName) && !string.IsNullOrEmpty(_remoteSessionManager.RemoteSession.UserPassword))
+                if (_remoteSession != null && (_remoteSession.State == RemoteSessionState.Connecting || _remoteSession.State == RemoteSessionState.Connected) &&
+                   (_remoteSession.ServerAddress.ToLower() == "localhost" || _remoteSession.ServerAddress == "127.0.0.1" || _remoteSession.ServerAddress == HttpContext.Current.Request.Url.Host || !string.IsNullOrEmpty(_remoteSession.UserDomain)) &&
+                   !string.IsNullOrEmpty(_remoteSession.UserName) && !string.IsNullOrEmpty(_remoteSession.UserPassword))
                 {
                     _fileStorageClient = new FileStorageClient();
 
                     var files = _fileStorageClient.GetUserDocumentsFolderFiles(
-                        _remoteSessionManager.RemoteSession.UserDomain,
-                        _remoteSessionManager.RemoteSession.UserName,
-                        _remoteSessionManager.RemoteSession.UserPassword);
+                        _remoteSession.Id,
+                        _remoteSession.UserDomain,
+                        _remoteSession.UserName,
+                        _remoteSession.UserPassword);
 
                     if (files.Count > 0)
                     {
@@ -111,11 +116,12 @@ namespace Myrtille.Web
                     _fileStorageClient.UploadFileToUserDocumentsFolder(
                         new UploadRequest
                         {
-                            Domain = _remoteSessionManager.RemoteSession.UserDomain,
-                            UserName = _remoteSessionManager.RemoteSession.UserName,
-                            UserPassword = _remoteSessionManager.RemoteSession.UserPassword,
-                            FileName = fileToUploadText.PostedFile.FileName,
-                            Stream = fileToUploadText.PostedFile.InputStream
+                            RemoteSessionId = _remoteSession.Id,
+                            UserDomain = _remoteSession.UserDomain,
+                            UserName = _remoteSession.UserName,
+                            UserPassword = _remoteSession.UserPassword,
+                            FileName = Path.GetFileName(fileToUploadText.PostedFile.FileName),
+                            FileStream = fileToUploadText.PostedFile.InputStream
                         });
 
                     // reload the page to have the newly uploaded file available for download
@@ -149,9 +155,10 @@ namespace Myrtille.Web
                 if (!string.IsNullOrEmpty(fileToDownloadSelect.Value))
                 {
                     var fileStream = _fileStorageClient.DownloadFileFromUserDocumentsFolder(
-                        _remoteSessionManager.RemoteSession.UserDomain,
-                        _remoteSessionManager.RemoteSession.UserName,
-                        _remoteSessionManager.RemoteSession.UserPassword,
+                        _remoteSession.Id,
+                        _remoteSession.UserDomain,
+                        _remoteSession.UserName,
+                        _remoteSession.UserPassword,
                         fileToDownloadSelect.Value);
 
                     FileHelper.DownloadFile(Response, fileStream, fileToDownloadSelect.Value, true);

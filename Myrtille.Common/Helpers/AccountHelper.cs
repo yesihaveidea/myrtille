@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2016 Cedric Coste
+    Copyright(c) 2014-2017 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -360,14 +360,14 @@ namespace Myrtille.Helpers
         /// <summary>
         /// retrieve an user documents folder; also validates the user credentials to prevent unauthorized access to this folder
         /// </summary>
-        /// <param name="domain"></param>
+        /// <param name="userDomain"></param>
         /// <param name="userName"></param>
-        /// <param name="password"></param>
+        /// <param name="userPassword"></param>
         /// <returns>home directory</returns>
         public static string GetUserDocumentsFolder(
-            string domain,
+            string userDomain,
             string userName,
-            string password)
+            string userPassword)
         {
             var token = IntPtr.Zero;
 
@@ -375,12 +375,12 @@ namespace Myrtille.Helpers
             {
                 // logon the user, domain (if defined) or local otherwise
                 // myrtille must be running on a machine which is part of the domain for it to work
-                if (LogonUser(userName, string.IsNullOrEmpty(domain) ? Environment.MachineName : domain, password, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, ref token) != 0)
+                if (LogonUser(userName, string.IsNullOrEmpty(userDomain) ? Environment.MachineName : userDomain, userPassword, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, ref token) != 0)
                 {
                     string serverName = null;
-                    if (!string.IsNullOrEmpty(domain))
+                    if (!string.IsNullOrEmpty(userDomain))
                     {
-                        var context = new DirectoryContext(DirectoryContextType.Domain, domain, userName, password);
+                        var context = new DirectoryContext(DirectoryContextType.Domain, userDomain, userName, userPassword);
                         var controller = Domain.GetDomain(context).FindDomainController();
                         serverName = controller.Name;
                     }
@@ -395,8 +395,8 @@ namespace Myrtille.Helpers
                         {
                             dwSize = Marshal.SizeOf(typeof(ProfileInfo)),
                             dwFlags = (int)ProfileInfoFlags.PI_NOUI,
-                            lpServerName = string.IsNullOrEmpty(domain) ? Environment.MachineName : serverName.Split(new[] { "." }, StringSplitOptions.None)[0],
-                            lpUserName = string.IsNullOrEmpty(domain) ? userName : string.Format(@"{0}\{1}", domain, userName),
+                            lpServerName = string.IsNullOrEmpty(userDomain) ? Environment.MachineName : serverName.Split(new[] { "." }, StringSplitOptions.None)[0],
+                            lpUserName = string.IsNullOrEmpty(userDomain) ? userName : string.Format(@"{0}\{1}", userDomain, userName),
                             lpProfilePath = userInfo.usri4_profile
                         };
 
@@ -446,13 +446,13 @@ namespace Myrtille.Helpers
         /// </summary>
         /// <param name="userName"></param>
         /// <param name="description"></param>
-        /// <param name="password"></param>
+        /// <param name="userPassword"></param>
         /// <param name="userCannotChangePassword"></param>
         /// <param name="passwordNeverExpires"></param>
         public static void CreateLocalUser(
             string userName,
             string description,
-            string password,
+            string userPassword,
             bool userCannotChangePassword,
             bool passwordNeverExpires)
         {
@@ -467,7 +467,7 @@ namespace Myrtille.Helpers
                         user.Name = userName;
                         user.DisplayName = userName;
                         user.Description = description;
-                        user.SetPassword(password);
+                        user.SetPassword(userPassword);
                         user.UserCannotChangePassword = userCannotChangePassword;
                         user.PasswordNeverExpires = passwordNeverExpires;
                         user.Save();
