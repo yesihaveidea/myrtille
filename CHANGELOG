@@ -1,4 +1,4 @@
-﻿2017-07-14 Version 1.5.0 (beta)
+﻿2017-07-19 Version 1.5.0 (beta)
 	changed prerequisites: IIS 8+ with websocket protocol enabled and .NET 4.5 (instead of .NET 4.0)
 	replaced Fleck websocket server by IIS 8+ websocket handler (now using standard 80 and 443 ports)
 	added websocket binary communication (no more base64 33% bandwidth overhead)
@@ -7,6 +7,7 @@
 	fixed installer issue if both IIS and IIS Express are available on the target machine
 	fixed building issue with CERTENROLLLib (COM object) under Windows 10 (thanks mak1311)
 	fixed the blue mouse pointer shadow
+	fixed a read access violation regarding the mouse pointer (c0000005 exception code)
 	fixed remote clipboard under IE (wasn't displayed into the popup)
 	increased max file upload size up to 1GB
 	improved UI (stat, debug and rendering mode are now hidden by default into default.css, customizable logo, myrtille version, etc.)
@@ -16,6 +17,7 @@
 	simplified config.js (added enums and autodetection for major settings)
 	customizable framerate (into config.js)
 	resynced the myrtille FreeRDP fork with the FreeRDP master repository
+	disabled the FreeRDP credentials popup when myrtille is running as a service (it can also be run in console mode for debug)
 	refactoring
 
 2016-12-22 Version 1.4.0 (stable)
