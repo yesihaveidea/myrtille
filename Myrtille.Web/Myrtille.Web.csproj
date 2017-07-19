@@ -177,6 +177,7 @@
     <Content Include="js\network\longpolling.js" />
     <Content Include="js\network\xmlhttp.js" />
     <Content Include="js\user\touchscreen.js" />
+    <Content Include="myrtille.ico" />
     <Content Include="ShowDialog.aspx" />
     <Content Include="VirtualKeyboard.aspx" />
     <Content Include="css\Default.css" />
@@ -245,6 +246,9 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>myrtille.ico</ApplicationIcon>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />

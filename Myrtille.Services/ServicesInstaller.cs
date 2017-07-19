@@ -51,7 +51,7 @@ namespace Myrtille.Services
 
             this.serviceInstaller = new ServiceInstaller();
             this.serviceInstaller.ServiceName = "Myrtille.Services";
-            this.serviceInstaller.Description = "Handles the rdp client processes and file storage";
+            this.serviceInstaller.Description = "Myrtille HTTP(S) to RDP gateway";
             this.serviceInstaller.StartType = ServiceStartMode.Automatic;
 
             this.Installers.AddRange(new Installer[] {
