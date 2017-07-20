@@ -9,6 +9,7 @@
 	fixed the blue mouse pointer shadow
 	fixed a (myrtille) read access violation regarding the mouse pointer (c0000005 exception code)
 	fixed a (FreeRDP) read access violation regarding the H264 codec init, when available on the client machine (c0000005 exception code)
+	disabled H264 (Myrtille does process bitmaps updates, not video streams)
 	fixed remote clipboard under IE (wasn't displayed into the popup)
 	increased max file upload size up to 1GB
 	improved UI (stat, debug and rendering mode are now hidden by default into default.css, customizable logo, myrtille version, etc.)
