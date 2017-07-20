@@ -1,4 +1,4 @@
-﻿2017-07-19 Version 1.5.0 (beta)
+﻿2017-07-20 Version 1.5.0 (beta)
 	changed prerequisites: IIS 8+ with websocket protocol enabled and .NET 4.5 (instead of .NET 4.0)
 	replaced Fleck websocket server by IIS 8+ websocket handler (now using standard 80 and 443 ports)
 	added websocket binary communication (no more base64 33% bandwidth overhead)
@@ -7,7 +7,8 @@
 	fixed installer issue if both IIS and IIS Express are available on the target machine
 	fixed building issue with CERTENROLLLib (COM object) under Windows 10 (thanks mak1311)
 	fixed the blue mouse pointer shadow
-	fixed a read access violation regarding the mouse pointer (c0000005 exception code)
+	fixed a (myrtille) read access violation regarding the mouse pointer (c0000005 exception code)
+	fixed a (FreeRDP) read access violation regarding the H264 codec init, when available on the client machine (c0000005 exception code)
 	fixed remote clipboard under IE (wasn't displayed into the popup)
 	increased max file upload size up to 1GB
 	improved UI (stat, debug and rendering mode are now hidden by default into default.css, customizable logo, myrtille version, etc.)
