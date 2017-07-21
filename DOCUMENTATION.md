@@ -17,9 +17,9 @@ I hope you will enjoy Myrtille! :)
 Special thanks to Catalin Trifanescu for its support.
 
 ## Installation
-You need at least IIS 8+ before installing myrtille (the HTTP(S) to RDP gateway). It installs as a role on Windows Servers and as a feature on others Windows versions.
+You need at least IIS 7 before installing myrtille (the HTTP(S) to RDP gateway). It installs as a role on Windows Servers and as a feature on others Windows versions.
 
-**CAUTION! If you want to use websockets**, you need to enable the websocket protocol into IIS (disabled by default; see https://www.iis.net/configreference/system.webserver/websocket).
+**CAUTION! If you want to use websockets**, you need IIS 8 or greater with the websocket protocol enabled (disabled by default; see https://www.iis.net/configreference/system.webserver/websocket).
 
 The .NET 4.5+ framework can be installed automatically by the myrtille installer (Setup.exe), enabled as a feature of IIS (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012) or installed separately (https://www.microsoft.com/en-us/download/details.aspx?id=30653).
 
@@ -59,7 +59,7 @@ The installer creates a self-signed certificate for myrtille (so you can use it 
 ## Configuration
 Both the gateway and services have their own .NET config files; the gateway also uses XDT transform files to adapt the settings depending on the current solution configuration.
 
-You may also play with the gateway "js/config.js" file settings to fine tune the configuration depending on your needs.
+You may also play with the "js/config.js" file settings to fine tune the configuration depending on your needs.
 
 ## Code organization
 - Myrtille.RDP: link to the myrtille FreeRDP fork. C++ code. RDP client, modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
@@ -86,7 +86,7 @@ The objectives are:
 
 Steps to build the FreeRDP fork (and have it working with myrtille):
 - Git clone https://github.com/cedrozor/FreeRDP.git into "<myrtille root folder>\Myrtille.RDP\FreeRDP\" (**NOTE** if using TortoiseGit, the contextual menu won't show the "Git clone" option from the "Myrtille.RDP" folder; you will have to do it from elsewhere, outside of the myrtille tree; also, don't create the "FreeRDP" folder manually, just write it into the clone target path)
-- Use cmake on it as detailed here: https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) to generate the Visual Studio solution and projects accordingly to your dev environment (don't forget to install OpenSSL first; precompiled installers here: http://slproweb.com/products/Win32OpenSSL.html)
+- Use cmake on it as detailed here: https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) to generate the Visual Studio solution and projects accordingly to your dev environment (don't forget to install OpenSSL first; precompiled installers here: https://wiki.openssl.org/index.php/Binaries)
 - Open and build the generated solution. **CAUTION** if OpenSSL is configured standalone (dlls not present into the Windows "System32" folder), you will have to copy *"libeay32.dll"* and *"ssleay32.dll"* files (located into "OpenSSL\bin") into the FreeRDP build output folder
 
 If you plan to build the myrtille installer, you have first to build the FreeRDP fork (or you can add the FreeRDP fork solution to the myrtille solution and use the FreeRDP projects outputs instead of files).
@@ -139,7 +139,7 @@ This is a thing to consider if you want to isolate the web gateway from your int
 - In order to keep the installation simple, both the myrtille gateway and services are installed on the same machine. They do however conform to a distributed architecture; if needed, given some additionnal code, myrtille services could acts as a proxy, so the gateway could be installed and operate separately (this could be handy if the gateway should go into a DMZ).
 
 ## Troubleshoot
-First at all, ensure the Myrtille prerequisites are met (IIS 8+ with websocket protocol enabled and .NET 4.5+). Note that IIS must be installed separately, before running the installer (see "Installation").
+First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+). Note that IIS must be installed separately, before running the installer (see "Installation").
 
 - The installation fails
 	- Prerequisites are not downloaded: the installer was run directly using the MSI file; this exclude the bootstrapper (Setup.exe), whose purpose is to check and download/install the prerequisites if necessary
@@ -149,7 +149,7 @@ First at all, ensure the Myrtille prerequisites are met (IIS 8+ with websocket p
 
 - I can't access http://myserver/myrtille
 	- Ensure IIS is started and "Myrtille.Web" application is running on the "MyrtilleAppPool" application pool.
-	- Ensure IIS websocket protocol is enabled.
+	- If you have IIS 8 or greater, ensure the websocket protocol is enabled (HTML4 clients will automatically fallback to long-polling).
 	- Ensure .NET 4.5 is installed and the "MyrtilleAppPool" is running on it.
 	- You may have to register .NET 4.5 against IIS (https://stackoverflow.com/questions/13749138/asp-net-4-5-has-not-been-registered-on-the-web-server)
 	- Ensure the "Myrtille.Web" target folder does have enough privileges (should be set automatically by the installer but may depend on specific configurations)
@@ -170,7 +170,7 @@ First at all, ensure the Myrtille prerequisites are met (IIS 8+ with websocket p
 	- Check the RDP server configuration (session disconnect timeout in particular). You can setup it automatically by importing the Myrtille "RDPSetup.reg" file into registry.
 
 - Myrtille is slow or buggy
-	- Enable the stats bar to have detailed information about the current connection. Check latency and bandwidth, among other things.
+	- Enable the stats bar to have detailed information about the current connection. Check latency and bandwidth, among other things. **Stats, debug and HTML4 buttons can be enabled into css/Default.css (hidden by default)**
 	- Ensure debug is disabled or otherwise logs are not set to "Information" level (Myrtille "Web.Config" file, "system.diagnostics" section, default is "Warning"). Check logs, if debug is enabled.
 	- If debug is enabled and you are running Myrtille in debug mode under Visual Studio, you will have the FreeRDP window (session display) and console (rdp events) shown to you. It may help to debug.
 	- Switch from HTML4 to HTML5 rendering, or inversely (should be faster with HTML5).

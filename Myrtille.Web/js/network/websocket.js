@@ -126,7 +126,7 @@ function Websocket(config, dialog, display, network)
         else
         {
             // the websocket failed, fallback to long-polling
-            alert('websocket connection closed with error code ' + e.code + ' (is the websocket protocol enabled into IIS8+?), falling back to long-polling');
+            dialog.showDebug('websocket connection closed with error code ' + e.code + ' (if you have IIS 8 or greater, ensure the websocket protocol is enabled), falling back to long-polling');
             config.setNetworkMode(config.getNetworkModeEnum().LONGPOLLING);
             network.init();
         }

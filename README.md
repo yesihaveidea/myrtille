@@ -26,7 +26,7 @@ More information into the DOCUMENTATION.md file.
 
 ## Requirements
 - Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required.
-- Gateway (myrtille): IIS 8+ with websocket protocol enabled and .NET 4.5+
+- Gateway (myrtille): IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+
 - RDP server: any RDP enabled computer (preferably Windows Server but can also be Windows XP, 7, 8, 10)
 
 ## Resources
