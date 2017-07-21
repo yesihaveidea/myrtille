@@ -11,7 +11,7 @@
 	fixed a (FreeRDP) read access violation regarding the H264 codec init, when available on the client machine (c0000005 exception code)
 	disabled H264 (Myrtille does process bitmaps updates, not video streams)
 	fixed remote clipboard under IE (wasn't displayed into the popup)
-	increased max file upload size up to 1GB
+	increased max file upload/download size up to 1GB (tweakable into Myrtille.Web and Myrtille.Services configs, if needed)
 	improved UI (stat, debug and rendering mode are now hidden by default into default.css, customizable logo, myrtille version, etc.)
 	the remote session log is now configurable into Myrtille.Services config (disabled by default)
 	the remote session display is now responsive (scale to browser size, disabled by default)
