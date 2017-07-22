@@ -173,6 +173,32 @@
 
         <script type="text/javascript" language="javascript" defer="defer">
 
+            // start program from url
+            // if the display resolution isn't set, the remote session isn't able to start; redirect with the client resolution
+            if (window.location.href.indexOf('&program=') != -1 && (window.location.href.indexOf('&width=') == -1 || window.location.href.indexOf('&height=') == -1))
+            {
+                showToolbar();
+
+                var width = document.getElementById('<%=width.ClientID%>').value;
+                var height = document.getElementById('<%=height.ClientID%>').value;
+
+                var redirectUrl = window.location.href;
+
+                if (window.location.href.indexOf('&width=') == -1)
+                {
+                    redirectUrl += '&width=' + width;
+                }
+
+                if (window.location.href.indexOf('&height=') == -1)
+                {
+                    redirectUrl += '&height=' + height;
+                }
+
+                alert('reloading page with url:' + redirectUrl);
+
+                window.location.href = redirectUrl;
+            }
+
             function showToolbar()
             {
                 // server info

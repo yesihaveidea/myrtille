@@ -143,6 +143,14 @@ function startMyrtille(remoteSessionActive, statEnabled, debugEnabled, compatibi
                 //alert('clearing old session id from url');
                 redirectUrl = window.location.href.substr(0, window.location.href.indexOf('?oldSID=')) + '?';
             }
+            // a program was started from url
+            // there is no need for any session fixation protection in this case because the user credentials are already into the url
+            // TODO: hash password into the url (same way as password 51 into .rdp files; https://github.com/cedrozor/myrtille/issues/43)
+            else if (window.location.href.indexOf('&program=') != -1)
+            {
+                // redirect with an empty querystring
+                redirectUrl = httpServerUrl + '?';
+            }
         }
 
         if (redirectUrl != '')
