@@ -194,7 +194,7 @@
                     redirectUrl += '&height=' + height;
                 }
 
-                alert('reloading page with url:' + redirectUrl);
+                //alert('reloading page with url:' + redirectUrl);
 
                 window.location.href = redirectUrl;
             }
