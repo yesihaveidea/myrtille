@@ -112,6 +112,15 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlInputPassword password;
         
         /// <summary>
+        /// passwordHash control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputHidden passwordHash;
+        
+        /// <summary>
         /// programLabel control.
         /// </summary>
         /// <remarks>

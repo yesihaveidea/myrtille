@@ -99,6 +99,9 @@
                     <input type="password" runat="server" id="password" title="user password"/>
                 </div>
 
+                <!-- hashed password (aka password 51) -->
+                <input type="hidden" runat="server" id="passwordHash"/>
+
                 <!-- program to run -->
                 <div class="inputDiv">
                     <label runat="server" id="programLabel" for="program">Program to run (optional)</label>

@@ -30,20 +30,29 @@ All releases here: https://github.com/cedrozor/myrtille/releases
 - Myrtille.msi: MSI package (x86)
 
 ## Start remote application from URL
-Starting from version 1.3.x, it's possible to run a program automatically, on session start, from an URL. It's a feature comparable to remoteApp, which makes it easy to launch remote applications directly from internet shortcuts (.url) placed on the desktop.
+Starting from version 1.3.0, it's possible to run a program automatically, on session start, from an URL. It's a feature comparable to remoteApp (.rdp files).
+
+From version 1.5.0, Myrtille does support hashed passwords (so that the password is not plain text into the url).
 
 Currently not working with Windows 2008 servers. See notes and limitations.
 
 ### Syntax
-https://myserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=*server*&domain=*domain* [optional]&user=*username*&password=*password*&stat=*Stat+enabled|disabled* [optional]&debug=*Debug+enabled|disabled* [optional]&browser=*HTML4|HTML5* [optional]&program=*executable path, name and parameters (double quotes must be escaped)* [optional]&width=*width (px)* [optional]&height=*height (px)* [optional]&connect=*Connect%21*
+https://myserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=*server*&domain=*domain* [optional]&user=*username*&passwordHash=*passwordHash*&stat=*Stat+enabled|disabled* [optional]&debug=*Debug+enabled|disabled* [optional]&browser=*HTML4|HTML5* [optional]&program=*executable path, name and parameters (double quotes must be escaped)* [optional]&width=*width (px)* [optional]&height=*height (px)* [optional]&connect=*Connect%21*
 
-The parameters values **must be URL encoded**. You can use a tool like http://www.url-encode-decode.com/ for that purpose (just copy&paste the encoded parameters into the URL).
+The pre version 1.5.0 syntax ("&password=*password*") is still supported, but it's advisable to move to the safer syntax.
 
-**CAUTION!** please be aware that the user credentials are passed within the URL! it's unsafe to use this feature from an untrusted device or browser, because it will save the URL (and credentials) into its history.
+The parameters values **must be URL encoded**. You can use a tool like http://www.url-encode-decode.com/ (just copy & paste the encoded parameters into the URL).
 
-Fortunaly, it's possible to have browsers into incognito mode (hence not have the URL saved). See http://www.howtogeek.com/137466/how-to-always-start-any-browser-in-private-browsing-mode/
+### Password Hash
 
-Additionnaly, usage of **https://** (instead of **http://**) is strongly advised to secure the network communication.
+To generate a password hash, you can use the powershell script "password51.ps1" on the myrtille gateway (requires access to the machine). The script is located into the myrtille bin folder at runtime or into the "Myrtille.Services" project under Visual Studio.
+- Run the script (from its location folder): ". .\password51.ps1" (if needed, see powershell script execution policy: https://technet.microsoft.com/en-us/library/ee176961.aspx)
+- Call the encrypt function: "Encrypt-RDP-Password -Password *password*"
+- Copy & Paste the result into your URL
+
+The password hash is only valid on the machine which generated it (the myrtille gateway); it won't work on another machine. Its length is 492 chars.
+
+For further information, see https://docs.microsoft.com/en-us/dotnet/standard/security/how-to-use-data-protection
 
 ## File transfer
 Myrtille supports both local and network file storage. If you want your domain users to have access to their documents whatever the connected server, follow these steps:

@@ -24,6 +24,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.SessionState;
 using System.Web.UI;
+using Myrtille.Helpers;
 
 namespace Myrtille.Web
 {
@@ -201,7 +202,7 @@ namespace Myrtille.Web
                     ServerAddress = string.IsNullOrEmpty(server.Value) ? "localhost" : server.Value,
                     UserDomain = domain.Value,
                     UserName = user.Value,
-                    UserPassword = password.Value,
+                    UserPassword = string.IsNullOrEmpty(passwordHash.Value) ? password.Value : RDPCryptoHelper.DecryptPassword(passwordHash.Value),
                     ClientWidth = int.Parse(width.Value),
                     ClientHeight = int.Parse(height.Value),
                     Program = program.Value

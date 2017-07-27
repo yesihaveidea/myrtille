@@ -45,12 +45,14 @@ See DOCUMENTATION.md for more details.
 ## Usage
 Once Myrtille is installed on your server, you can use it at http://myserver/myrtille. Set the rdp server address, user domain (if any), name and password then click "Connect!" to log in. "Disconnect" to log out.
 
+You can also connect a remote desktop and **start a program automatically from an url** (see DOCUMENTATION.md). From version 1.5.0, Myrtille does support encrypted credentials (aka "password 51" into .rdp files) so the urls can be distributed to third parties without compromising on security.
+
 The installer creates a self-signed certificate for https://myserver/myrtille. Like for all self-signed certificates, you will have to add a security exception into your browser (just ignore the warning message and proceed to the website).
 Of course, you can avoid that by installing a certificate provided by a trusted Certification Authority (see DOCUMENTATION.md).
 
-If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (logs are saved under the Myrtille "log" folder). *Hidden from version 1.5.x (can be enabled into default.css)*.
+If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (logs are saved under the Myrtille "log" folder). *Hidden from version 1.5.0 (can be enabled into default.css)*.
 
-You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall). *Hidden (autodetected) from version 1.5.x (can be enabled into default.css)*.
+You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall). *Hidden (autodetected) from version 1.5.0 (can be enabled into default.css)*.
 
 On touchscreen devices, you can pop the device keyboard with the "Keyboard" button. Then enter some text and click "Send". This can be used, for example, to paste the local clipboard content and send it to the server (then it be copied from there, within the remote session).
 Alternatively, you can run **osk.exe** (the Windows on screen keyboard, located into %SystemRoot%\System32) within the remote session. It can even be run automatically on session start (https://www.cybernetman.com/kb/index.cfm/fuseaction/home.viewArticles/articleId/197).

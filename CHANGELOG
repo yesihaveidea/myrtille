@@ -1,4 +1,4 @@
-﻿2017-07-22 Version 1.5.0 (beta)
+﻿2017-07-27 Version 1.5.0 (stable)
 	changed prerequisites: IIS 8+ with websocket protocol enabled and .NET 4.5 (instead of .NET 4.0)
 	replaced Fleck websocket server by IIS 8+ websocket handler (now using standard 80 and 443 ports)
 	added websocket binary communication (no more base64 33% bandwidth overhead)
@@ -16,6 +16,7 @@
 	the remote session log is now configurable into Myrtille.Services config (disabled by default)
 	the remote session display is now responsive (scale to browser size, disabled by default)
 	if starting a program from url without setting a display resolution, it's auto-detetected from the client
+	"start program from url" feature now supports hashed passwords (aka "password 51" into .rdp files)
 	commands can now be sent directly from the browser (i.e.: image quality tweak depending on the available bandwidth)
 	simplified config.js (added enums and autodetection for major settings)
 	customizable framerate (into config.js)

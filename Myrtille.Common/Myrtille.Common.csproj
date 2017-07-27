@@ -92,6 +92,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Messaging" />
     <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Security" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
@@ -104,6 +105,7 @@
     <Compile Include="Helpers\IISHelper.cs" />
     <Compile Include="Helpers\PermissionsHelper.cs" />
     <Compile Include="Helpers\PipeHelper.cs" />
+    <Compile Include="Helpers\RDPCryptoHelper.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Helpers\XmlTools.cs" />
     <Compile Include="Log\Log4netTraceFilter.cs" />
