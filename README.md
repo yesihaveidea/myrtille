@@ -30,8 +30,12 @@ More information into the DOCUMENTATION.md file.
 - RDP server: any RDP enabled computer (preferably Windows Server but can also be Windows XP, 7, 8, 10)
 
 ## Resources
-Myrtille does support multiple users sessions/tabs. There is no limitation about the maximal number of concurrent users beside what the rdp server(s) can handle (number of CALs, CPU, RAM?).
+Myrtille does support multiple users sessions/tabs.
+
+There is no limitation about the maximal number of concurrent users beside what the rdp server(s) can handle (number of CALs, CPU, RAM?).
+
 Regarding the gateway, a simple dual core CPU with 4GB RAM can handle up to 50 simultaneous sessions (about 50MB RAM by rdp client process).
+
 Each session uses about 20KB/sec bandwidth with the browser.
 
 ## Build
