@@ -63,7 +63,7 @@ Alternatively, you can run **osk.exe** (the Windows on screen keyboard, located 
 
 The remote clipboard content can also be retrieved locally with the "Clipboard" button (text format only).
 
-You can upload/download file(s) to/from the user documents folder with the "My documents" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified.
+You can upload/download file(s) to/from the user documents folder with the "Files" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified.
 
 ## Third-party
 Myrtille uses the following licensed software:
