@@ -91,7 +91,7 @@ Cedric Coste (cedrozor@gmail.com).
 - Fabien Janvier (AppliKr developer: website css, clipping algorithm, websocket server)
 - UltraSam (AppliKr developer: rdp client, http gateway)
 
-## Resources
+## Links
 - Website:	http://cedrozor.github.io/myrtille
 - Sources:	https://github.com/cedrozor/myrtille
 - Tracker:	https://github.com/cedrozor/myrtille/issues
