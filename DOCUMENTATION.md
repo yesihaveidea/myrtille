@@ -73,12 +73,12 @@ Both the gateway and services have their own .NET config files; the gateway also
 You may also play with the "js/config.js" file settings to fine tune the configuration depending on your needs.
 
 ## Code organization
-- Myrtille.RDP: link to the myrtille FreeRDP fork. C++ code. RDP client, modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
-- Myrtille.Common: C# code. Common helpers.
-- Myrtille.Services: C# code. WCF services, hosted by a Windows Service (or a console application in debug build). start/stop the rdp client and upload/download file(s) to/from the connected user documents folder.
-- Myrtille.Services.Contracts: C# code. WCF contracts (interfaces).
-- Myrtille.Web: C# code. Link between the browser and the rdp client; maintain correlation between http and rdp sessions.
-- Myrtille.Setup: MSI installer.
+- **Myrtille.RDP**: link to the myrtille FreeRDP fork. C++ code. RDP client, modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
+- **Myrtille.Common**: C# code. Common helpers.
+- **Myrtille.Services**: C# code. WCF services, hosted by a Windows Service (or a console application in debug build). start/stop the rdp client and upload/download file(s) to/from the connected user documents folder.
+- **Myrtille.Services.Contracts**: C# code. WCF contracts (interfaces).
+- **Myrtille.Web**: C# code. IIS Web application; gateway between the browser and the rdp client; maintain correlation between http and rdp sessions.
+- **Myrtille.Setup**: MSI installer.
 
 ## Build
 Myrtille uses C#, C++ and vanilla Javascript code (no additional libraries). Microsoft Visual Studio Community 2015 was used as primary development environment, using the .NET 4.5 framework.
