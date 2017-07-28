@@ -37,7 +37,7 @@ From version 1.5.0, Myrtille does support hashed passwords (so that the password
 Currently not working with Windows 2008 servers. See notes and limitations.
 
 ### Syntax
-https://myserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=*server*&domain=*domain* [optional]&user=*username*&passwordHash=*passwordHash*&stat=*Stat+enabled|disabled* [optional]&debug=*Debug+enabled|disabled* [optional]&browser=*HTML4|HTML5* [optional]&program=*executable path, name and parameters (double quotes must be escaped)* [optional]&width=*width (px)* [optional]&height=*height (px)* [optional]&connect=*Connect%21*
+https://myserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=*server*&domain=*domain* [optional]&user=*username*&passwordHash=*passwordHash*&program=*executable path, name and parameters (double quotes must be escaped)* [optional]&width=*width (px)* [optional]&height=*height (px)* [optional]&connect=*Connect%21*
 
 The pre version 1.5.0 syntax ("&password=*password*") is still supported, but it's advisable to move to the safer syntax.
 
