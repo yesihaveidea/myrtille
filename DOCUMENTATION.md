@@ -161,7 +161,7 @@ First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (prefe
 - I can't access http://myserver/myrtille
 	- Ensure IIS is started and "Myrtille.Web" application is running on the "MyrtilleAppPool" application pool.
 	- If you have IIS 8 or greater, ensure the websocket protocol is enabled (HTML4 clients will automatically fallback to long-polling).
-	- Ensure .NET 4.5 is installed and the "MyrtilleAppPool" is running on it.
+	- Ensure .NET 4.5 is installed (https://stackoverflow.com/questions/6425442/http-error-404-3-not-found-in-iis-7-5/8487214#8487214) and the "MyrtilleAppPool" is running on it.
 	- You may have to register .NET 4.5 against IIS (https://stackoverflow.com/questions/13749138/asp-net-4-5-has-not-been-registered-on-the-web-server)
 	- Ensure the "Myrtille.Web" target folder does have enough privileges (should be set automatically by the installer but may depend on specific configurations)
 
