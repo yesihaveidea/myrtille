@@ -29,17 +29,17 @@ All releases here: https://github.com/cedrozor/myrtille/releases
 - Setup.exe (preferred installation method): setup bootstrapper
 - Myrtille.msi: MSI package (x86)
 
-## Start remote application from URL
-Starting from version 1.3.0, it's possible to run a program automatically, on session start, from an URL. It's a feature comparable to remoteApp (.rdp files).
+## Auto-connect / Start remote application from URL
+Starting from version 1.3.0, it's possible to connect and run a program automatically, on session start, from an URL. It's a feature comparable to remoteApp (.rdp files).
 
 From version 1.5.0, Myrtille does support hashed passwords (so that the password is not plain text into the url).
 
 Currently not working with Windows 2008 servers. See notes and limitations.
 
 ### Syntax
-https://myserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=server&domain=domain[optional]&user=user&passwordHash=passwordHash&program=program[optional]&width=width(px)[optional]&height=height(px)[optional]&connect=Connect%21
+https://myserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=server&domain=domain[optional]&user=user&passwordHash=passwordHash&program=program&width=width(px)[optional]&height=height(px)[optional]&connect=Connect%21
 
-For the **"&program="** parameter, set the executable path, name and parameters (double quotes must be escaped).
+Leave the **"&program="** parameter empty for direct access to the desktop or set the executable path, name and parameters (double quotes must be escaped).
 
 The pre version 1.5.0 syntax ("&password=*password*") is still supported, but it's advisable to move to the safer syntax.
 
