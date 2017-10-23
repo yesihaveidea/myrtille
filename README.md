@@ -3,14 +3,14 @@ Myrtille provides a simple and fast access to remote desktops and applications t
 
 Technically, Myrtille is an HTTP(S) to RDP gateway.
 
-## How does it works?
-It works by forwarding the user inputs (keyboard, mouse, touchscreen) from a web browser to an HTTP(S) gateway, then up to an RDP client which maintain a session with an RDP server.
+## How does it work?
+It works by forwarding the user inputs (keyboard, mouse, touchscreen) from a web browser to an HTTP(S) gateway, then up to an RDP client which maintains a session with an RDP server.
 
 The display resulting, or not, of such actions is streamed back to the browser, from the rdp client and through the gateway.
 
 The implementation is quite straightforward in order to maintain the best speed and stability as possible. Some optimizations, such as inputs buffering and display quality tweaking, help to mitigate with latency and bandwidth issues.
 
-More information into the DOCUMENTATION.md file.
+More information in the DOCUMENTATION.md file.
 
 ## Features
 - HTTP(S) to RDP gateway
