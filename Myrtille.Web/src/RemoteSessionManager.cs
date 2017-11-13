@@ -129,6 +129,12 @@ namespace Myrtille.Web
                 // image
                 else
                 {
+                    if (RemoteSession.State == RemoteSessionState.Connecting)
+                    {
+                        // remote session is now connected
+                        RemoteSession.State = RemoteSessionState.Connected;
+                    }
+
                     ProcessUpdate(msg);
                 }
             }
@@ -156,6 +162,16 @@ namespace Myrtille.Web
 
                 switch (command)
                 {
+                    // as the process command line can be displayed into the task manager / process explorer, the connection settings (including user credentials) are now passed to the rdp client through the inputs pipe
+                    // their values are set from the login page (using http(s) post), they shouldn't be modified at this step
+                    case RemoteSessionCommand.SendServerAddress:
+                    case RemoteSessionCommand.SendUserDomain:
+                    case RemoteSessionCommand.SendUserName:
+                    case RemoteSessionCommand.SendUserPassword:
+                    case RemoteSessionCommand.SendStartProgram:
+                        // if needed
+                        break;
+
                     // browser, keyboard, mouse, etc.
                     case RemoteSessionCommand.SendBrowserResize:
                     case RemoteSessionCommand.SendKeyUnicode:
@@ -226,6 +242,10 @@ namespace Myrtille.Web
                         Trace.TraceInformation("Requesting remote clipboard, remote session {0}", RemoteSession.Id);
                         break;
 
+                    case RemoteSessionCommand.ConnectRdpClient:
+                        Trace.TraceInformation("Connecting remote session, remote session {0}", RemoteSession.Id);
+                        break;
+
                     case RemoteSessionCommand.CloseRdpClient:
                         Trace.TraceInformation("Closing remote session, remote session {0}", RemoteSession.Id);
                         break;
@@ -233,13 +253,14 @@ namespace Myrtille.Web
 
                 Trace.TraceInformation("Sending command with args {0}, remote session {1}", commandWithArgs, RemoteSession.Id);
 
-                if (RemoteSession.State == RemoteSessionState.Connected ||
+                if (RemoteSession.State == RemoteSessionState.Connecting ||
+                    RemoteSession.State == RemoteSessionState.Connected ||
                     RemoteSession.State == RemoteSessionState.Disconnecting)
                 {
                     PipeHelper.WritePipeMessage(
                         Pipes.InputsPipe,
                         "remotesession_" + RemoteSession.Id + "_inputs",
-                        commandWithArgs + ",");
+                        commandWithArgs + "\t");
                 }
             }
             catch (Exception exc)
@@ -305,6 +326,14 @@ namespace Myrtille.Web
 
                 Array.Copy(data, 36, image.Data, 0, data.Length - 36);
 
+                // cache the image, even if using websocket (used to retrieve the mouse cursor on IE)
+                _imageCache.Insert(
+                    "remoteSessionImage_" + RemoteSession.Id + "_" + image.Idx,
+                    image,
+                    null,
+                    DateTime.Now.AddMilliseconds(_imageCacheDuration),
+                    Cache.NoSlidingExpiration);
+
                 Trace.TraceInformation("Received image {0} ({1}), remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), RemoteSession.Id);
 
                 // while a fullscreen update is pending, discard all updates; the fullscreen will replace all of them
@@ -345,18 +374,11 @@ namespace Myrtille.Web
                         WebSocket.Send(data);
                     }
                 }
-                // otherwise cache it (will be retrieved later)
+                // otherwise, it will be retrieved later
                 else
                 {
                     lock (_imageEventLock)
                     {
-                        _imageCache.Insert(
-                            "remoteSessionImage_" + RemoteSession.Id + "_" + image.Idx,
-                            image,
-                            null,
-                            DateTime.Now.AddMilliseconds(_imageCacheDuration),
-                            Cache.NoSlidingExpiration);
-
                         // last received image index
                         _lastReceivedImageIdx = image.Idx;
 

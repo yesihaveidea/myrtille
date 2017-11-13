@@ -158,6 +158,12 @@ function Touchscreen(config, dialog, display, network, user)
 	/*** Tap                                                                                                                                                                                       ***/
 	/*************************************************************************************************************************************************************************************************/
 
+    // last touch tap position
+    var lastTouchTapX = null;
+    var lastTouchTapY = null;
+    this.getLastTouchTapX = function () { return lastTouchTapX; };
+    this.getLastTouchTapY = function () { return lastTouchTapY; };
+
     function touchTap(e, start)
     {
         try
@@ -172,6 +178,10 @@ function Touchscreen(config, dialog, display, network, user)
 
             //dialog.showDebug('touch ' + (start ? 'start' : 'end'));
             sendEvent(network.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + start + touchX + '-' + touchY);   // same event as mouse left button
+
+            // update the last touch tap position
+            lastTouchTapX = touchX;
+            lastTouchTapY = touchY;
         }
         catch (exc)
         {

@@ -153,6 +153,7 @@ namespace Myrtille.Web
                 clipboard.Disabled = loginScreen.Visible;
                 files.Disabled = loginScreen.Visible || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != HttpContext.Current.Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain)) || string.IsNullOrEmpty(RemoteSession.UserName) || string.IsNullOrEmpty(RemoteSession.UserPassword);
                 cad.Disabled = loginScreen.Visible;
+                mrc.Disabled = loginScreen.Visible;
                 disconnect.Disabled = loginScreen.Visible;
             }
         }
@@ -240,16 +241,12 @@ namespace Myrtille.Web
                     RemoteSession.Manager.Pipes.CreatePipes();
 
                     // the rdp client does connect the pipes when it starts; when it stops (either because it was closed, crashed or because the rdp session had ended), pipes are released
+                    // as the process command line can be displayed into the task manager / process explorer, the connection settings (including user credentials) are now passed to the rdp client through the inputs pipe
                     // use http://technet.microsoft.com/en-us/sysinternals/dd581625 to track the existing pipes
                     RemoteSession.Manager.Client.StartProcess(
                         RemoteSession.Id,
-                        RemoteSession.ServerAddress,
-                        RemoteSession.UserDomain,
-                        RemoteSession.UserName,
-                        RemoteSession.UserPassword,
                         RemoteSession.ClientWidth,
-                        RemoteSession.ClientHeight,
-                        RemoteSession.Program);
+                        RemoteSession.ClientHeight);
 
                     // update controls
                     UpdateControls();
@@ -270,7 +267,7 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
-            // disconnect the active remote session, if any and connected
+            // disconnect the active remote session, if any and connecting/connected
             if (RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected))
             {
                 try

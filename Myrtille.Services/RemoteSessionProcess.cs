@@ -39,13 +39,8 @@ namespace Myrtille.Services
         //Usage: https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
         public void StartProcess(
             int remoteSessionId,
-            string serverAddress,
-            string userDomain,
-            string userName,
-            string userPassword,
             int clientWidth,
-            int clientHeight,
-            string program)
+            int clientHeight)
         {
             try
             {
@@ -93,14 +88,11 @@ namespace Myrtille.Services
 
                 // https://github.com/FreeRDP/FreeRDP/wiki/CommandLineInterface
                 // Syntax: /flag enables flag, +toggle or -toggle enables or disables toggle. /toggle and +toggle are the same. Options with values work like this: /option:<value>
+                // as the process command line can be displayed into the task manager / process explorer, the connection settings (including user credentials) are now passed to the rdp client through the inputs pipe
                 _process.StartInfo.Arguments =
                     "/myrtille-sid:" + _remoteSessionId +                                                           // session id
                     (!Environment.UserInteractive ? string.Empty : " /myrtille-window") +                           // session window
                     (!remoteSessionLog ? string.Empty : " /myrtille-log") +                                         // session log
-                    " /v:" + (string.IsNullOrEmpty(serverAddress) ? "localhost" : serverAddress) +                  // server
-                    (string.IsNullOrEmpty(userDomain) ? string.Empty : " /d:" + userDomain) +                       // domain
-                    (string.IsNullOrEmpty(userName) ? string.Empty : " /u:" + userName) +                           // user
-                    (string.IsNullOrEmpty(userPassword) ? string.Empty : " /p:" + userPassword) +                   // password
                     " /w:" + clientWidth +                                                                          // display width
                     " /h:" + clientHeight +                                                                         // display height
                     " /bpp:16" +                                                                                    // color depth
@@ -117,8 +109,7 @@ namespace Myrtille.Services
                     " -async-channels" +                                                                            // async channels
                     " -async-transport" +                                                                           // async transport
                     " +clipboard" +                                                                                 // clipboard support
-                    " /audio-mode:2" +                                                                              // audio mode (not supported for now, 2: do not play)
-                    (string.IsNullOrEmpty(program) ? string.Empty : " /shell:\"" + program + "\"");                 // program to run
+                    " /audio-mode:2";                                                                               // audio mode (not supported for now, 2: do not play)
 
                 if (!Environment.UserInteractive)
                 {

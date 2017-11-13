@@ -30,9 +30,6 @@ function Canvas(config, dialog, display)
     var canvasContext = null;
     this.getCanvasContext = function() { return canvasContext; };
 
-    // blob support
-    var blobAvailable = false;
-
     this.init = function()
     {
         try
@@ -78,17 +75,19 @@ function Canvas(config, dialog, display)
 		    return;
 	    }
 
-        try
+        // blob support check
+        if (config.getImageBlobEnabled())
         {
-            // blob support check
-            var blob = new Blob();
-            blobAvailable = true;
+            try
+            {
+                var blob = new Blob();
+            }
+	        catch (exc)
+	        {
+		        dialog.showDebug('blob support check failed (' + exc.message + '), using base64');
+		        config.setImageBlobEnabled(false);
+	        }
         }
-	    catch (exc)
-	    {
-		    dialog.showDebug('blob support check failed (' + exc.message + '), using base64');
-		    blobAvailable = false;
-	    }
     };
 
     this.addImage = function(idx, posX, posY, width, height, format, quality, fullscreen, data)
@@ -96,7 +95,7 @@ function Canvas(config, dialog, display)
         try
         {
             var img = new Image();
-            var url;
+            var url = null;
 
             img.onload = function()
             {
@@ -108,7 +107,7 @@ function Canvas(config, dialog, display)
                     canvasContext.strokeRect(parseInt(posX), parseInt(posY), parseInt(width), parseInt(height));
                 }
 
-                if (blobAvailable)
+                if (config.getImageBlobEnabled() && url != null)
                 {
                     //dialog.showDebug('revoking url: ' + url);
                     URL.revokeObjectURL(url);
@@ -150,9 +149,10 @@ function Canvas(config, dialog, display)
 
                 // after sending the image in raw binary, having to convert it to base64 to draw it on canvas feels quite weird
                 // another option is to make a blob and create an url from it (cached locally)
-                // after some tests, both solutions behave similarly... base64 is however more backward compatible...
+                // base64 is more backward compatible while blob is a newer javascript construct
+                // after some tests, both solutions behave similarly... but the blob url is cached on disk whereas the base64 data is cached in memory (thus blob might be slower)
 
-                if (!blobAvailable)
+                if (!config.getImageBlobEnabled())
                 {
                     url = 'data:image/' + format + ';base64,' + display.bytesToBase64(data);
                 }

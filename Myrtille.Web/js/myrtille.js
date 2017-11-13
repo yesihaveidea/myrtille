@@ -143,9 +143,9 @@ function startMyrtille(remoteSessionActive, statEnabled, debugEnabled, compatibi
                 //alert('clearing old session id from url');
                 redirectUrl = window.location.href.substr(0, window.location.href.indexOf('?oldSID=')) + '?';
             }
-            // a program was started from url
+            // auto-connect / start program from url
             // there is no need for any session fixation protection in this case because the user credentials are already into the url (with password either plain text or hashed)
-            else if (window.location.href.indexOf('&program=') != -1)
+            else if (window.location.href.indexOf('&connect=') != -1)
             {
                 // redirect with an empty querystring
                 redirectUrl = httpServerUrl + '?';
@@ -383,5 +383,36 @@ function sendCtrlAltDel()
     catch (exc)
     {
         dialog.showDebug('myrtille sendCtrlAltDel error: ' + exc.message);
+    }
+}
+
+function sendRightClick()
+{
+    try
+    {
+        // check touchscreen first (same logic as mouse)
+        var lastMouseClickX = user.getTouchscreen().getLastTouchTapX();
+        var lastMouseClickY = user.getTouchscreen().getLastTouchTapY();
+
+        // if there is no touchscreen tap activity, check mouse click
+        // note that, if mouse and touchscreen are both used, the touchscreen activity is prioritary
+        if (lastMouseClickX == null || lastMouseClickY == null)
+        {
+            lastMouseClickX = user.getMouse().getLastMouseClickX();
+            lastMouseClickY = user.getMouse().getLastMouseClickY();
+        }
+
+        if (lastMouseClickX != null && lastMouseClickY != null)
+        {
+            if (config.getAdaptiveFullscreenTimeout() > 0)
+                user.triggerActivity();
+
+            network.processUserEvent('mouse', network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + '1' + lastMouseClickX + '-' + lastMouseClickY);
+            network.processUserEvent('mouse', network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + '0' + lastMouseClickX + '-' + lastMouseClickY);
+        }
+    }
+    catch (exc)
+    {
+        dialog.showDebug('myrtille sendRightClick error: ' + exc.message);
     }
 }

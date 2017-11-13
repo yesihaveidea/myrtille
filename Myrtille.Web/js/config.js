@@ -50,7 +50,7 @@ function Config(
         WEBP: { value: 3, text: 'WEBP' }
     };
 
-    // see comments into display.js
+    // see comments into network.js
     var imageModeEnum =
     {
         AUTO: { value: 0, text: 'AUTO' },
@@ -92,14 +92,15 @@ function Config(
 
     // display
     var displayMode = displayModeEnum.AUTO;             // display mode
-    var imageEncoding = imageEncodingEnum.AUTO;         // image encoding
-    var imageQuality = 50;                              // image quality (%) higher = better; not applicable for PNG (lossless); tweaked dynamically to fit the available bandwidth if using JPEG, PNG_JPEG or WEBP encoding. for best user experience, fullscreen updates are always done in higher quality (75%), regardless of this setting and bandwidth
+    var imageEncoding = imageEncodingEnum.PNG;          // image encoding
+    var imageQuality = 100;                             // image quality (%) higher = better; not applicable for PNG (lossless); tweaked dynamically to fit the available bandwidth if using JPEG, PNG_JPEG or WEBP encoding. for best user experience, fullscreen updates are always done in higher quality (75%), regardless of this setting and bandwidth
     var imageQuantity = 100;                            // image quantity (%) less images = lower cpu and bandwidth usage / faster; more = smoother display (skipping images may result in some display inconsistencies). tweaked dynamically to fit the available bandwidth; possible values: 5, 10, 20, 25, 50, 100 (lower = higher drop rate)
     var imageTweakLowerThreshold = 50;                  // tweak the image quality & quantity depending on the available bandwidth: lower threshold
     var imageTweakHigherThreshold = 90;                 // tweak the image quality & quantity depending on the available bandwidth: higher threshold
     var imageCountOk = 500;                             // reasonable number of images to display at once; for HTML4 (divs), used to clean the DOM (by requesting a fullscreen update) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
     var imageCountMax = 1000;                           // maximal number of images to display at once; for HTML4 (divs), used to clean the DOM (by reloading the page) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
     var imageMode = imageModeEnum.AUTO;                 // image mode
+    var imageBlobEnabled = false;                       // display images from local cached urls using blob objects (HTML5 only, binary mode)
     var imageDebugEnabled = false;                      // display a red border around images, for debug purpose
     var periodicalFullscreenInterval = 30000;           // periodical fullscreen update (ms); used to refresh the whole display
     var adaptiveFullscreenTimeout = 1500;               // adaptive fullscreen update (ms); requested after a given period of user inactivity (=no input). 0 to disable
@@ -118,7 +119,7 @@ function Config(
     var bufferSize = 128;                               // max number of buffered items (not size in bytes)
 
     // user
-    var mouseMoveSamplingRate = 10;                     // sampling the mouse moves (%) may help to reduce the server load in applications that trigger a lot of updates (i.e.: imaging applications); possible values: 5, 10, 20, 25, 50, 100 (lower = higher drop rate)
+    var mouseMoveSamplingRate = 100;                    // sampling the mouse moves (%) may help to reduce the server load in applications that trigger a lot of updates (i.e.: imaging applications); possible values: 5, 10, 20, 25, 50, 100 (lower = higher drop rate)
 
     /*************************************************************************************************************************************************************************************************/
     /*** Properties                                                                                                                                                                                ***/
@@ -146,7 +147,7 @@ function Config(
     this.getDisplayHeight = function() { return displayHeight; };
     this.getDisplayModeEnum = function() { return displayModeEnum; };
     this.getDisplayMode = function() { return displayMode; };
-    this.setDisplayMode = function (mode) { displayMode = mode; };
+    this.setDisplayMode = function(mode) { displayMode = mode; };
     this.getImageEncodingEnum = function() { return imageEncodingEnum; };
     this.getImageEncoding = function() { return imageEncoding; };
     this.setImageEncoding = function(encoding) { imageEncoding = encoding; };
@@ -161,6 +162,8 @@ function Config(
     this.getImageModeEnum = function() { return imageModeEnum; };
     this.getImageMode = function() { return imageMode; };
     this.setImageMode = function(mode) { imageMode = mode; };
+    this.getImageBlobEnabled = function() { return imageBlobEnabled; };
+    this.setImageBlobEnabled = function(enabled) { imageBlobEnabled = enabled; };
     this.getImageDebugEnabled = function() { return imageDebugEnabled; };
     this.getPeriodicalFullscreenInterval = function() { return periodicalFullscreenInterval; };
     this.getAdaptiveFullscreenTimeout = function() { return adaptiveFullscreenTimeout; };
@@ -171,7 +174,7 @@ function Config(
     this.getBandwidthCheckInterval = function() { return bandwidthCheckInterval; };
     this.getNetworkModeEnum = function() { return networkModeEnum; };
     this.getNetworkMode = function() { return networkMode; };
-    this.setNetworkMode = function (mode) { networkMode = mode; };
+    this.setNetworkMode = function(mode) { networkMode = mode; };
 
     // websocket
     this.getHttpSessionKeepAliveInterval = function() { return httpSessionKeepAliveInterval; };

@@ -59,7 +59,7 @@ function Websocket(config, dialog, display, network)
             catch (exc)
             {
                 dialog.showDebug('websocket binary init error: ' + exc.message + ', falling back to base64 (or roundtrip if not available)');
-                config.setImageMode(display.isBase64Available() ? config.getImageModeEnum().BASE64 : config.getImageModeEnum().ROUNDTRIP);
+                config.setImageMode(!display.isBase64Available() ? config.getImageModeEnum().ROUNDTRIP : config.getImageModeEnum().BASE64);
                 dialog.showStat(dialog.getShowStatEnum().IMAGE_MODE, config.getImageMode());
             }
         }

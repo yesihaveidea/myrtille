@@ -20,8 +20,8 @@ namespace Myrtille.Web
 {
     public enum ImageEncoding
     {
-        AUTO = 0,   // default
-        PNG = 1,
+        AUTO = 0,
+        PNG = 1,    // default
         JPEG = 2,
         WEBP = 3
     }

@@ -66,32 +66,40 @@ function Network(config, dialog, display)
     */
     var commandEnum =
     {
+        // connection
+        SEND_SERVER_ADDRESS: { value: 0, text: 'SRV' },
+        SEND_USER_DOMAIN: { value: 1, text: 'DOM' },
+        SEND_USER_NAME: { value: 2, text: 'USR' },
+        SEND_USER_PASSWORD: { value: 3, text: 'PWD' },
+        SEND_START_PROGRAM: { value: 4, text: 'PRG' },
+        CONNECT_RDP_CLIENT: { value: 5, text: 'CON' },
+
         // browser
-        SEND_BROWSER_RESIZE: { value: 0, text: 'RSZ' },
+        SEND_BROWSER_RESIZE: { value: 6, text: 'RSZ' },
 
         // keyboard
-        SEND_KEY_UNICODE: { value: 1, text: 'KUC' },
-        SEND_KEY_SCANCODE: { value: 2, text: 'KSC' },
+        SEND_KEY_UNICODE: { value: 7, text: 'KUC' },
+        SEND_KEY_SCANCODE: { value: 8, text: 'KSC' },
 
         // mouse
-        SEND_MOUSE_MOVE: { value: 3, text: 'MMO' },
-        SEND_MOUSE_LEFT_BUTTON: { value: 4, text: 'MLB' },
-        SEND_MOUSE_MIDDLE_BUTTON: { value: 5, text: 'MMB' },
-        SEND_MOUSE_RIGHT_BUTTON: { value: 6, text: 'MRB' },
-        SEND_MOUSE_WHEEL_UP: { value: 7, text: 'MWU' },
-        SEND_MOUSE_WHEEL_DOWN: { value: 8, text: 'MWD' },
+        SEND_MOUSE_MOVE: { value: 9, text: 'MMO' },
+        SEND_MOUSE_LEFT_BUTTON: { value: 10, text: 'MLB' },
+        SEND_MOUSE_MIDDLE_BUTTON: { value: 11, text: 'MMB' },
+        SEND_MOUSE_RIGHT_BUTTON: { value: 12, text: 'MRB' },
+        SEND_MOUSE_WHEEL_UP: { value: 13, text: 'MWU' },
+        SEND_MOUSE_WHEEL_DOWN: { value: 14, text: 'MWD' },
 
         // control
-        SET_STAT_MODE: { value: 9, text: 'STA' },
-        SET_DEBUG_MODE: { value: 10, text: 'DBG' },
-        SET_COMPATIBILITY_MODE: { value: 11, text: 'CMP' },
-        SET_SCALE_DISPLAY: { value: 12, text: 'SCA' },
-        SET_IMAGE_ENCODING: { value: 13, text: 'ECD' },
-        SET_IMAGE_QUALITY: { value: 14, text: 'QLT' },
-        SET_IMAGE_QUANTITY: { value: 15, text: 'QNT' },
-        REQUEST_FULLSCREEN_UPDATE: { value: 16, text: 'FSU' },
-        REQUEST_REMOTE_CLIPBOARD: { value: 17, text: 'CLP' },
-        CLOSE_RDP_CLIENT: { value: 18, text: 'CLO' }
+        SET_STAT_MODE: { value: 15, text: 'STA' },
+        SET_DEBUG_MODE: { value: 16, text: 'DBG' },
+        SET_COMPATIBILITY_MODE: { value: 17, text: 'CMP' },
+        SET_SCALE_DISPLAY: { value: 18, text: 'SCA' },
+        SET_IMAGE_ENCODING: { value: 19, text: 'ECD' },
+        SET_IMAGE_QUALITY: { value: 20, text: 'QLT' },
+        SET_IMAGE_QUANTITY: { value: 21, text: 'QNT' },
+        REQUEST_FULLSCREEN_UPDATE: { value: 22, text: 'FSU' },
+        REQUEST_REMOTE_CLIPBOARD: { value: 23, text: 'CLP' },
+        CLOSE_RDP_CLIENT: { value: 24, text: 'CLO' }
     };
 
     if (Object.freeze)
@@ -105,6 +113,67 @@ function Network(config, dialog, display)
     {
         try
         {
+            /* image mode
+
+            ROUNDTRIP
+            display images from raw data
+            the simplest mode. each image is retrieved using a server call
+            pros: reliable (works in all browsers); cons: slower in case of high latency connection (due to the roundrip time)
+
+            BASE64
+            display images from base64 data
+            pros: avoid server roundtrips to retrieve images (direct injection into the DOM); cons: base64 encoding has an 33% overhead over binary
+            IE6/7: not supported
+            IE8: supported up to 32KB
+            IE9: supported in native mode; not supported in compatibility mode (use IE7 engine)
+            IE10+: supported
+            please note that, even if base64 data is disabled or not supported by the client, the server will always send them in order to display images size and compute bandwidth usage, and thus be able to tweak the images (quality & quantity) if the available bandwidth gets too low
+            it also workaround a weird glitch in IE7 that prevents script execution if code length is too low (when script code is injected into the DOM through long-polling)
+
+            BINARY
+            display images from binary data
+            pros: no bandwidth overhead; cons: requires an HTML5 browser with websocket (and binary type) support
+            
+            AUTO (default)
+            automatic detection of the best available mode (in order: ROUNDTRIP < BASE64 < BINARY)
+
+            */
+
+            var base64Available = display.isBase64Available();
+            var binaryAvailable = (window.WebSocket || window.MozWebSocket) && !config.getCompatibilityMode();
+
+            switch (config.getImageMode())
+            {
+                case config.getImageModeEnum().ROUNDTRIP:
+                    break;
+
+                case config.getImageModeEnum().BASE64:
+                    if (!base64Available)
+                    {
+                        config.setImageMode(config.getImageModeEnum().ROUNDTRIP);
+                    }
+                    break;
+                    
+                case config.getImageModeEnum().BINARY:
+                    if (!binaryAvailable)
+                    {
+                        if (!base64Available)
+                        {
+                            config.setImageMode(config.getImageModeEnum().ROUNDTRIP);
+                        }
+                        else
+                        {
+                            config.setImageMode(config.getImageModeEnum().BASE64);
+                        }
+                    }
+                    break;
+                    
+                default:
+                    config.setImageMode((!binaryAvailable ? (!base64Available ? config.getImageModeEnum().ROUNDTRIP : config.getImageModeEnum().BASE64) : config.getImageModeEnum().BINARY));
+            }
+
+            dialog.showStat(dialog.getShowStatEnum().IMAGE_MODE, config.getImageMode());
+
             /* network mode
 
             XHR

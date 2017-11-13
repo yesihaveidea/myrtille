@@ -117,67 +117,6 @@ function Display(config, dialog)
                 checkWebpSupport();
             }
 
-            /* image mode
-
-            ROUNDTRIP
-            display images from raw data
-            the simplest mode. each image is retrieved using a server call
-            pros: reliable (works in all browsers); cons: slower in case of high latency connection (due to the roundrip time)
-
-            BASE64
-            display images from base64 data
-            pros: avoid server roundtrips to retrieve images (direct injection into the DOM); cons: base64 encoding has an 33% overhead over binary
-            IE6/7: not supported
-            IE8: supported up to 32KB
-            IE9: supported in native mode; not supported in compatibility mode (use IE7 engine)
-            IE10+: supported
-            please note that, even if base64 data is disabled or not supported by the client, the server will always send them in order to display images size and compute bandwidth usage, and thus be able to tweak the images (quality & quantity) if the available bandwidth gets too low
-            it also workaround a weird glitch in IE7 that prevents script execution if code length is too low (when script code is injected into the DOM through long-polling)
-
-            BINARY
-            display images from binary data
-            pros: no bandwidth overhead; cons: requires an HTML5 browser with websocket (and binary type) support
-            
-            AUTO (default)
-            automatic detection of the best available mode (in order: ROUNDTRIP < BASE64 < BINARY)
-
-            */
-
-            var base64Available = this.isBase64Available();
-            var binaryAvailable = (window.WebSocket || window.MozWebSocket) && !config.getCompatibilityMode();
-
-            switch (config.getImageMode())
-            {
-                case config.getImageModeEnum().ROUNDTRIP:
-                    break;
-
-                case config.getImageModeEnum().BASE64:
-                    if (!base64Available)
-                    {
-                        config.setImageMode(config.getImageModeEnum().ROUNDTRIP);
-                    }
-                    break;
-                    
-                case config.getImageModeEnum().BINARY:
-                    if (!binaryAvailable)
-                    {
-                        if (!base64Available)
-                        {
-                            config.setImageMode(config.getImageModeEnum().ROUNDTRIP);
-                        }
-                        else
-                        {
-                            config.setImageMode(config.getImageModeEnum().BASE64);
-                        }
-                    }
-                    break;
-                    
-                default:
-                    config.setImageMode((!binaryAvailable ? (!base64Available ? config.getImageModeEnum().ROUNDTRIP : config.getImageModeEnum().BASE64) : config.getImageModeEnum().BINARY));
-            }
-
-            dialog.showStat(dialog.getShowStatEnum().IMAGE_MODE, config.getImageMode());
-           
             // image count per second; currently just an information but could be used for throttling display, if needed
             window.setInterval(function()
             {
@@ -334,33 +273,36 @@ function Display(config, dialog)
         {
             //dialog.showDebug('updating mouse cursor, xHotSpot: ' + xHotSpot + ', yHotSpot: ' + yHotSpot);
 
-            //dialog.showDebug('browser: ' + navigator.userAgent);
-
-            // https://msdn.microsoft.com/library/aa358795(v=vs.85).aspx
-            // IE/Edge have issues with mouse cursors:
-            // - it doesn't supports PNG (neither base64 or binary data), only .cur, .ico or .ani
-            // - it's not possible to specify an hotspot using CSS (but the .cur format handles it...)
-            // - the cursor blinks when it changes, and stays invisible as long as the user doesn't move the mouse (!)
             if (this.isIEBrowser())
             {
-                //dialog.showDebug('IE/Edge: unable to set a custom mouse cursor');
-                return;
-            }
+                //dialog.showDebug('IE browser detected, retrieving mouse cursor (.cur format, with hotspot)');
 
-            if (config.getImageMode() == config.getImageModeEnum().ROUNDTRIP || base64Data == '')
-            {
                 if (config.getAdditionalLatency() > 0)
                 {
-                    window.setTimeout(function() { document.body.style.cursor = 'url(' + config.getHttpServerUrl() + 'GetUpdate.aspx?imgIdx=' + idx + '&noCache=' + new Date().getTime() + ') ' + xHotSpot + ' ' + yHotSpot + ', auto'; }, Math.round(config.getAdditionalLatency() / 2));
+                    window.setTimeout(function() { document.body.style.cursor = 'url(\'' + config.getHttpServerUrl() + 'GetCursor.aspx?imgIdx=' + idx + '&noCache=' + new Date().getTime() + '\'), auto'; }, Math.round(config.getAdditionalLatency() / 2));
                 }
                 else
                 {
-                    document.body.style.cursor = 'url(' + config.getHttpServerUrl() + 'GetUpdate.aspx?imgIdx=' + idx + '&noCache=' + new Date().getTime() + ') ' + xHotSpot + ' ' + yHotSpot + ', auto';
+                    document.body.style.cursor = 'url(\'' + config.getHttpServerUrl() + 'GetCursor.aspx?imgIdx=' + idx + '&noCache=' + new Date().getTime() + '\'), auto';
                 }
             }
             else
             {
-                document.body.style.cursor = 'url(\'data:image/png;base64,' + base64Data + '\') ' + xHotSpot + ' ' + yHotSpot + ', auto';
+                if (config.getImageMode() == config.getImageModeEnum().ROUNDTRIP || base64Data == '')
+                {
+                    if (config.getAdditionalLatency() > 0)
+                    {
+                        window.setTimeout(function() { document.body.style.cursor = 'url(\'' + config.getHttpServerUrl() + 'GetUpdate.aspx?imgIdx=' + idx + '&noCache=' + new Date().getTime() + '\') ' + xHotSpot + ' ' + yHotSpot + ', auto'; }, Math.round(config.getAdditionalLatency() / 2));
+                    }
+                    else
+                    {
+                        document.body.style.cursor = 'url(\'' + config.getHttpServerUrl() + 'GetUpdate.aspx?imgIdx=' + idx + '&noCache=' + new Date().getTime() + '\') ' + xHotSpot + ' ' + yHotSpot + ', auto';
+                    }
+                }
+                else
+                {
+                    document.body.style.cursor = 'url(\'data:image/png;base64,' + base64Data + '\') ' + xHotSpot + ' ' + yHotSpot + ', auto';
+                }
             }
         }
 	    catch (exc)

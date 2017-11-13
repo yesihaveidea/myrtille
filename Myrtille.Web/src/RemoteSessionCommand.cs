@@ -22,32 +22,40 @@ namespace Myrtille.Web
 {
     public enum RemoteSessionCommand
     {
+        // connection
+        SendServerAddress = 0,
+        SendUserDomain = 1,
+        SendUserName = 2,
+        SendUserPassword = 3,
+        SendStartProgram = 4,
+        ConnectRdpClient = 5,
+
         // browser
-        SendBrowserResize = 0,
+        SendBrowserResize = 6,
 
         // keyboard
-        SendKeyUnicode = 1,
-        SendKeyScancode = 2,
+        SendKeyUnicode = 7,
+        SendKeyScancode = 8,
 
         // mouse
-        SendMouseMove = 3,
-        SendMouseLeftButton = 4,
-        SendMouseMiddleButton = 5,
-        SendMouseRightButton = 6,
-        SendMouseWheelUp = 7,
-        SendMouseWheelDown = 8,
+        SendMouseMove = 9,
+        SendMouseLeftButton = 10,
+        SendMouseMiddleButton = 11,
+        SendMouseRightButton = 12,
+        SendMouseWheelUp = 13,
+        SendMouseWheelDown = 14,
 
         // control
-        SetStatMode = 9,
-        SetDebugMode = 10,
-        SetCompatibilityMode = 11,
-        SetScaleDisplay = 12,
-        SetImageEncoding = 13,
-        SetImageQuality = 14,
-        SetImageQuantity = 15,
-        RequestFullscreenUpdate = 16,
-        RequestRemoteClipboard = 17,
-        CloseRdpClient = 18
+        SetStatMode = 15,
+        SetDebugMode = 16,
+        SetCompatibilityMode = 17,
+        SetScaleDisplay = 18,
+        SetImageEncoding = 19,
+        SetImageQuality = 20,
+        SetImageQuantity = 21,
+        RequestFullscreenUpdate = 22,
+        RequestRemoteClipboard = 23,
+        CloseRdpClient = 24
     }
 
     /*
@@ -63,6 +71,12 @@ namespace Myrtille.Web
         static RemoteSessionCommandMapping()
         {
             FromPrefix = new Hashtable();
+            FromPrefix["SRV"] = RemoteSessionCommand.SendServerAddress;
+            FromPrefix["DOM"] = RemoteSessionCommand.SendUserDomain;
+            FromPrefix["USR"] = RemoteSessionCommand.SendUserName;
+            FromPrefix["PWD"] = RemoteSessionCommand.SendUserPassword;
+            FromPrefix["PRG"] = RemoteSessionCommand.SendStartProgram;
+            FromPrefix["CON"] = RemoteSessionCommand.ConnectRdpClient;
             FromPrefix["RSZ"] = RemoteSessionCommand.SendBrowserResize;
             FromPrefix["KUC"] = RemoteSessionCommand.SendKeyUnicode;
             FromPrefix["KSC"] = RemoteSessionCommand.SendKeyScancode;
@@ -84,6 +98,12 @@ namespace Myrtille.Web
             FromPrefix["CLO"] = RemoteSessionCommand.CloseRdpClient;
 
             ToPrefix = new Hashtable();
+            ToPrefix[RemoteSessionCommand.SendServerAddress] = "SRV";
+            ToPrefix[RemoteSessionCommand.SendUserDomain] = "DOM";
+            ToPrefix[RemoteSessionCommand.SendUserName] = "USR";
+            ToPrefix[RemoteSessionCommand.SendUserPassword] = "PWD";
+            ToPrefix[RemoteSessionCommand.SendStartProgram] = "PRG";
+            ToPrefix[RemoteSessionCommand.ConnectRdpClient] = "CON";
             ToPrefix[RemoteSessionCommand.SendBrowserResize] = "RSZ";
             ToPrefix[RemoteSessionCommand.SendKeyUnicode] = "KUC";
             ToPrefix[RemoteSessionCommand.SendKeyScancode] = "KSC";

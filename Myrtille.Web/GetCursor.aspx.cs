@@ -17,12 +17,9 @@
 */
 
 using System;
-using System.Drawing;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Web;
 using System.Web.UI;
-using System.Windows.Forms;
 
 namespace Myrtille.Web
 {
@@ -66,26 +63,7 @@ namespace Myrtille.Web
                 var imgData = img != null ? img.Data : null;
                 if (imgData != null && imgData.Length > 0)
                 {
-                    var imgStream = new MemoryStream(imgData);
-                    var bitmap = new Bitmap(imgStream);
-
-                    //var cursor = CreateCursor(bitmap, img.PosX, img.PosY);
-                    // TODO: find a way to save a cursor as .cur file? using .ico instead...
-
-                    var icon = Icon.FromHandle(bitmap.GetHicon());
-
-                    // TODO: IE
-                    // IE does support .ico files for cursors, but an icon doesn't have an hotspot and there is no way to define it in IE...
-                    // problem is, the user thinks clicking a specific spot and, in fact, isn't...
-                    // also, the cursor blinks when it changes, and stays invisible as long as the user doesn't move the mouse...
-                    // for these reasons, IE won't display custom cursors...
-
-                    var iconStream = new MemoryStream();
-                    icon.Save(iconStream);
-                    var iconData = iconStream.ToArray();
-
-                    // write the output
-                    HttpContext.Current.Response.OutputStream.Write(iconData, 0, iconData.Length);
+                    CreateCursorFromImage(img.Width, img.Height, img.PosX, img.PosY, imgData, Response.OutputStream);
                 }
             }
             catch (Exception exc)
@@ -94,41 +72,61 @@ namespace Myrtille.Web
             }
         }
 
-        #region Icon
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetIconInfo(IntPtr hIcon, ref IconInfo pIconInfo);
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr CreateIconIndirect(ref IconInfo icon);
-
-        public struct IconInfo
+        // create a cursor (CUR) from an image (BMP or PNG); https://en.wikipedia.org/wiki/ICO_%28file_format%29
+        private static void CreateCursorFromImage(int width, int height, int xHotSpot, int yHotSpot, byte[] data, Stream output)
         {
-            public bool fIcon;
-            public int xHotspot;
-            public int yHotspot;
-            public IntPtr hbmMask;
-            public IntPtr hbmColor;
-        }
+            try
+            {
+                var writer = new BinaryWriter(output);
 
-        /// <summary>
-        /// create a mouse cursor from a bitmap
-        /// </summary>
-        /// <param name="bitmap"></param>
-        /// <param name="xHotSpot"></param>
-        /// <param name="yHotSpot"></param>
-        /// <returns></returns>
-        private static Cursor CreateCursor(Bitmap bitmap, int xHotSpot, int yHotSpot)
-        {
-            var iconInfo = new IconInfo();
-            GetIconInfo(bitmap.GetHicon(), ref iconInfo);
-            iconInfo.xHotspot = xHotSpot;
-            iconInfo.yHotspot = yHotSpot;
-            iconInfo.fIcon = false;
-            return new Cursor(CreateIconIndirect(ref iconInfo));
-        }
+                // 0-1 Reserved. Must always be 0.
+                writer.Write((byte)0);
+                writer.Write((byte)0);
 
-        #endregion
+                // 2-3 Specifies image type: 1 for icon (.ICO) image, 2 for cursor (.CUR) image. Other values are invalid.
+                writer.Write((short)2);
+
+                // 4-5 Specifies number of images in the file.
+                writer.Write((short)1);
+
+                // image #1
+
+                // 0 Specifies image width in pixels. Can be any number between 0 and 255. Value 0 means image width is 256 pixels.
+                writer.Write((byte)width);
+
+                // 1 Specifies image height in pixels. Can be any number between 0 and 255. Value 0 means image height is 256 pixels.
+                writer.Write((byte)height);
+
+                // 2 Specifies number of colors in the color palette. Should be 0 if the image does not use a color palette.
+                writer.Write((byte)0);
+
+                // 3 Reserved. Should be 0.
+                writer.Write((byte)0);
+
+                // 4-5 In ICO format: Specifies color planes.Should be 0 or 1.
+                // 4-5 In CUR format: Specifies the horizontal coordinates of the hotspot in number of pixels from the left.
+                writer.Write((short)xHotSpot);
+
+                // 6-7 In ICO format: Specifies bits per pixel.
+                // 6-7 In CUR format: Specifies the vertical coordinates of the hotspot in number of pixels from the top.
+                writer.Write((short)yHotSpot);
+
+                // 8-11 Specifies the size of the image's data in bytes
+                writer.Write((int)data.Length);
+
+                // 12-15 Specifies the offset of BMP or PNG data from the beginning of the ICO/CUR file
+                writer.Write((int)(6 + 16));
+
+                // image data
+                writer.Write(data);
+
+                writer.Flush();
+            }
+            catch (Exception exc)
+            {
+                System.Diagnostics.Trace.TraceError("Failed to convert image to cursor with exception {0}", exc);
+                throw;
+            }
+        }
     }
 }

@@ -37,9 +37,9 @@ From version 1.5.0, Myrtille does support hashed passwords (so that the password
 Currently not working with Windows 2008 servers. See notes and limitations.
 
 ### Syntax
-https://myserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=server&domain=domain[optional]&user=user&passwordHash=passwordHash&program=program&width=width(px)[optional]&height=height(px)[optional]&connect=Connect%21
+https://myserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=server&domain=domain[optional]&user=user&passwordHash=passwordHash&program=program[optional]&width=width(px)[optional]&height=height(px)[optional]&connect=Connect%21
 
-Leave the **"&program="** parameter empty for direct access to the desktop or set the executable path, name and parameters (double quotes must be escaped).
+Don't set the **"&program="** parameter (or leave it empty) for a direct access to the desktop or set the executable path, name and parameters otherwise (double quotes must be escaped).
 
 The pre version 1.5.0 syntax ("&password=*password*") is still supported, but it's advisable to move to the safer syntax.
 
@@ -67,10 +67,17 @@ Myrtille supports both local and network file storage. If you want your domain u
 ## Security
 The installer creates a self-signed certificate for myrtille (so you can use it at https://myserver/myrtille), but you can set your own certificate (if you wish).
 
-## Configuration
+## Configuration / Performance tweaks
 Both the gateway and services have their own .NET config files; the gateway also uses XDT transform files to adapt the settings depending on the current solution configuration.
 
 You may also play with the "js/config.js" file settings to fine tune the configuration depending on your needs.
+
+The most important settings are:
+- **imageEncoding**: set the format used to render the display; possible values: AUTO, PNG (default), JPEG or WEBP. For best performance, the encoding is defined to PNG in version 1.6.0. For optimized bandwidth usage (if your bandwidth is small or if you use graphical applications), the recommanded encoding is AUTO.
+- **imageQuality**: set the % quality of the rendering (higher = better); not applicable for PNG (lossless)
+- **imageQuantity**: set the % completeness of the rendering (lower = higher drop rate); useful for low server CPU / bandwidth; use with caution as skipping some images may result in display inconsistencies
+- **mouseMoveSamplingRate**: set the % sampling of the mouse moves (lower = higher drop rate); useful to reduce the server load in applications that trigger a lot of updates (i.e.: graphical applications)
+- **bufferEnabled**: buffer for user inputs; adjusted dynamically to fit the latency (more latency = more bufferization)
 
 ## Code organization
 - **Myrtille.RDP**: link to the myrtille FreeRDP fork. C++ code. RDP client, modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
@@ -177,12 +184,15 @@ First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (prefe
 	- Check the gateway windows event logs, particulary regarding .NET.
 	- Retry with debug enabled and check logs (into the "log" folder). You can change their verbosity level in config (but be warned it will affect peformance and flood the disk if set too verbose).
 
+- I don't have a mouse (or a right button), how can I Right-Click? (i.e.: on a touchpad or iOS device)
+	- Tap/Left-Click the screen where you want the Right-Click to occur then press the "Right-Click" button into the toolbar (on top of the screen)
+
 - The RDP session continues to run after clicking "Disconnect"
 	- Check the RDP server configuration (session disconnect timeout in particular). You can setup it automatically by importing the Myrtille "myrtille\bin\RDPSetup.reg" file into registry.
 
 - Myrtille is slow or buggy
 	- Enable the stats bar to have detailed information about the current connection. Check latency and bandwidth, among other things. **Stats, debug and HTML4 buttons can be enabled into css/Default.css (hidden by default)**
-	- Ensure debug is disabled or otherwise logs are not set to "Information" level (Myrtille "Web.Config" file, "system.diagnostics" section, default is "Warning"). Check logs, if debug is enabled.
+	- Ensure debug is disabled or otherwise logs are not set to "Information" level (Myrtille "Web.Config" file, "system.diagnostics" section, default is "Warning"). Check logs, if debug is enabled. **FreeRDP logs can be enabled into bin/Myrtille.Services.exe.config ("RemoteSessionLog" key, at the bottom of the file)**. Logs are located into the log folder.
 	- If debug is enabled and you are running Myrtille in debug mode under Visual Studio, you will have the FreeRDP window (session display) and console (rdp events) shown to you. It may help to debug.
 	- Switch from HTML4 to HTML5 rendering, or inversely (should be faster with HTML5).
 	- Check your network configuration (is something filtering the traffic?) and capabilities (high latency or small bandwidth?).

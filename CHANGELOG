@@ -1,4 +1,15 @@
-﻿2017-07-27 Version 1.5.0 (stable)
+﻿2017-11-13 Version 1.6.0 (stable)
+	resynced FreeRDP with master repository; among other things, fixes multiple vulnerabilities reported by the Cisco Talos Team (http://blog.talosintelligence.com/2017/07/vulnerbility-spotlight-freerdp-multiple.html) (thanks hac)
+	connection settings (including user credentials) are no longer passed to FreeRDP through command line; using pipe communication instead (thanks Paul)
+	auto-connect / start program from url now doesn't require the "&program=" parameter (access to the desktop if missing or empty) (thanks noetius)
+	custom mouse cursors are now supported with IE (thanks Thijs)
+	added a "Right-Click" button (into the toolbar) to simulate a right-click action on devices which don't have a mouse (or a right button) (thanks Scott)
+	performance tweak: now using PNG encoding by default (instead of mixed PNG/JPEG); drawback is it uses more bandwidth with graphic applications (use AUTO encoding in this case; config.js)
+	performance tweak: disabled mouse move sampling; drawback is it may lower the responsiveness with graphical applications (enable the sampling in this case; 10% for example; config.js)
+	performance tweak: disabled blob support (using base64 instead); blob is a newer javascript construct but is cached on disk whereas base64 data is cached in memory (faster); config.js
+	minor refactoring
+
+2017-07-27 Version 1.5.0 (stable)
 	changed prerequisites: IIS 8+ with websocket protocol enabled and .NET 4.5 (instead of .NET 4.0)
 	replaced Fleck websocket server by IIS 8+ websocket handler (now using standard 80 and 443 ports)
 	added websocket binary communication (no more base64 33% bandwidth overhead)

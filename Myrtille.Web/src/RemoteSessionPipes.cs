@@ -110,8 +110,12 @@ namespace Myrtille.Web
                 {
                     InputsPipe.EndWaitForConnection(e);
 
-                    // remote session is now connected
-                    RemoteSession.State = RemoteSessionState.Connected;
+                    // send connection settings
+                    RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendServerAddress, string.IsNullOrEmpty(RemoteSession.ServerAddress) ? "localhost" : RemoteSession.ServerAddress);
+                    RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendUserDomain, RemoteSession.UserDomain);
+                    RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendUserName, RemoteSession.UserName);
+                    RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendUserPassword, RemoteSession.UserPassword);
+                    RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendStartProgram, RemoteSession.Program);
 
                     // send client settings, if defined (they will be otherwise send later by the client)
                     if (RemoteSession.ImageEncoding.HasValue)
@@ -123,8 +127,8 @@ namespace Myrtille.Web
                     if (RemoteSession.ImageQuantity.HasValue)
                         RemoteSession.Manager.SendCommand(RemoteSessionCommand.SetImageQuantity, RemoteSession.ImageQuantity.ToString());
 
-                    if (RemoteSession.Manager.FullscreenEventPending)
-                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.RequestFullscreenUpdate);
+                    // connect; a fullscreen update will be sent upon connection
+                    RemoteSession.Manager.SendCommand(RemoteSessionCommand.ConnectRdpClient);
                 }
             }
             catch (Exception exc)

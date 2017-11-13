@@ -157,6 +157,9 @@
                 <!-- send ctrl+alt+del to the remote session. may be useful to change the user password, for example -->
                 <input type="button" runat="server" id="cad" value="Ctrl+Alt+Del" onclick="sendCtrlAltDel();" title="send Ctrl+Alt+Del to the remote session" disabled="disabled"/>
 
+                <!-- send right-click (on the last touched or left-clicked position) to the remote session. may be useful on touchpads or iOS devices -->
+                <input type="button" runat="server" id="mrc" value="Right-Click" onclick="sendRightClick();" title="send Right-Click (on the last touched or left-clicked position) to the remote session" disabled="disabled"/>
+
                 <!-- disconnect -->
                 <input type="button" runat="server" id="disconnect" value="Disconnect" onserverclick="DisconnectButtonClick" title="close session" disabled="disabled"/>
 
@@ -176,9 +179,9 @@
 
         <script type="text/javascript" language="javascript" defer="defer">
 
-            // start program from url
+            // auto-connect / start program from url
             // if the display resolution isn't set, the remote session isn't able to start; redirect with the client resolution
-            if (window.location.href.indexOf('&program=') != -1 && (window.location.href.indexOf('&width=') == -1 || window.location.href.indexOf('&height=') == -1))
+            if (window.location.href.indexOf('&connect=') != -1 && (window.location.href.indexOf('&width=') == -1 || window.location.href.indexOf('&height=') == -1))
             {
                 showToolbar();
 

@@ -34,9 +34,11 @@ function User(config, dialog, display, network)
 
     // mouse
     var mouse = null;
+    this.getMouse = function() { return mouse; };
 
     // touchscreen
     var touchscreen = null;
+    this.getTouchscreen = function() { return touchscreen; };
 
     this.init = function()
     {
@@ -76,6 +78,7 @@ function User(config, dialog, display, network)
             mouse.init();
 
             // even if possible to detect if the device has touchscreen capabilities, it would only be an assumption; so, implementing it by default, alongside with mouse...
+            // that's anyway the right thing to do, as a device can have both mouse and touchscreen
             // http://www.stucox.com/blog/you-cant-detect-a-touchscreen/
             touchscreen = new Touchscreen(config, dialog, display, network, this);
             touchscreen.init();
