@@ -99,7 +99,7 @@ namespace Myrtille.Services
                     " /gdi:sw" +                                                                                    // gdi mode (sw: software, hw: hardware). forced software because there is a palette issue with windows server 2008; also, the performance gain is small and even null on most virtual machines, when hardware isn't available
                     " /network:modem" +                                                                             // network profile
                     " +compression" +                                                                               // bulk compression (level is autodetected from the rdp version)
-                    " -sec-tls" +                                                                                   // tls encryption
+                    " /cert-ignore" +                                                                               // ignore certificate warning (when using NLA); may happen, for example, with a self-signed certificate (not trusted) or if the server joined a domain after the certificate was issued (name mismatch). more details here: http://www.vkernel.ro/blog/configuring-certificates-in-2012r2-remote-desktop-services-rds
                     " -mouse-motion" +                                                                              // mouse motion
                     " +bitmap-cache" +                                                                              // bitmap cache
                     " -offscreen-cache" +                                                                           // offscreen cache
