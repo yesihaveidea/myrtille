@@ -69,7 +69,10 @@
 
         <form method="post" runat="server" id="mainForm">
 
-            <!-- LOGIN -->
+            <!-- ********************************************************************************************************************************************************************************** -->
+            <!-- *** LOGIN                                                                                                                                                                      *** -->
+            <!-- ********************************************************************************************************************************************************************************** -->
+            
             <div runat="server" id="loginScreen">
 
                 <!-- customizable logo -->
@@ -127,7 +130,10 @@
                 
             </div>
 
-            <!-- TOOLBAR -->
+            <!-- ********************************************************************************************************************************************************************************** -->
+            <!-- *** TOOLBAR                                                                                                                                                                    *** -->
+            <!-- ********************************************************************************************************************************************************************************** -->
+            
             <div runat="server" id="toolbar" style="visibility:hidden;display:none;">
 
                 <!-- server info -->
@@ -161,7 +167,7 @@
                 <input type="button" runat="server" id="mrc" value="Right-Click" onclick="sendRightClick();" title="send Right-Click (on the last touched or left-clicked position) to the remote session" disabled="disabled"/>
 
                 <!-- disconnect -->
-                <input type="button" runat="server" id="disconnect" value="Disconnect" onserverclick="DisconnectButtonClick" title="close session" disabled="disabled"/>
+                <input type="button" runat="server" id="disconnect" value="Disconnect" onserverclick="DisconnectButtonClick" title="disconnect session" disabled="disabled"/>
 
             </div>
 
