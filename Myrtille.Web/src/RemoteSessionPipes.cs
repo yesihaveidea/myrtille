@@ -37,14 +37,6 @@ namespace Myrtille.Web
         private NamedPipeServerStream _updatesPipe;
         public NamedPipeServerStream UpdatesPipe { get { return _updatesPipe; } }
 
-        // the pipes buffers sizes must match the ones defined in the remote session process
-        // in order to avoid overloading both the bandwidth and the browser, images are limited to 1024 KB each
-        private const int _inputsPipeBufferSize = 131072;   // 128 KB
-        public int InputsPipeBufferSize { get { return _inputsPipeBufferSize; } }
-
-        private const int _updatesPipeBufferSize = 1048576; // 1024 KB
-        public int UpdatesPipeBufferSize { get { return _updatesPipeBufferSize; } }
-
         public delegate void ProcessUpdatesPipeMessageDelegate(byte[] msg);
         public ProcessUpdatesPipeMessageDelegate ProcessUpdatesPipeMessage { get; set; }
 
@@ -72,8 +64,8 @@ namespace Myrtille.Web
                     1,
                     PipeTransmissionMode.Message,
                     PipeOptions.Asynchronous,
-                    InputsPipeBufferSize,
-                    InputsPipeBufferSize,
+                    0,
+                    0,
                     pipeSecurity);
 
                 _updatesPipe = new NamedPipeServerStream(
@@ -82,8 +74,8 @@ namespace Myrtille.Web
                     1,
                     PipeTransmissionMode.Message,
                     PipeOptions.Asynchronous,
-                    UpdatesPipeBufferSize,
-                    UpdatesPipeBufferSize,
+                    0,
+                    0,
                     pipeSecurity);
 
                 // wait for client connection
@@ -177,7 +169,7 @@ namespace Myrtille.Web
             try
             {
                 var memoryStream = new MemoryStream();
-                var buffer = new byte[UpdatesPipeBufferSize];
+                var buffer = new byte[4096];
 
                 do
                 {

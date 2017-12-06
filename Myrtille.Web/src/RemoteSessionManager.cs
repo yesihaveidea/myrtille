@@ -17,6 +17,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.ServiceModel;
 using System.Text;
@@ -49,7 +50,7 @@ namespace Myrtille.Web
                 Pipes.ProcessUpdatesPipeMessage = ProcessUpdatesPipeMessage;
 
                 // sockets
-                WebSocket = null;
+                WebSockets = new List<RemoteSessionSocketHandler>();
 
                 // messages
                 _messageEventLock = new object();
@@ -99,10 +100,13 @@ namespace Myrtille.Web
                     // request page reload
                     if (message.Equals("reload"))
                     {
-                        if (WebSocket != null)
+                        if (WebSockets.Count > 0)
                         {
-                            Trace.TraceInformation("Sending reload request on websocket, remote session {0}", RemoteSession.Id);
-                            WebSocket.Send(message);
+                            Trace.TraceInformation("Sending reload request on websocket(s), remote session {0}", RemoteSession.Id);
+                            foreach (var webSocket in WebSockets)
+                            {
+                                webSocket.Send(message);
+                            }
                         }
                         else
                         {
@@ -113,10 +117,13 @@ namespace Myrtille.Web
                     // remote clipboard is available
                     else if (message.StartsWith("clipboard|"))
                     {
-                        if (WebSocket != null)
+                        if (WebSockets.Count > 0)
                         {
-                            Trace.TraceInformation("Sending clipboard content {0} on websocket, remote session {1}", message, RemoteSession.Id);
-                            WebSocket.Send(message);
+                            Trace.TraceInformation("Sending clipboard content {0} on websocket(s), remote session {1}", message, RemoteSession.Id);
+                            foreach (var webSocket in WebSockets)
+                            {
+                                webSocket.Send(message);
+                            }
                         }
                         else
                         {
@@ -148,7 +155,7 @@ namespace Myrtille.Web
 
         #region Sockets
 
-        public RemoteSessionSocketHandler WebSocket { get; set; }
+        public List<RemoteSessionSocketHandler> WebSockets { get; set; }
 
         #endregion
 
@@ -351,27 +358,30 @@ namespace Myrtille.Web
                     }
                 }
 
-                // if using a websocket, send the image
-                if (WebSocket != null)
+                // if using websocket(s), send the image
+                if (WebSockets.Count > 0)
                 {
-                    Trace.TraceInformation("Sending image {0} ({1}) on websocket, remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), RemoteSession.Id);
+                    Trace.TraceInformation("Sending image {0} ({1}) on websocket(s), remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), RemoteSession.Id);
 
-                    if (!WebSocket.BinaryMode)
+                    foreach (var webSocket in WebSockets)
                     {
-                        WebSocket.Send(
-                            image.Idx + "," +
-                            image.PosX + "," +
-                            image.PosY + "," +
-                            image.Width + "," +
-                            image.Height + "," +
-                            image.Format.ToString().ToLower() + "," +
-                            image.Quality + "," +
-                            image.Fullscreen.ToString().ToLower() + "," +
-                            Convert.ToBase64String(image.Data));
-                    }
-                    else
-                    {
-                        WebSocket.Send(data);
+                        if (!webSocket.BinaryMode)
+                        {
+                            webSocket.Send(
+                                image.Idx + "," +
+                                image.PosX + "," +
+                                image.PosY + "," +
+                                image.Width + "," +
+                                image.Height + "," +
+                                image.Format.ToString().ToLower() + "," +
+                                image.Quality + "," +
+                                image.Fullscreen.ToString().ToLower() + "," +
+                                Convert.ToBase64String(image.Data));
+                        }
+                        else
+                        {
+                            webSocket.Send(data);
+                        }
                     }
                 }
                 // otherwise, it will be retrieved later
@@ -555,10 +565,12 @@ namespace Myrtille.Web
             {
                 Pipes.DeletePipes();
             }
-            if (WebSocket != null)
+            if (WebSockets.Count > 0)
             {
-                WebSocket.Close();
-                WebSocket = null;
+                foreach (var webSocket in WebSockets)
+                {
+                    webSocket.Close();
+                }
             }
         }
 

@@ -92,10 +92,13 @@ namespace Myrtille.Web
                     _remoteSessionManager.Pipes.DeletePipes();
                 }
 
-                // if using a websocket, send a disconnect notification
-                if (_remoteSessionManager.WebSocket != null)
+                // if using websocket(s), send a disconnect notification
+                if (_remoteSessionManager.WebSockets.Count > 0)
                 {
-                    _remoteSessionManager.WebSocket.Send("disconnected");
+                    foreach (var webSocket in _remoteSessionManager.WebSockets)
+                    {
+                        webSocket.Send("disconnected");
+                    }
                 }
                 // no websocket at this step can mean using xhr (with long-polling or not),
                 // but it can also be because the browser wasn't fast enough to open a websocket before the rdp client was closed (due to a crash, connection or authentication issue, etc.)

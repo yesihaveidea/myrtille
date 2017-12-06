@@ -51,7 +51,7 @@ namespace Myrtille.Web
         public override void OnOpen()
         {
             Trace.TraceInformation("Opening websocket, remote session {0}", _remoteSession.Id);
-            _remoteSession.Manager.WebSocket = this;
+            _remoteSession.Manager.WebSockets.Add(this);
             base.OnOpen();
 
             // send a disconnect notification
@@ -65,7 +65,7 @@ namespace Myrtille.Web
         public override void OnClose()
         {
             Trace.TraceInformation("Closing websocket, remote session {0}", _remoteSession.Id);
-            _remoteSession.Manager.WebSocket = null;
+            _remoteSession.Manager.WebSockets.Remove(this);
             base.OnClose();
         }
 
