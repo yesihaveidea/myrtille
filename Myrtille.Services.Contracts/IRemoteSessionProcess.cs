@@ -39,6 +39,12 @@ namespace Myrtille.Services.Contracts
         /// </summary>
         [OperationContract]
         void StopProcess();
+
+        /// <summary>
+        /// retrieve the user account the rdp client process is running on
+        /// </summary>
+        [OperationContract]
+        string GetProcessIdentity();
     }
 
     public interface IRemoteSessionProcessCallback

@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Pipes;
 using System.Security.AccessControl;
 using Myrtille.Helpers;
@@ -54,7 +53,7 @@ namespace Myrtille.Web
 
                 // set the pipes access rights
                 var pipeSecurity = new PipeSecurity();
-                var pipeAccessRule = new PipeAccessRule(AccountHelper.GetEveryoneGroupName(), PipeAccessRights.ReadWrite, AccessControlType.Allow);
+                var pipeAccessRule = new PipeAccessRule(RemoteSession.Manager.Client.GetProcessIdentity(), PipeAccessRights.FullControl, AccessControlType.Allow);
                 pipeSecurity.AddAccessRule(pipeAccessRule);
 
                 // create the pipes
@@ -62,7 +61,7 @@ namespace Myrtille.Web
                     "remotesession_" + RemoteSession.Id + "_inputs",
                     PipeDirection.InOut,
                     1,
-                    PipeTransmissionMode.Message,
+                    PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous,
                     0,
                     0,
@@ -72,15 +71,15 @@ namespace Myrtille.Web
                     "remotesession_" + RemoteSession.Id + "_updates",
                     PipeDirection.InOut,
                     1,
-                    PipeTransmissionMode.Message,
+                    PipeTransmissionMode.Byte,
                     PipeOptions.Asynchronous,
                     0,
                     0,
                     pipeSecurity);
 
                 // wait for client connection
-                InputsPipe.BeginWaitForConnection(InputsPipeConnected, InputsPipe.GetHashCode());
-                UpdatesPipe.BeginWaitForConnection(UpdatesPipeConnected, UpdatesPipe.GetHashCode());
+                InputsPipe.BeginWaitForConnection(InputsPipeConnected, InputsPipe);
+                UpdatesPipe.BeginWaitForConnection(UpdatesPipeConnected, UpdatesPipe);
             }
             catch (Exception exc)
             {
@@ -149,9 +148,9 @@ namespace Myrtille.Web
         {
             try
             {
-                while (UpdatesPipe != null && UpdatesPipe.IsConnected && UpdatesPipe.CanRead)
+                while (UpdatesPipe != null && UpdatesPipe.IsConnected)
                 {
-                    var msg = ReadUpdatesPipeMessage();
+                    var msg = PipeHelper.ReadPipeMessage(UpdatesPipe, "remotesession_" + RemoteSession.Id + "_updates");
                     if (msg != null && msg.Length > 0)
                     {
                         ProcessUpdatesPipeMessage(msg);
@@ -161,27 +160,9 @@ namespace Myrtille.Web
             catch (Exception exc)
             {
                 Trace.TraceError("Failed to read updates pipe, remote session {0} ({1})", RemoteSession.Id, exc);
-            }
-        }
 
-        private byte[] ReadUpdatesPipeMessage()
-        {
-            try
-            {
-                var memoryStream = new MemoryStream();
-                var buffer = new byte[4096];
-
-                do
-                {
-                    memoryStream.Write(buffer, 0, UpdatesPipe.Read(buffer, 0, buffer.Length));
-                } while (UpdatesPipe != null && UpdatesPipe.IsConnected && UpdatesPipe.CanRead && !UpdatesPipe.IsMessageComplete);
-
-                return memoryStream.ToArray();
-            }
-            catch (Exception exc)
-            {
-                Trace.TraceError("Failed to read updates pipe message, remote session {0} ({1})", RemoteSession.Id, exc);
-                return null;
+                // there is a problem with the updates pipe, close the remote session in order to avoid it being stuck
+                RemoteSession.Manager.SendCommand(RemoteSessionCommand.CloseRdpClient);
             }
         }
 

@@ -65,6 +65,21 @@ namespace Myrtille.Web
                 throw;
             }
         }
+
+        public string GetProcessIdentity()
+        {
+            Trace.TraceInformation("Retrieving service process identity, remote session {0}", _remoteSessionManager.RemoteSession.Id);
+
+            try
+            {
+                return Channel.GetProcessIdentity();
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to retrieve service process identity, remote session {0} ({1})", _remoteSessionManager.RemoteSession.Id, exc);
+                throw;
+            }
+        }
     }
 
     [CallbackBehavior(UseSynchronizationContext = false)]

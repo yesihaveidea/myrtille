@@ -166,6 +166,11 @@ namespace Myrtille.Services
             }
         }
 
+        public string GetProcessIdentity()
+        {
+            return Environment.UserName;
+        }
+
         /// <summary>
         /// the rdp client process has exited
         /// </summary>
