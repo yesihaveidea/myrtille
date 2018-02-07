@@ -1,7 +1,7 @@
 ﻿<%--
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2017 Cedric Coste
+    Copyright(c) 2014-2018 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@
                 <!-- server -->
                 <div class="inputDiv">
                     <label runat="server" id="serverLabel" for="server">Server (:port)</label>
-                    <input type="text" runat="server" id="server" title="server address or hostname (:port, if other than the standard 3389)"/>
+                    <input type="text" runat="server" id="server" title="server address or hostname (:port, if other than the standard 3389). use [] for ipv6"/>
                 </div>
 
                 <!-- domain -->
@@ -160,11 +160,11 @@
                 <!-- upload/download file(s). only enabled if the connected server is localhost or if a domain is specified (so file(s) can be accessed within the rdp session) -->
                 <input type="button" runat="server" id="files" value="Files" onclick="openPopup('fileStoragePopup', 'FileStorage.aspx');" title="upload/download files to/from the user documents folder" disabled="disabled"/>
 
-                <!-- send ctrl+alt+del to the remote session. may be useful to change the user password, for example -->
-                <input type="button" runat="server" id="cad" value="Ctrl+Alt+Del" onclick="sendCtrlAltDel();" title="send Ctrl+Alt+Del to the remote session" disabled="disabled"/>
+                <!-- send ctrl+alt+del. may be useful to change the user password, for example -->
+                <input type="button" runat="server" id="cad" value="Ctrl+Alt+Del" onclick="sendCtrlAltDel();" title="send Ctrl+Alt+Del" disabled="disabled"/>
 
-                <!-- send right-click (on the last touched or left-clicked position) to the remote session. may be useful on touchpads or iOS devices -->
-                <input type="button" runat="server" id="mrc" value="Right-Click" onclick="sendRightClick();" title="send Right-Click (on the last touched or left-clicked position) to the remote session" disabled="disabled"/>
+                <!-- send a right-click on the next touch or left-click action. may be useful on touchpads or iOS devices -->
+                <input type="button" runat="server" id="mrc" value="Right-Click OFF" onclick="toggleRightClick(this);" title="if toggled on, send a Right-Click on the next touch or left-click action" disabled="disabled"/>
 
                 <!-- disconnect -->
                 <input type="button" runat="server" id="disconnect" value="Disconnect" onserverclick="DisconnectButtonClick" title="disconnect session" disabled="disabled"/>
@@ -288,6 +288,7 @@
                 disableControl('<%=clipboard.ClientID%>');
                 disableControl('<%=files.ClientID%>');
                 disableControl('<%=cad.ClientID%>');
+                disableControl('<%=mrc.ClientID%>');
                 disableControl('<%=disconnect.ClientID%>');
             }
 
