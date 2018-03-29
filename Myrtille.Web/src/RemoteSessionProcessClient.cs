@@ -35,14 +35,20 @@ namespace Myrtille.Web
 
         public void StartProcess(
             int remoteSessionId,
+            string serverAddress,
+            string userDomain,
+            string userName,
+            string startProgram,
             int clientWidth,
-            int clientHeight)
+            int clientHeight,
+            bool allowRemoteClipboard,
+            SecurityProtocolEnum securityProtocol)
         {
-            Trace.TraceInformation("Calling service start process, remote session {0}", _remoteSessionManager.RemoteSession.Id);
+            Trace.TraceInformation("Calling service start process, remote session {0}, server {1}, domain {2}, user {3}, program {4}", remoteSessionId, serverAddress, string.IsNullOrEmpty(userDomain) ? "(none)" : userDomain, userName, string.IsNullOrEmpty(startProgram) ? "(none)" : startProgram);
 
             try
             {
-                Channel.StartProcess(remoteSessionId, clientWidth, clientHeight);
+                Channel.StartProcess(remoteSessionId, serverAddress, userDomain, userName, startProgram, clientWidth, clientHeight, allowRemoteClipboard, securityProtocol);
             }
             catch (Exception exc)
             {

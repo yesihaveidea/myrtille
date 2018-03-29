@@ -29,8 +29,14 @@ namespace Myrtille.Services.Contracts
         [OperationContract]
         void StartProcess(
             int remoteSessionId,
+            string serverAddress,
+            string userDomain,
+            string userName,
+            string startProgram,
             int clientWidth,
-            int clientHeight);
+            int clientHeight,
+            bool allowRemoteClipboard,
+            SecurityProtocolEnum securityProtocol);
 
         /// <summary>
         /// stop the rdp client process

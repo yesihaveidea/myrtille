@@ -16,6 +16,8 @@
     limitations under the License.
 */
 
+using Myrtille.Services.Contracts;
+
 namespace Myrtille.Web
 {
     public class RemoteSession
@@ -37,7 +39,9 @@ namespace Myrtille.Web
         public bool StatMode;
         public bool DebugMode;
         public bool CompatibilityMode;
-        public string Program;
+        public string StartProgram;
+        public bool AllowRemoteClipboard;               // set in myrtille web config
+        public SecurityProtocolEnum SecurityProtocol;
 
         public RemoteSession()
         {

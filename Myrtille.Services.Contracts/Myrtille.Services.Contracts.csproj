@@ -66,8 +66,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Adapters\IEnterpriseAdapter.cs" />
+    <Compile Include="Adapters\IMultifactorAuthenticationAdapter.cs" />
+    <Compile Include="IEnterpriseService.cs" />
     <Compile Include="IFileStorage.cs" />
+    <Compile Include="IMFAAuthentication.cs" />
     <Compile Include="IRemoteSessionProcess.cs" />
+    <Compile Include="Models\EnterpriseConnectionDetails.cs" />
+    <Compile Include="Models\EnterpriseHost.cs" />
+    <Compile Include="Models\EnterpriseHostEdit.cs" />
+    <Compile Include="Models\EnterpriseSession.cs" />
+    <Compile Include="Models\SecurityProtocolEnum.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

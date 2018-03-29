@@ -25,6 +25,7 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -83,38 +84,56 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FileStorage.aspx.cs">
+    <Compile Include="popups\EditHostSession.aspx.cs">
+      <DependentUpon>EditHostSession.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="popups\EditHostSession.aspx.designer.cs">
+      <DependentUpon>EditHostSession.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="popups\EditHost.aspx.cs">
+      <DependentUpon>EditHost.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="popups\EditHost.aspx.designer.cs">
+      <DependentUpon>EditHost.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="popups\FileStorage.aspx.cs">
       <DependentUpon>FileStorage.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="FileStorage.aspx.designer.cs">
+    <Compile Include="popups\FileStorage.aspx.designer.cs">
       <DependentUpon>FileStorage.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="popups\ShowDialog.aspx.cs">
+      <DependentUpon>ShowDialog.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="popups\ShowDialog.aspx.designer.cs">
+      <DependentUpon>ShowDialog.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="popups\VirtualKeyboard.aspx.cs">
+      <DependentUpon>VirtualKeyboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="popups\VirtualKeyboard.aspx.designer.cs">
+      <DependentUpon>VirtualKeyboard.aspx</DependentUpon>
     </Compile>
     <Compile Include="SocketHandler.ashx.cs">
       <DependentUpon>SocketHandler.ashx</DependentUpon>
     </Compile>
+    <Compile Include="src\EnterpriseServiceClient.cs" />
+    <Compile Include="src\FileStorageClient.cs" />
+    <Compile Include="src\MFAAuthenticationClient.cs" />
     <Compile Include="src\RemoteSession.cs" />
     <Compile Include="src\RemoteSessionCommand.cs" />
     <Compile Include="src\RemoteSessionImage.cs" />
     <Compile Include="src\RemoteSessionPipes.cs" />
+    <Compile Include="src\RemoteSessionProcessClient.cs" />
     <Compile Include="src\RemoteSessionSocketHandler.cs" />
     <Compile Include="src\RemoteSessionState.cs" />
     <Compile Include="src\WebInstaller.cs">
       <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ShowDialog.aspx.cs">
-      <DependentUpon>ShowDialog.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="ShowDialog.aspx.designer.cs">
-      <DependentUpon>ShowDialog.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="VirtualKeyboard.aspx.cs">
-      <DependentUpon>VirtualKeyboard.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="VirtualKeyboard.aspx.designer.cs">
-      <DependentUpon>VirtualKeyboard.aspx</DependentUpon>
     </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -126,8 +145,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="src\FileStorageClient.cs" />
-    <Compile Include="src\RemoteSessionProcessClient.cs" />
     <Compile Include="src\RemoteSessionManager.cs" />
     <Compile Include="GetCursor.aspx.cs">
       <DependentUpon>GetCursor.aspx</DependentUpon>
@@ -161,7 +178,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="FileStorage.aspx" />
     <Content Include="img\bandwidthTest.png" />
     <Content Include="img\myrtille.png" />
     <Content Include="img\RemoteDesktop.png" />
@@ -178,8 +194,11 @@
     <Content Include="js\network\xmlhttp.js" />
     <Content Include="js\user\touchscreen.js" />
     <Content Include="myrtille.ico" />
-    <Content Include="ShowDialog.aspx" />
-    <Content Include="VirtualKeyboard.aspx" />
+    <Content Include="popups\EditHostSession.aspx" />
+    <Content Include="popups\EditHost.aspx" />
+    <Content Include="popups\FileStorage.aspx" />
+    <Content Include="popups\ShowDialog.aspx" />
+    <Content Include="popups\VirtualKeyboard.aspx" />
     <Content Include="css\Default.css" />
     <Content Include="Global.asax" />
     <Content Include="js\myrtille.js" />
@@ -216,7 +235,7 @@
       <Name>Myrtille.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Myrtille.Services.Contracts\Myrtille.Services.Contracts.csproj">
-      <Project>{010E1702-3045-4B13-BFB6-06FFC60B5CBB}</Project>
+      <Project>{010e1702-3045-4b13-bfb6-06ffc60b5cbb}</Project>
       <Name>Myrtille.Services.Contracts</Name>
     </ProjectReference>
   </ItemGroup>

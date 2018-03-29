@@ -106,7 +106,7 @@ namespace Myrtille.Web
                     RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendUserDomain, RemoteSession.UserDomain);
                     RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendUserName, RemoteSession.UserName);
                     RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendUserPassword, RemoteSession.UserPassword);
-                    RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendStartProgram, RemoteSession.Program);
+                    RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendStartProgram, RemoteSession.StartProgram);
 
                     // send client settings, if defined (they will be otherwise send later by the client)
                     if (RemoteSession.ImageEncoding.HasValue)

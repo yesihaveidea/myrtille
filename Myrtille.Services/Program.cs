@@ -17,10 +17,14 @@
 */
 
 using System;
+using System.Configuration;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.ServiceModel;
 using System.ServiceProcess;
 using log4net.Config;
+using Myrtille.Services.Contracts;
 
 namespace Myrtille.Services
 {
@@ -28,6 +32,14 @@ namespace Myrtille.Services
     {
         private static ServiceHost _remoteSessionProcess;
         private static ServiceHost _localFileStorage;
+        private static ServiceHost _mfaAuthentication;
+        private static ServiceHost _enterpriseServices;
+
+        public static IMultifactorAuthenticationAdapter _multifactorAdapter = null;
+        public static IEnterpriseAdapter _enterpriseAdapter = null;
+
+        public static string _adminGroup;
+        public static string _enterpriseDomain;
 
         private static ServiceHost OpenService(Type serviceType)
         {
@@ -75,6 +87,9 @@ namespace Myrtille.Services
             // logger
             XmlConfigurator.Configure();
 
+            // database (enterprise mode)
+            ConfigureEnterpriseDatabase();
+
             if (!Environment.UserInteractive)
             {
                 Run(new Program());
@@ -85,27 +100,94 @@ namespace Myrtille.Services
                 consoleTraceListener.Filter = new EventTypeFilter(SourceLevels.Information);
                 Trace.Listeners.Add(consoleTraceListener);
 
+                LoadMFAAdapter();
+                LoadEnterpriseAdapter();
+
                 _remoteSessionProcess = OpenService(typeof(RemoteSessionProcess));
                 _localFileStorage = OpenService(typeof(FileStorage));
+                _mfaAuthentication = OpenService(typeof(MFAAuthentication));
+                _enterpriseServices = OpenService(typeof(EnterpriseService));
 
                 Console.WriteLine("press any key to exit...");
                 Console.ReadKey();
 
                 CloseService(ref _remoteSessionProcess);
                 CloseService(ref _localFileStorage);
+                CloseService(ref _mfaAuthentication);
+                CloseService(ref _enterpriseServices);
             }
         }
 
         protected override void OnStart(string[] args)
 		{
+            LoadMFAAdapter();
+            LoadEnterpriseAdapter();
+
             _remoteSessionProcess = OpenService(typeof(RemoteSessionProcess));
             _localFileStorage = OpenService(typeof(FileStorage));
-		}
+            _mfaAuthentication = OpenService(typeof(MFAAuthentication));
+            _enterpriseServices = OpenService(typeof(EnterpriseService));
+        }
  
 		protected override void OnStop()
 		{
             CloseService(ref _remoteSessionProcess);
             CloseService(ref _localFileStorage);
-		}
+            CloseService(ref _mfaAuthentication);
+            CloseService(ref _enterpriseServices);
+        }
+
+        private static void LoadMFAAdapter()
+        {
+            var configuration = ConfigurationManager.AppSettings["MFAAuthAdapter"];
+            if (configuration == null)
+                return;
+
+            var assemblyDetails = configuration.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+            if (assemblyDetails.Length != 2)
+                throw new FormatException("MFAAuthAdapter configuration is invalid!");
+
+            var assembly = Assembly.Load(assemblyDetails[1].Trim());
+            _multifactorAdapter = (IMultifactorAuthenticationAdapter)assembly.CreateInstance(assemblyDetails[0]);
+            if (_multifactorAdapter == null)
+                throw new InvalidOperationException(string.Format("Unable to create instance of {0}", assemblyDetails[0]));
+        }
+
+        private static void LoadEnterpriseAdapter()
+        {
+            var configuration = ConfigurationManager.AppSettings["EnterpriseAdapter"];
+            if (configuration == null)
+                return;
+
+            var assemblyDetails = configuration.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+            if (assemblyDetails.Length != 2)
+                throw new FormatException("EnterpriseAdapter configuration is invalid!");
+
+            var assembly = Assembly.Load(assemblyDetails[1].Trim());
+            _enterpriseAdapter = (IEnterpriseAdapter)assembly.CreateInstance(assemblyDetails[0]);
+            if (_enterpriseAdapter == null)
+                throw new InvalidOperationException(string.Format("Unable to create instance of {0}", assemblyDetails[0]));
+
+            _adminGroup = ConfigurationManager.AppSettings["EnterpriseAdminGroup"];
+            if (_adminGroup == null)
+                throw new Exception("EnterpriseAdminGroup has not been configured!");
+
+            _enterpriseDomain = ConfigurationManager.AppSettings["EnterpriseDomain"];
+            if (_enterpriseDomain == null)
+                throw new Exception("EnterpriseDomain has not been configured!");
+
+            _enterpriseAdapter.Initialize();
+        }
+
+        private static void ConfigureEnterpriseDatabase()
+        {
+            // SQLCE DB folder
+            var dataDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\data");
+
+            if (!Directory.Exists(dataDir))
+                Directory.CreateDirectory(dataDir);
+
+            AppDomain.CurrentDomain.SetData("DataDirectory", dataDir);
+        }
     }
 }

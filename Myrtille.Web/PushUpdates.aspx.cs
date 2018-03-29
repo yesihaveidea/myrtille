@@ -85,7 +85,7 @@ namespace Myrtille.Web
                     // disconnected session
                     else if (remoteSession.State == RemoteSessionState.Disconnected)
                     {
-                        HttpContext.Current.Response.Write("<script>parent.location.href = parent.getConfig().getHttpServerUrl();</script>");
+                        HttpContext.Current.Response.Write("<script>parent.location.href = parent.getConfig().getHttpServerUrl() + '?';</script>");
                         HttpContext.Current.Response.Flush();
                         break;
                     }

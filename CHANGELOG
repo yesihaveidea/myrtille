@@ -1,4 +1,14 @@
-﻿2018-02-07 Version 1.7.0 (stable)
+﻿2018-03-29 Version 1.8.0 (beta)
+	resynced FreeRDP with master repository (fixes the NLA issue introduced with Windows updates KB4088776, KB4088787, KB4088876, KB4088875)
+	added support for MFA (one time password and one time host session url) (thanks Paul Oliver). Refer to documentation for activation
+	added enterprise mode (AD pre-authentication and hosts list management) (thanks Paul Oliver). Refer to documentation for activation
+	in enterprise mode, the security mode for the host connection is now configurable (NLA, TLS, RDP, etc.)
+	most FreeRDP connection params are now configurable (myrtille\bin\Myrtille.Services.exe.config)
+	the remote clipboard can now be disabled, for enhanced security (myrtille\Web.config)
+	replaced client redirects by server redirects (cleaner and more friendly to proxies)
+	added more connection details to myrtille logs
+
+2018-02-07 Version 1.7.0 (stable)
 	resynced FreeRDP with master repository; FreeRDP 2.0-RC2 milestone: https://github.com/FreeRDP/FreeRDP/milestone/8
 	FreeRDP HOTFIX: connection using FQDN is broken (either direct connection or through a connection broker redirection), using target IP instead
 	FreeRDP HOTFIX: fixed client IP resolution when using an ipv6 connection

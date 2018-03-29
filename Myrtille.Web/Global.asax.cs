@@ -34,6 +34,7 @@ namespace Myrtille.Web
 
     public enum HttpSessionStateVariables
     {
+        EnterpriseSession,
         RemoteSession
     }
 

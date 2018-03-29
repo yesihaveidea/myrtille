@@ -225,7 +225,7 @@ function Websocket(config, dialog, display, network)
                 // disconnected session
                 else if (message == 'disconnected')
                 {
-                    window.location.href = config.getHttpServerUrl();
+                    window.location.href = config.getHttpServerUrl() + '?';
                 }
                 // server ack
                 else if (message.length >= 4 && message.substr(0, 4) == 'ack,')

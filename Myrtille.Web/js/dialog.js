@@ -404,37 +404,58 @@ var popup = null;
 
 function openPopup(id, src)
 {
-    // lock background
-    var bgfDiv = document.getElementById('bgfDiv');
-    if (bgfDiv != null)
+    try
     {
-        bgfDiv.style.visibility = 'visible';
-        bgfDiv.style.display = 'block';
+        // if there is already an opened popup, close it
+        if (popup != null)
+        {
+            closePopup();
+        }
+
+        // lock background
+        var bgfDiv = document.getElementById('bgfDiv');
+        if (bgfDiv != null)
+        {
+            bgfDiv.style.visibility = 'visible';
+            bgfDiv.style.display = 'block';
+        }
+
+        // add popup
+        popup = document.createElement('iframe');
+        popup.id = id;
+        popup.src = 'popups/' + src;
+        popup.className = 'modalPopup';
+
+        document.body.appendChild(popup);
     }
-
-    // add popup
-    popup = document.createElement('iframe');
-    popup.id = id;
-    popup.src = src;
-    popup.className = 'modalPopup';
-
-    document.body.appendChild(popup);
+    catch (exc)
+    {
+        this.showDebug('openPopup error: ' + exc.message);
+    }
 }
 
 function closePopup()
 {
-    // remove popup
-    if (popup != null)
+    try
     {
-        document.body.removeChild(popup);
-    }
+        // remove popup
+        if (popup != null)
+        {
+            document.body.removeChild(popup);
+            popup = null;
+        }
 
-    // unlock background
-    var bgfDiv = document.getElementById('bgfDiv');
-    if (bgfDiv != null)
+        // unlock background
+        var bgfDiv = document.getElementById('bgfDiv');
+        if (bgfDiv != null)
+        {
+            bgfDiv.style.visibility = 'hidden';
+            bgfDiv.style.display = 'none';
+        }
+    }
+    catch (exc)
     {
-        bgfDiv.style.visibility = 'hidden';
-        bgfDiv.style.display = 'none';
+        this.showDebug('closePopup error: ' + exc.message);
     }
 }
 

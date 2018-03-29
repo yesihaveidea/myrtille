@@ -39,9 +39,17 @@ namespace Myrtille.Services
         //Usage: https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
         public void StartProcess(
             int remoteSessionId,
+            string serverAddress,
+            string userDomain,
+            string userName,
+            string startProgram,
             int clientWidth,
-            int clientHeight)
+            int clientHeight,
+            bool allowRemoteClipboard,
+            SecurityProtocolEnum securityProtocol)
         {
+            Trace.TraceInformation("Connecting remote session {0}, server {1}, domain {2}, user {3}, program {4}", remoteSessionId, serverAddress, string.IsNullOrEmpty(userDomain) ? "(none)" : userDomain, userName, string.IsNullOrEmpty(startProgram) ? "(none)" : startProgram);
+
             try
             {
                 // set the remote session id
@@ -59,8 +67,7 @@ namespace Myrtille.Services
 
                 if (Environment.UserInteractive)
                 {
-                    var pathParts = AppDomain.CurrentDomain.BaseDirectory.Split(new[] { @"\" }, StringSplitOptions.RemoveEmptyEntries);
-                    _process.StartInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Myrtille.RDP\FreeRDP", pathParts[pathParts.Length - 1], "wfreerdp.exe");
+                    _process.StartInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory.Replace(@"Myrtille.Services\bin", @"Myrtille.RDP\FreeRDP"), "wfreerdp.exe");
                 }
                 else
                 {
@@ -81,10 +88,78 @@ namespace Myrtille.Services
 
                 // log remote session events into a file (located into <Myrtille folder>\log)
                 var remoteSessionLog = false;
-                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["RemoteSessionLog"]))
+                if (bool.TryParse(ConfigurationManager.AppSettings["RemoteSessionLog"], out bool bResult))
                 {
-                    remoteSessionLog = bool.Parse(ConfigurationManager.AppSettings["RemoteSessionLog"]);
+                    remoteSessionLog = bResult;
                 }
+
+                #region FreeRDP params
+
+                // color depth
+                var bpp = 16;
+                if (int.TryParse(ConfigurationManager.AppSettings["FreeRDPBpp"], out int iResult))
+                {
+                    bpp = iResult;
+                }
+
+                // gdi mode (sw: software, hw: hardware). default software because there is a palette issue with windows server 2008; also, the performance gain is small and even null on most virtual machines, when hardware isn't available
+                var gdi = "sw";
+                if (ConfigurationManager.AppSettings["FreeRDPGdi"] != null)
+                {
+                    gdi = ConfigurationManager.AppSettings["FreeRDPGdi"];
+                }
+
+                // wallpaper
+                var wallpaper = false;
+                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPWallpaper"], out bResult))
+                {
+                    wallpaper = bResult;
+                }
+
+
+                // desktop composition
+                var aero = false;
+                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPAero"], out bResult))
+                {
+                    aero = bResult;
+                }
+
+                // window drag
+                var windowDrag = false;
+                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPWindowDrag"], out bResult))
+                {
+                    windowDrag = bResult;
+                }
+
+                // menu animations
+                var menuAnims = false;
+                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPMenuAnims"], out bResult))
+                {
+                    menuAnims = bResult;
+                }
+
+                // themes
+                var themes = false;
+                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPThemes"], out bResult))
+                {
+                    themes = bResult;
+                }
+
+                // smooth fonts (requires ClearType enabled on the remote server)
+                var smoothFonts = true;
+                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPSmoothFonts"], out bResult))
+                {
+                    smoothFonts = bResult;
+                }
+
+                // ignore certificate warning (when using NLA); may happen, for example, with a self-signed certificate (not trusted) or if the server joined a domain after the certificate was issued (name mismatch). more details here: http://www.vkernel.ro/blog/configuring-certificates-in-2012r2-remote-desktop-services-rds
+                var certIgnore = true;
+                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPCertIgnore"], out bResult))
+                {
+                    certIgnore = bResult;
+                }
+
+                #endregion
 
                 // https://github.com/FreeRDP/FreeRDP/wiki/CommandLineInterface
                 // Syntax: /flag enables flag, +toggle or -toggle enables or disables toggle. /toggle and +toggle are the same. Options with values work like this: /option:<value>
@@ -95,16 +170,16 @@ namespace Myrtille.Services
                     (!remoteSessionLog ? string.Empty : " /myrtille-log") +                                         // session log
                     " /w:" + clientWidth +                                                                          // display width
                     " /h:" + clientHeight +                                                                         // display height
-                    " /bpp:16" +                                                                                    // color depth
-                    " /gdi:sw" +                                                                                    // gdi mode (sw: software, hw: hardware). forced software because there is a palette issue with windows server 2008; also, the performance gain is small and even null on most virtual machines, when hardware isn't available
-                    " -wallpaper" +                                                                                 // wallpaper
-                    " -aero" +                                                                                      // desktop composition
-                    " -window-drag" +                                                                               // window drag
-                    " -menu-anims" +                                                                                // menu animations
-                    " -themes" +                                                                                    // themes
-                    " +fonts" +                                                                                     // smooth fonts (requires ClearType enabled on the remote server)
+                    " /bpp:" + bpp +                                                                                // color depth
+                    " /gdi:" + gdi +                                                                                // gdi mode (sw: software, hw: hardware)
+                    (wallpaper ? " +" : " -") + "wallpaper" +                                                       // wallpaper
+                    (aero ? " +" : " -") + "aero" +                                                                 // desktop composition
+                    (windowDrag ? " +" : " -") + "window-drag" +                                                    // window drag
+                    (menuAnims ? " +" : " -") + "menu-anims" +                                                      // menu animations
+                    (themes ? " +" : " -") + "themes" +                                                             // themes
+                    (smoothFonts ? " +" : " -") + "fonts" +                                                         // smooth fonts (requires ClearType enabled on the remote server)
                     " +compression" +                                                                               // bulk compression (level is autodetected from the rdp version)
-                    " /cert-ignore" +                                                                               // ignore certificate warning (when using NLA); may happen, for example, with a self-signed certificate (not trusted) or if the server joined a domain after the certificate was issued (name mismatch). more details here: http://www.vkernel.ro/blog/configuring-certificates-in-2012r2-remote-desktop-services-rds
+                    (certIgnore ? " /cert-ignore" : "") +                                                           // ignore certificate warning (when using NLA)
                     " -mouse-motion" +                                                                              // mouse motion
                     " +bitmap-cache" +                                                                              // bitmap cache
                     " -offscreen-cache" +                                                                           // offscreen cache
@@ -113,7 +188,8 @@ namespace Myrtille.Services
                     " -async-update" +                                                                              // async update
                     " -async-channels" +                                                                            // async channels
                     " -async-transport" +                                                                           // async transport
-                    " +clipboard" +                                                                                 // clipboard support
+                    (allowRemoteClipboard ? " +" : " -") + "clipboard" +                                            // clipboard support
+                    (securityProtocol != SecurityProtocolEnum.auto ? " /sec:" + securityProtocol.ToString() : "") + // security protocol
                     " /audio-mode:2";                                                                               // audio mode (not supported for now, 2: do not play)
 
                 if (!Environment.UserInteractive)
@@ -135,8 +211,6 @@ namespace Myrtille.Services
                 _callback = OperationContext.Current.GetCallbackChannel<IRemoteSessionProcessCallback>();
 
                 _process.Start();
-
-                Trace.TraceInformation("Started remote session {0}", _remoteSessionId);
             }
             catch (Exception exc)
             {
@@ -153,11 +227,11 @@ namespace Myrtille.Services
 
             if (_process != null && !_process.HasExited)
             {
+                Trace.TraceInformation("Stopping (kill) rdp client process, remote session {0}", _remoteSessionId);
+
                 try
                 {
                     _process.Kill();
-
-                    Trace.TraceInformation("Stopped (killed) rdp client process, remote session {0}", _remoteSessionId);
                 }
                 catch (Exception exc)
                 {
@@ -189,7 +263,7 @@ namespace Myrtille.Services
             // also interesting to note, it's possible to set a MaxConnectionTime for the rdp session (registry: HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp, "MaxConnectionTime" (DWORD, value in msecs))
             // an alternative to alter the registry directly (which impact the whole server) is to define group policies strategies (GPOs) into the Active Directory; it's a bit more complicated to handle, but proper...
 
-            Trace.TraceInformation("Stopped remote session {0}", _remoteSessionId);
+            Trace.TraceInformation("Disconnected remote session {0}", _remoteSessionId);
 
             try
             {

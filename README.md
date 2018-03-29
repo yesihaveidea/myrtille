@@ -14,6 +14,8 @@ More information in the DOCUMENTATION.md file.
 
 ## Features
 - HTTP(S) to RDP gateway
+- Multifactor Authentication
+- Active Directory integration
 - Start remote application from URL
 - File transfer (local and roaming accounts)
 - HTML4 and HTML5 support
@@ -49,6 +51,8 @@ See DOCUMENTATION.md for more details.
 ## Usage
 Once Myrtille is installed on your server, you can use it at http://myserver/myrtille. Set the rdp server address, user domain (if any), name and password then click "Connect!" to log in. "Disconnect" to log out.
 
+Multifactor Authentication and Active Directory integration (Enterprise Mode) are disabled by default. Please read documentation for activation of these features.
+
 You can also connect a remote desktop and **start a program automatically from an url** (see DOCUMENTATION.md). From version 1.5.0, Myrtille does support encrypted credentials (aka "password 51" into .rdp files) so the urls can be distributed to third parties without compromising on security.
 
 The installer creates a self-signed certificate for https://myserver/myrtille. Like for all self-signed certificates, you will have to add a security exception into your browser (just ignore the warning message and proceed to the website).
@@ -72,6 +76,7 @@ Myrtille uses the following licensed software:
 - WebP encoding: libWebP 0.5.1 (https://developers.google.com/speed/webp/), licensed under BSD-style Open Source license. Copyright (c) 2010, Google Inc. All rights reserved.
 - HTML5 websockets: Microsoft.WebSockets 0.2.3.1 (https://www.nuget.org/packages/Microsoft.WebSockets/0.2.3.1), licensed under MIT license. Copyright (c) Microsoft 2012.
 - Logging: Log4net 2.0.8 (https://logging.apache.org/log4net/), licensed under Apache 2.0 license.
+- Multifactor Authentication: OASIS.Integration 1.6.1 (https://www.nuget.org/packages/OASIS.Integration/1.6.1), licensed under Apache 2.0 license. Source code available at https://github.com/OliveInnovations/OASIS. Copyright Olive Innovations Ltd 2017.
 
 See DISCLAIMERS.md file.
 

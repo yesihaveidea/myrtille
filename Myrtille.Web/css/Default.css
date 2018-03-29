@@ -46,7 +46,7 @@ a img
 /*** LOGIN                                                                                                                                                                                         ***/
 /*****************************************************************************************************************************************************************************************************/
 
-#loginScreen
+#login
 {
     position: absolute;
     top: 50%;
@@ -72,17 +72,29 @@ a img
     display: inline-block;
 }
 
-label
+label,
+#mfaProvider
 {
     float: left;
     width: 200px;
     margin-top: 2px;
 }
 
+#mfaProvider
+{
+    cursor: pointer;
+}
+
+#mfaProvider:hover
+{
+    text-decoration: underline;
+}
+
 #server,
 #domain,
 #user,
 #password,
+#mfaPassword,
 #program
 {
     width: 200px;
@@ -109,6 +121,54 @@ label
 {
     font-size: 10px;
     display: inline-block;
+}
+
+#errorDiv
+{
+    margin-left: 200px;
+}
+
+#connectError
+{
+    color: #ff0000;
+}
+
+/*****************************************************************************************************************************************************************************************************/
+/*** HOSTS                                                                                                                                                                                         ***/
+/*****************************************************************************************************************************************************************************************************/
+
+#hosts
+{
+    /* if needed */
+}
+
+#hostsControl
+{
+    /* if needed */
+}
+
+.hostDiv
+{
+    display: inline-block;
+    text-align: center;
+    font-size: 15px;
+}
+
+.hostDiv:hover
+{
+    background-color: #ecf0f1;
+    color: #000;
+}
+
+.hostLink,
+.hostName
+{
+    cursor: pointer;
+}
+
+.hostName:hover
+{
+    text-decoration: underline;
 }
 
 /*****************************************************************************************************************************************************************************************************/
@@ -185,11 +245,27 @@ label
     z-index: 400;
 }
 
+/* virtual keyboard popup */
+
 #virtualKeyboardPopup
 {
     width: 470px;
     height: 290px;
 }
+
+#virtualKeyboardPopupDesc
+{
+    font-weight: bold;
+}
+
+#virtualKeyboardPopupText
+{
+    width: 425px;
+    height: 150px;
+    margin-bottom: 5px;
+}
+
+/* show dialog popup */
 
 #showDialogPopup
 {
@@ -197,30 +273,91 @@ label
     height: 240px;
 }
 
+#showDialogPopupDesc
+{
+    font-weight: bold;
+}
+
+#showDialogPopupText
+{
+    width: 425px;
+    height: 150px;
+    margin-bottom: 5px;
+}
+
+/* file storage popup */
+
 #fileStoragePopup
 {
     width: 470px;
     height: 130px;
 }
 
-#virtualKeyboardPopupDesc,
-#showDialogPopupDesc,
 #fileStoragePopupDesc
 {
     font-weight: bold;
 }
 
-#virtualKeyboardPopupText,
-#showDialogPopupText
-{
-    width: 425px;
-	height: 150px;
-    margin-bottom: 5px;
-}
-
 #fileToDownloadSelect
 {
     width: 250px;
+}
+
+/* host popup */
+
+#editHostPopup,
+#editHostPopupInner
+{
+    width: 400px;
+    height: 270px;
+}
+
+#editHostPopupInner
+{
+    color: #000;
+    background: #fff;
+}
+
+#editHostPopupTitle
+{
+    padding-top: 20px;
+    padding-left: 10px;
+}
+
+.editHostPopupInput
+{
+    padding-left: 10px;
+}
+
+/* host session popup */
+
+#editHostSessionPopup,
+#editHostSessionPopupInner
+{
+    width: 400px;
+    height: 400px;
+}
+
+#editHostSessionPopupInner
+{
+    color: #000;
+    background: #fff;
+}
+
+#editHostSessionPopupTitle
+{
+    padding-top: 20px;
+    padding-left: 10px;
+}
+
+.editHostSessionPopupInput
+{
+    padding-left: 10px;
+}
+
+#sessionUrl
+{
+    width: 370px;
 }
 
 /* remote session display */

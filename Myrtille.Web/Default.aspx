@@ -69,65 +69,112 @@
 
         <form method="post" runat="server" id="mainForm">
 
+            <!-- display resolution -->
+            <input type="hidden" runat="server" id="width"/>
+            <input type="hidden" runat="server" id="height"/>
+
             <!-- ********************************************************************************************************************************************************************************** -->
             <!-- *** LOGIN                                                                                                                                                                      *** -->
             <!-- ********************************************************************************************************************************************************************************** -->
             
-            <div runat="server" id="loginScreen">
+            <div runat="server" id="login" visible="false">
 
                 <!-- customizable logo -->
                 <div runat="server" id="logo"></div>
 
-                <!-- server -->
-                <div class="inputDiv">
-                    <label runat="server" id="serverLabel" for="server">Server (:port)</label>
-                    <input type="text" runat="server" id="server" title="server address or hostname (:port, if other than the standard 3389). use [] for ipv6"/>
-                </div>
+                <!-- standard mode -->
+                <div runat="server" id="domainServerDiv">
+                    
+                    <!-- server -->
+                    <div class="inputDiv">
+                        <label id="serverLabel" for="server">Server (:port)</label>
+                        <input type="text" runat="server" id="server" title="server address or hostname (:port, if other than the standard 3389). use [] for ipv6. CAUTION! if using a hostname or if you have a connection broker, make sure the DNS is reachable by myrtille (or myrtille has joined the domain)"/>
+                    </div>
 
-                <!-- domain -->
-                <div class="inputDiv">
-                    <label runat="server" id="domainLabel" for="domain">Domain (optional)</label>
-                    <input type="text" runat="server" id="domain" title="user domain (if applicable)"/>
+                    <!-- domain -->
+                    <div class="inputDiv">
+                        <label id="domainLabel" for="domain">Domain (optional)</label>
+                        <input type="text" runat="server" id="domain" title="user domain (if applicable)"/>
+                    </div>
+
                 </div>
                 
                 <!-- user -->
                 <div class="inputDiv">
-                    <label runat="server" id="userLabel" for="user">User</label>
+                    <label id="userLabel" for="user">User</label>
                     <input type="text" runat="server" id="user" title="user name"/>
                 </div>
 
                 <!-- password -->
                 <div class="inputDiv">
-                    <label runat="server" id="passwordLabel" for="password">Password</label>
+                    <label id="passwordLabel" for="password">Password</label>
                     <input type="password" runat="server" id="password" title="user password"/>
                 </div>
 
                 <!-- hashed password (aka password 51) -->
                 <input type="hidden" runat="server" id="passwordHash"/>
 
+                <!-- MFA password -->
+                <div class="inputDiv" runat="server" id="mfaDiv" visible="false">
+                    <a runat="server" id="mfaProvider" href="#" target="_blank" tabindex="-1" title="MFA provider"></a>
+                    <input type="text" runat="server" id="mfaPassword" title="MFA password"/>
+                </div>
+
                 <!-- program to run -->
                 <div class="inputDiv">
-                    <label runat="server" id="programLabel" for="program">Program to run (optional)</label>
+                    <label id="programLabel" for="program">Program to run (optional)</label>
                     <input type="text" runat="server" id="program" title="executable path, name and parameters (double quotes must be escaped) (optional)"/>
                 </div>
 
-                <!-- display resolution -->
-                <input type="hidden" runat="server" id="width"/>
-                <input type="hidden" runat="server" id="height"/>
-                
                 <!-- connect -->
-                <input type="submit" runat="server" id="connect" value="Connect!" onclick="showToolbar();" onserverclick="ConnectButtonClick" title="open session"/>
+                <input type="submit" runat="server" id="connect" value="Connect!" onserverclick="ConnectButtonClick" title="open session"/>
 
                 <!-- myrtille version -->
                 <div id="version">
-                    <a href="http://cedrozor.github.io/myrtille/">
+                    <a href="http://cedrozor.github.io/myrtille/" title="myrtille">
                         <img src="img/myrtille.png" alt="myrtille" width="15px" height="15px"/>
                     </a>
                     <span>
                         <%=typeof(Default).Assembly.GetName().Version%>
                     </span>
                 </div>
+
+                <!-- connect error -->
+                <div id="errorDiv">
+                    <span runat="server" id="connectError"></span>
+                </div>
                 
+            </div>
+
+            <!-- ********************************************************************************************************************************************************************************** -->
+            <!-- *** HOSTS                                                                                                                                                                      *** -->
+            <!-- ********************************************************************************************************************************************************************************** -->
+
+            <div runat="server" id="hosts" visible="false">
+                
+                <div id="hostsControl">
+
+                    <!-- new host -->
+                    <input type="button" runat="server" id="newHost" value="New Host" onclick="openPopup('editHostPopup', 'EditHost.aspx');" title="New Host"/>
+                
+                    <!-- logout -->
+                    <input type="button" runat="server" id="logout" value="Logout" onserverclick="LogoutButtonClick" title="Logout"/>
+
+                </div>
+                
+                <!-- hosts list -->
+                <asp:Repeater runat="server" id="hostsList" OnItemDataBound="hostsList_ItemDataBound">
+                    <ItemTemplate>
+                        <div class="hostDiv">
+                            <a runat="server" id="hostLink" title="connect">
+                                <img src="img/RemoteDesktop.png" alt="host" width="128px" height="128px"/>
+                            </a>
+                            <br/>
+                            <span runat="server" id="hostName" title="edit"></span>
+                        </div>
+                    </ItemTemplate>
+                </asp:Repeater>
+
             </div>
 
             <!-- ********************************************************************************************************************************************************************************** -->
