@@ -1,22 +1,22 @@
-﻿[Introduction](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#introduction)
-[History](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#history)
-[Installation](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#installation)
-[Auto-connect / Start remote application from URL](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#auto-connect--start-remote-application-from-url)
-	[Syntax](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#syntax)
-	[Password Hash](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#password-hash)
-[File transfer](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#file-transfer)
-[Security](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#security)
-[Configuration / Performance tweaks](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#configuration--performance-tweaks)
-[Code organization](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#code-organization)
-[Build](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#build)
-	[Startup projects](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#startup-projects)
-[Communication](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#communication)
-	[Overview](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#overview)
-	[Protocols](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#protocols)
-[Multifactor Authentication](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#multifactor-authentication)
-[Enterprise Mode](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#enterprise-mode)
-[Notes and limitations](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#notes-and-limitations)
-[Troubleshoot](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#troubleshoot)
+﻿- [Introduction](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#introduction)
+- [History](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#history)
+- [Installation](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#installation)
+- [Auto-connect / Start remote application from URL](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#auto-connect--start-remote-application-from-url)
+- [Syntax](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#syntax)
+- [Password Hash](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#password-hash)
+- [File transfer](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#file-transfer)
+- [Security](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#security)
+- [Configuration / Performance tweaks](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#configuration--performance-tweaks)
+- [Code organization](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#code-organization)
+- [Build](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#build)
+- [Startup projects](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#startup-projects)
+- [Communication](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#communication)
+- [Overview](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#overview)
+- [Protocols](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#protocols)
+- [Multifactor Authentication](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#multifactor-authentication)
+- [Enterprise Mode](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#enterprise-mode)
+- [Notes and limitations](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#notes-and-limitations)
+- [Troubleshoot](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#troubleshoot)
 
 # Introduction
 I worked hard to make Myrtille as straightforward as possible, with commented code, but some points may needs additional information.
@@ -171,19 +171,19 @@ In addition to 2fa, an access control could be enforced to allow connections onl
 
 The adapter has been written to use a platform provided by Olive Innovations and named OASIS. It's free to use up to 10 users; to use this service follow these instructions:
 
-	1) Visit https://oasis.oliveinnovations.com and register for free
-	2) Once logged in, create a User Group (into the menu select User Groups), then click New, input a Name (i.e. Myrtille) and save
-	3) Create a user (choose Users from the menu), then click New, input user details and tick the box to send register by email (**IMPORTANT** the username must be the same as the username you will login with myrtille; when registering via email, the user will have a link to complete the registration) and save. Into the user details page, select the user group created in Step 2
-		NOTE: If you have enabled Enterprise Mode and wish to sync your Active Directory with OASIS, visit http://www.oliveinnovations.com, go to download area and download the Gateway application; instructions for configuration can be found into the docs on the same website
-	4) Create an application (choose Applications from the menu), then click New, enter a Name and save. You will be directed to the application details page, grant access to the user group created in Step 2
-	5) Within the application page, click the button Application Key, this will display the information to configure myrtille
+- Visit https://oasis.oliveinnovations.com and register for free
+- Once logged in, create a User Group (into the menu select User Groups), then click New, input a Name (i.e. Myrtille) and save
+- Create a user (choose Users from the menu), then click New, input user details and tick the box to send register by email (**IMPORTANT** the username must be the same as the username you will login with myrtille; when registering via email, the user will have a link to complete the registration) and save. Into the user details page, select the user group created in Step 2
+NOTE: If you have enabled Enterprise Mode and wish to sync your Active Directory with OASIS, visit http://www.oliveinnovations.com, go to download area and download the Gateway application; instructions for configuration can be found into the docs on the same website
+- Create an application (choose Applications from the menu), then click New, enter a Name and save. You will be directed to the application details page, grant access to the user group created in Step 2
+- Within the application page, click the button Application Key, this will display the information to configure myrtille
 
 Once these steps are completed, edit the app.config file of Myrtille.Services and uncomment the following appSettings:
-	- `MFAAuthAdapter`, this is the OASIS MFA adapter
-	- `OASISApiKey`, this is the API Key found when you clicked Application Key in step 5
-	- `OASISAppID`, this is the App ID found when you clicked Application Key in step 5
-	- `OASISAppKey`, this is the App Key found when you clicked Application Key in step 5
-	- Restart Myrtille.Services windows service to use the new settings
+- `MFAAuthAdapter`, this is the OASIS MFA adapter
+- `OASISApiKey`, this is the API Key found when you clicked Application Key in step 5
+- `OASISAppID`, this is the App ID found when you clicked Application Key in step 5
+- `OASISAppKey`, this is the App Key found when you clicked Application Key in step 5
+- Restart Myrtille.Services windows service to use the new settings
 
 The included MFA adapter is written by Olive Innovations Ltd for use with the OASIS platform. This adapter uses a nuget package, OASIS.Integration (https://www.nuget.org/packages/OASIS.Integration/) available open source (https://github.com/OliveInnovations/OASIS/).
 If you wish to create your own MFA adapter, `Myrtille.Services.Contracts` contains the interfaces you need.
@@ -192,16 +192,16 @@ If you wish to create your own MFA adapter, `Myrtille.Services.Contracts` contai
 When enabled, the enterprise mode authenticates users against a domain and allows administrators to create hosts connections which can be restricted to the security groups the authenticated users belongs to.
 
 The enterprise mode provides the following additional features:
-	- Authenticate users against a domain/active directory instead of a host they wish to connect to
-	- Allow administrators to define a list of hosts; these hosts are the only hosts the users can connect to
-	- Access to hosts can be restricted based on the groups the authenticated users belongs to
-	- Administrators can create a single use session url to a specific host (with specific login credentials) which can be shared with external (non domain) users and only be used once
+- Authenticate users against a domain/active directory instead of a host they wish to connect to
+- Allow administrators to define a list of hosts; these hosts are the only hosts the users can connect to
+- Access to hosts can be restricted based on the groups the authenticated users belongs to
+- Administrators can create a single use session url to a specific host (with specific login credentials) which can be shared with external (non domain) users and only be used once
 
 To enable enterprise mode, edit the app.config file of Myrtille.Services and uncomment the following appSettings:
-	- `EnterpriseAdapter`, this is the adapter to use for enterprise mode
-	- `EnterpriseAdminGroup`, this is the security group which will define a user as an administrator who can create, edit, delete hosts, define access to hosts and create single use sessions
-	- `EnterpriseDomain`, this is the NETBIOS name (i.e. MYDOMAIN) or FQDN (i.e. mydomain.local) of your domain
-	- Restart Myrtille.Services windows service to use the new settings
+- `EnterpriseAdapter`, this is the adapter to use for enterprise mode
+- `EnterpriseAdminGroup`, this is the security group which will define a user as an administrator who can create, edit, delete hosts, define access to hosts and create single use sessions
+- `EnterpriseDomain`, this is the NETBIOS name (i.e. MYDOMAIN) or FQDN (i.e. mydomain.local) of your domain
+- Restart Myrtille.Services windows service to use the new settings
 
 If you wish to create your own enterprise adapter (with a different authentication, database or behavior), `Myrtille.Services.Contracts` contains the interfaces you need.
 
