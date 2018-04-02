@@ -263,23 +263,26 @@ namespace Myrtille.Services
             // also interesting to note, it's possible to set a MaxConnectionTime for the rdp session (registry: HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp, "MaxConnectionTime" (DWORD, value in msecs))
             // an alternative to alter the registry directly (which impact the whole server) is to define group policies strategies (GPOs) into the Active Directory; it's a bit more complicated to handle, but proper...
 
-            Trace.TraceInformation("Disconnected remote session {0}", _remoteSessionId);
+            if (_process != null && _process.HasExited)
+            {
+                Trace.TraceInformation("Disconnected remote session {0}, exit code {1}", _remoteSessionId, _process.ExitCode);
 
-            try
-            {
-                // notify the remote session manager of the process exit
-                _callback.ProcessExited();
-            }
-            catch (Exception exc)
-            {
-                Trace.TraceError("Failed to notify rdp client process exit (MyrtilleAppPool down?), remote session {0} ({1})", _remoteSessionId, exc);
-            }
-            finally
-            {
-                if (_process != null)
+                try
                 {
-                    _process.Dispose();
-                    _process = null;
+                    // notify the remote session manager of the process exit
+                    _callback.ProcessExited(_process.ExitCode);
+                }
+                catch (Exception exc)
+                {
+                    Trace.TraceError("Failed to notify rdp client process exit (MyrtilleAppPool down?), remote session {0} ({1})", _remoteSessionId, exc);
+                }
+                finally
+                {
+                    if (_process != null)
+                    {
+                        _process.Dispose();
+                        _process = null;
+                    }
                 }
             }
         }

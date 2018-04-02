@@ -98,7 +98,7 @@ namespace Myrtille.Web
             _remoteSessionManager = remoteSessionManager;
         }
 
-        public void ProcessExited()
+        public void ProcessExited(int exitCode)
         {
             Trace.TraceInformation("Received rdp client process exit notification, remote session {0}", _remoteSessionManager.RemoteSession.Id);
 
@@ -106,6 +106,9 @@ namespace Myrtille.Web
             {
                 // remote session is now disconnected
                 _remoteSessionManager.RemoteSession.State = RemoteSessionState.Disconnected;
+
+                // process exit code
+                _remoteSessionManager.RemoteSession.ExitCode = exitCode;
 
                 // release the communication pipes, if any
                 if (_remoteSessionManager.Pipes != null)

@@ -1,4 +1,10 @@
-﻿2018-03-29 Version 1.8.0 (beta)
+﻿2018-04-02 Version 1.8.1 (beta)
+	enterprise mode data folder is now created by the installer (thanks hac)
+	fixed installer error 1001 regarding CERTENROLLLib.CX509PrivateKey
+	updated openssl to version 1.0.2o
+	added an error message if the remote connection fails or is closed unexpectedly
+
+2018-03-29 Version 1.8.0 (beta)
 	resynced FreeRDP with master repository (fixes the NLA issue introduced with Windows updates KB4088776, KB4088787, KB4088876, KB4088875)
 	added support for MFA (one time password and one time host session url) (thanks Paul Oliver). Refer to documentation for activation
 	added enterprise mode (AD pre-authentication and hosts list management) (thanks Paul Oliver). Refer to documentation for activation

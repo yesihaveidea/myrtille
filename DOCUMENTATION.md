@@ -190,6 +190,7 @@ If you wish to create your own MFA adapter, `Myrtille.Services.Contracts` contai
 
 ## Enterprise Mode
 When enabled, the enterprise mode authenticates users against a domain and allows administrators to create hosts connections which can be restricted to the security groups the authenticated users belongs to.
+**CAUTION** This requires the myrtille machine to have joined the domain or be able to resolve the domain controller FQDN or IP.
 
 The enterprise mode provides the following additional features:
 - Authenticate users against a domain/active directory instead of a host they wish to connect to
@@ -200,7 +201,7 @@ The enterprise mode provides the following additional features:
 To enable enterprise mode, edit the app.config file of Myrtille.Services and uncomment the following appSettings:
 - `EnterpriseAdapter`, this is the adapter to use for enterprise mode
 - `EnterpriseAdminGroup`, this is the security group which will define a user as an administrator who can create, edit, delete hosts, define access to hosts and create single use sessions
-- `EnterpriseDomain`, this is the NETBIOS name (i.e. MYDOMAIN) or FQDN (i.e. mydomain.local) of your domain
+- `EnterpriseDomain`, this is the name of your domain (i.e. MYDOMAIN or mydomain.local) if myrtille is part of it or the domain controller FQDN or IP otherwise
 - Restart Myrtille.Services windows service to use the new settings
 
 If you wish to create your own enterprise adapter (with a different authentication, database or behavior), `Myrtille.Services.Contracts` contains the interfaces you need.

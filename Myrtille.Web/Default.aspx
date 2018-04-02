@@ -232,6 +232,9 @@
 
         <script type="text/javascript" language="javascript" defer="defer">
 
+            // handle connection failure, disconnect and logout
+            handleRemoteSessionExit(<%=RemoteSession != null && RemoteSession.State == RemoteSessionState.Disconnected && RemoteSession.ExitCode != 0 ? RemoteSession.ExitCode : 0%>);
+
             // auto-connect / start program from url
             // if the display resolution isn't set, the remote session isn't able to start; redirect with the client resolution
             if (window.location.href.indexOf('&connect=') != -1 && (window.location.href.indexOf('&width=') == -1 || window.location.href.indexOf('&height=') == -1))

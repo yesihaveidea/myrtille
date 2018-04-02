@@ -104,6 +104,39 @@ namespace Myrtille.Web
         }
 
         /// <summary>
+        /// force remove the .net viewstate hidden fields from page (large bunch of unwanted data in url)
+        /// </summary>
+        /// <param name="writer"></param>
+        protected override void Render(
+            HtmlTextWriter writer)
+        {
+            var sb = new StringBuilder();
+            var sw = new StringWriter(sb);
+            var tw = new HtmlTextWriter(sw);
+            base.Render(tw);
+            var html = sb.ToString();
+            html = Regex.Replace(html, "<input[^>]*id=\"(__VIEWSTATE)\"[^>]*>", string.Empty, RegexOptions.IgnoreCase);
+            html = Regex.Replace(html, "<input[^>]*id=\"(__VIEWSTATEGENERATOR)\"[^>]*>", string.Empty, RegexOptions.IgnoreCase);
+            writer.Write(html);
+        }
+
+        /// <summary>
+        /// page unload
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void Page_Unload(
+            object sender,
+            EventArgs e)
+        {
+            // if there is a disconnected remote session with an unexpected exit code, reset the exit code (so that the related error message is displayed only once if the page is reloaded)
+            if (RemoteSession != null && RemoteSession.State == RemoteSessionState.Disconnected && RemoteSession.ExitCode != 0)
+            {
+                RemoteSession.ExitCode = 0;
+            }
+        }
+
+        /// <summary>
         /// prevent http session fixation attack or stealing by generating a new http session ID upon login
         /// https://www.owasp.org/index.php/Session_Fixation
         /// </summary>
@@ -179,23 +212,6 @@ namespace Myrtille.Web
                     HttpContext.Current.Application.UnLock();
                 }
             }
-        }
-
-        /// <summary>
-        /// force remove the .net viewstate hidden fields from page (large bunch of unwanted data in url)
-        /// </summary>
-        /// <param name="writer"></param>
-        protected override void Render(
-            HtmlTextWriter writer)
-        {
-            var sb = new StringBuilder();
-            var sw = new StringWriter(sb);
-            var tw = new HtmlTextWriter(sw);
-            base.Render(tw);
-            var html = sb.ToString();
-            html = Regex.Replace(html, "<input[^>]*id=\"(__VIEWSTATE)\"[^>]*>", string.Empty, RegexOptions.IgnoreCase);
-            html = Regex.Replace(html, "<input[^>]*id=\"(__VIEWSTATEGENERATOR)\"[^>]*>", string.Empty, RegexOptions.IgnoreCase);
-            writer.Write(html);
         }
 
         /// <summary>

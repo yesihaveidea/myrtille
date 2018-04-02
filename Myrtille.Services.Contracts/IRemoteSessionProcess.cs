@@ -59,6 +59,6 @@ namespace Myrtille.Services.Contracts
         /// process exited callback
         /// </summary>
         [OperationContract]
-        void ProcessExited();
+        void ProcessExited(int exitCode);
     }
 }

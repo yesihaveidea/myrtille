@@ -346,3 +346,56 @@ function sendCtrlAltDel()
         dialog.showDebug('myrtille sendCtrlAltDel error: ' + exc.message);
     }
 }
+
+function handleRemoteSessionExit(exitCode)
+{
+    if (exitCode == 0)
+        return;
+
+    switch (exitCode)
+    {
+        // wfreerdp.exe process killed
+        case 1:
+            alert('The remote connection was disconnected after the wfreerdp.exe process was killed');
+            break;
+
+        // session disconnect from admin console
+        case 65537:
+            alert('The remote connection was disconnected from admin console');
+            break;
+
+        // session logout from admin console
+        case 65538:
+            alert('The remote connection was logged out from admin console');
+            break;
+
+        // session disconnect from windows menu
+        case 65547:
+            //alert('The remote connection was disconnected from windows menu');
+            break;
+
+        // session logout from windows menu
+        case 65548:
+            //alert('The remote connection was logged out from windows menu');
+            break;
+
+        // invalid server
+        case 131077:
+        // unreachable server
+        case 131084:
+            alert('The remote connection failed due to invalid or unreachable server address');
+            break;
+
+        // missing username
+        case 131083:
+        // missing password
+        case 131085:
+        // invalid credentials
+        case 131092:
+            alert('The remote connection failed due to missing or invalid credentials');
+            break;
+
+        default:
+            alert('The remote connection failed or was closed unexpectedly');
+    }
+}

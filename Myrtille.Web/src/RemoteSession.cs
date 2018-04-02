@@ -42,6 +42,7 @@ namespace Myrtille.Web
         public string StartProgram;
         public bool AllowRemoteClipboard;               // set in myrtille web config
         public SecurityProtocolEnum SecurityProtocol;
+        public int ExitCode;
 
         public RemoteSession()
         {
