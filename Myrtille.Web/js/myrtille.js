@@ -369,6 +369,16 @@ function handleRemoteSessionExit(exitCode)
             alert('The remote connection was logged out from admin console');
             break;
 
+        // idle timeout
+        case 65539:
+            alert('The remote connection was disconnected after the idle timeout has expired');
+            break;
+
+        // maximum time
+        case 65540:
+            alert('The remote connection was disconnected after the maximum session time was reached');
+            break;
+
         // session disconnect from windows menu
         case 65547:
             //alert('The remote connection was disconnected from windows menu');
