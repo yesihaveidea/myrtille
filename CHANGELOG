@@ -1,4 +1,9 @@
-﻿2018-04-02 Version 1.8.1 (beta)
+﻿2018-04-08 Version 1.8.2 (beta)
+	enterprise mode now better reporting of login failures and includes change password dialog where user is required to change password
+	connectionString now in service app.config to allow to specify location for MyrtilleEnterprise.sdf or use SQL server
+	fixed issue with enterprise host create session including invalid /popup/ path in sessionURL
+
+2018-04-02 Version 1.8.1 (beta)
 	enterprise mode data folder is now created by the installer (thanks hac)
 	fixed installer error 1001 regarding CERTENROLLLib.CX509PrivateKey
 	updated openssl to version 1.0.2o

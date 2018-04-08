@@ -220,7 +220,7 @@ namespace Myrtille.Web
         private void UpdateControls()
         {
             // hosts list
-            if (_enterpriseSession != null && (RemoteSession == null || RemoteSession.State == RemoteSessionState.Disconnecting || RemoteSession.State == RemoteSessionState.Disconnected))
+            if (_enterpriseSession != null && _enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.NONE && (RemoteSession == null || RemoteSession.State == RemoteSessionState.Disconnecting || RemoteSession.State == RemoteSessionState.Disconnected))
             {
                 toolbar.Style["visibility"] = "hidden";
                 toolbar.Style["display"] = "none";
@@ -302,6 +302,7 @@ namespace Myrtille.Web
                 {
                     connectError.InnerText = "MFA Authentication failed!";
                     UpdateControls();
+
                     return;
                 }
             }
@@ -309,6 +310,7 @@ namespace Myrtille.Web
             // enterprise mode from login
             if (_enterpriseSession == null && _enterpriseClient.GetState())
             {
+                
                 CreateEnterpriseSessionFromLogin();
             }
             // connection from:
@@ -387,7 +389,8 @@ namespace Myrtille.Web
             if (_enterpriseSession != null && Request["SD"] != null)
             {
                 long hostId = 0;
-                if (long.TryParse(Request["SD"], out long lResult))
+                long lResult = 0;
+                if (long.TryParse(Request["SD"], out lResult))
                 {
                     hostId = lResult;
                 }
@@ -417,7 +420,8 @@ namespace Myrtille.Web
 
             // remote clipboard access
             var allowRemoteClipboard = true;
-            if (bool.TryParse(ConfigurationManager.AppSettings["allowRemoteClipboard"], out bool bResult))
+            bool bResult = false;
+            if (bool.TryParse(ConfigurationManager.AppSettings["allowRemoteClipboard"], out bResult))
             {
                 allowRemoteClipboard = bResult;
             }
@@ -583,9 +587,19 @@ namespace Myrtille.Web
             {
                 // authenticate the user against the enterprise active directory
                 _enterpriseSession = _enterpriseClient.Authenticate(user.Value, password.Value);
-                if (_enterpriseSession == null)
+                if (_enterpriseSession.AuthenticationErrorCode != EnterpriseAuthenticationErrorCode.NONE)
                 {
-                    connectError.InnerText = "Active Directory Authentication failed!";
+
+                    if (_enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.PASSWORD_EXPIRED)
+                    {
+                        Page.ClientScript.RegisterClientScriptBlock(this.GetType(), Guid.NewGuid().ToString(), string.Format("openPopup('changePasswordPopup', 'EnterpriseChangePassword.aspx?userId={0}');", user.Value),true);
+                    }
+                    else
+                    {
+                        connectError.InnerText = EnterpriseAuthenticationErrorHelper
+                                                .GetErrorDescription(_enterpriseSession.AuthenticationErrorCode);
+                        
+                    }
                     UpdateControls();
                     return;
                 }
@@ -629,7 +643,7 @@ namespace Myrtille.Web
                 hostLink.Attributes["class"] = "hostLink";
 
                 var hostName = e.Item.FindControl("hostName") as HtmlGenericControl;
-                hostName.InnerText = host.HostName;
+                hostName.InnerText = (_enterpriseSession.IsAdmin ? "Edit " : "") + host.HostName;
                 if (_enterpriseSession.IsAdmin)
                 {
                     hostName.Attributes["class"] = "hostName";

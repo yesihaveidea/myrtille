@@ -1,7 +1,9 @@
-﻿/*
-    Enterprise mode, mimic behaviour of RDP gateways
+﻿
+/*
+    Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2017-2018 Olive Innovations
+    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2018 Paul Oliver
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,9 +22,11 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
+using System.Runtime.InteropServices;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Text;
 using Myrtille.Helpers;
 using Myrtille.Services.Contracts;
@@ -31,6 +35,7 @@ namespace Myrtille.Enterprise
 {
     public class ActiveDirectory : IEnterpriseAdapter
     {
+
         public void Initialize()
         {
             using (var db = new MyrtilleEnterpriseDBContext())
@@ -55,7 +60,45 @@ namespace Myrtille.Enterprise
                 using (var context = new PrincipalContext(ContextType.Domain, domain, username, password))
                 {
                     UserPrincipal user = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, username);
+
                     DirectoryEntry entry = (DirectoryEntry)user.GetUnderlyingObject();
+
+                    if(user.IsAccountLockedOut())
+                    {
+                        return new EnterpriseSession
+                        {
+                            AuthenticationErrorCode = EnterpriseAuthenticationErrorCode.USER_ACCOUNT_LOCKED
+                        };
+                    }
+
+                    if(user.Enabled != null && !(bool)user.Enabled)
+                    {
+                        return new EnterpriseSession
+                        {
+                            AuthenticationErrorCode = EnterpriseAuthenticationErrorCode.ACCOUNT_DISABLED
+                        };
+                    }
+
+                    if(user.AccountExpirationDate != null && (DateTime)user.AccountExpirationDate <= DateTime.Now)
+                    {
+                        return new EnterpriseSession
+                        {
+                            AuthenticationErrorCode = EnterpriseAuthenticationErrorCode.ACCOUNT_EXPIRED
+                        };
+                    }
+
+                    if (!user.PasswordNeverExpires )//&& !user.UserCannotChangePassword)
+                    {
+                        var expDate = (DateTime)entry.InvokeGet("PasswordExpirationDate");
+                        if (expDate <= DateTime.Now)
+                        {
+                            return new EnterpriseSession
+                            {
+                                AuthenticationErrorCode = EnterpriseAuthenticationErrorCode.PASSWORD_EXPIRED
+                            };
+                        }
+                    }
+
 
                     var directoryGroups = new List<string>();
 
@@ -115,9 +158,26 @@ namespace Myrtille.Enterprise
                     }
                 }
             }
-            catch (Exception e)
+            catch(DirectoryServicesCOMException e)
+            {
+
+                var formattedError = (DirectoryExceptionHelper)e;
+
+                return new EnterpriseSession
+                {
+                    AuthenticationErrorCode = formattedError.ErrorCode
+                };
+            }
+            catch(PrincipalOperationException e)
             {
                 return null;
+            }
+            catch (Exception e)
+            {
+                return new EnterpriseSession
+                {
+                    AuthenticationErrorCode = EnterpriseAuthenticationErrorCode.UNKNOWN_ERROR
+                };
             }
         }
 
@@ -502,7 +562,31 @@ namespace Myrtille.Enterprise
                 return string.Format("?SI={0}&SD={1}&SK={2}",newSessionID,hostID,sessionKey);
             }
         }
-        
+
+        /// <summary>
+        /// Change password for user
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="oldPassword"></param>
+        /// <param name="newPassword"></param>
+        /// <returns></returns>
+        public bool ChangeUserPassword(string username, string oldPassword, string newPassword, string domain)
+        {
+            try
+            {
+                using (var context = new PrincipalContext(ContextType.Domain, domain, username, oldPassword))
+                {
+                    UserPrincipal user = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, username);
+                    user.ChangePassword(oldPassword, newPassword);
+                    user.Save();
+                }
+                return true;
+            }catch(Exception e)
+            {
+                return false;
+            }
+        }
+
         #region aes encryption
 
         private static string AES_Encrypt(string stringToBeEncrypted, string passwordString)
@@ -573,6 +657,7 @@ namespace Myrtille.Enterprise
 
             return decryptedString;
         }
+
 
         #endregion
     }

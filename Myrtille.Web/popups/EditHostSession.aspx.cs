@@ -66,7 +66,8 @@ namespace Myrtille.Web
             // retrieve the host
             if (Request["hostId"] != null)
             {
-                if (long.TryParse(Request["hostId"], out long lResult))
+                long lResult = 0;
+                if (long.TryParse(Request["hostId"], out lResult))
                 {
                     _hostId = lResult;
                 }
@@ -103,7 +104,7 @@ namespace Myrtille.Web
                 var url = _enterpriseClient.CreateUserSession(_enterpriseSession.SessionID, _hostId.Value, userName.Value, userPassword.Value);
                 if (!string.IsNullOrEmpty(url))
                 {
-                    sessionUrl.Value = Request.Url.Scheme + "://" + Request.Url.Host + (Request.Url.Port != 80 && Request.Url.Port != 443 ? ":" + Request.Url.Port : "") + "/" + Request.Url.Segments[1] + url + "&__EVENTTARGET=&__EVENTARGUMENT=&connect=Connect%21";
+                    sessionUrl.Value = Request.Url.Scheme + "://" + Request.Url.Host + (Request.Url.Port != 80 && Request.Url.Port != 443 ? ":" + Request.Url.Port : "")  + Request.ApplicationPath + "/"  + url + "&__EVENTTARGET=&__EVENTARGUMENT=&connect=Connect%21";
                 }
             }
             catch (Exception exc)

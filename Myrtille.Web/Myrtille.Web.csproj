@@ -98,6 +98,13 @@
     <Compile Include="popups\EditHost.aspx.designer.cs">
       <DependentUpon>EditHost.aspx</DependentUpon>
     </Compile>
+    <Compile Include="popups\EnterpriseChangePassword.aspx.cs">
+      <DependentUpon>EnterpriseChangePassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="popups\EnterpriseChangePassword.aspx.designer.cs">
+      <DependentUpon>EnterpriseChangePassword.aspx</DependentUpon>
+    </Compile>
     <Compile Include="popups\FileStorage.aspx.cs">
       <DependentUpon>FileStorage.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -196,6 +203,7 @@
     <Content Include="myrtille.ico" />
     <Content Include="popups\EditHostSession.aspx" />
     <Content Include="popups\EditHost.aspx" />
+    <Content Include="popups\EnterpriseChangePassword.aspx" />
     <Content Include="popups\FileStorage.aspx" />
     <Content Include="popups\ShowDialog.aspx" />
     <Content Include="popups\VirtualKeyboard.aspx" />
