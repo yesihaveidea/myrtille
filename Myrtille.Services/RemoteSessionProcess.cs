@@ -88,7 +88,8 @@ namespace Myrtille.Services
 
                 // log remote session events into a file (located into <Myrtille folder>\log)
                 var remoteSessionLog = false;
-                if (bool.TryParse(ConfigurationManager.AppSettings["RemoteSessionLog"], out bool bResult))
+                bool bResult = false;
+                if (bool.TryParse(ConfigurationManager.AppSettings["RemoteSessionLog"], out bResult))
                 {
                     remoteSessionLog = bResult;
                 }
@@ -97,7 +98,8 @@ namespace Myrtille.Services
 
                 // color depth
                 var bpp = 16;
-                if (int.TryParse(ConfigurationManager.AppSettings["FreeRDPBpp"], out int iResult))
+                int iResult = 16;
+                if (int.TryParse(ConfigurationManager.AppSettings["FreeRDPBpp"], out iResult))
                 {
                     bpp = iResult;
                 }

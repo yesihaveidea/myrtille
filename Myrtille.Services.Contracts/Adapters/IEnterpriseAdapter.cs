@@ -42,5 +42,7 @@ namespace Myrtille.Services.Contracts
         EnterpriseConnectionDetails GetSessionConnectionDetails(string sessionID, long hostID, string sessionKey);
 
         string CreateUserSession(string sessionID, long hostID, string username, string password);
+
+        bool ChangeUserPassword(string username, string oldPassword, string newPassword, string domain);
     }
 }

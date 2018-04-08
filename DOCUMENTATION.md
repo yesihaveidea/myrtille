@@ -204,6 +204,8 @@ To enable enterprise mode, edit the app.config file of Myrtille.Services and unc
 - `EnterpriseDomain`, this is the name of your domain (i.e. MYDOMAIN or mydomain.local) if myrtille is part of it or the domain controller FQDN or IP otherwise
 - Restart Myrtille.Services windows service to use the new settings
 
+To specify a customer path for the MyrtilleEnterprise database or use another SQL server amend Myrtille.Services app.config connectionString
+
 If you wish to create your own enterprise adapter (with a different authentication, database or behavior), `Myrtille.Services.Contracts` contains the interfaces you need.
 
 ## Notes and limitations

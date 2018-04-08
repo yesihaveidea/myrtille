@@ -67,7 +67,8 @@ namespace Myrtille.Web
             // retrieve the host
             if (Request["hostId"] != null)
             {
-                if (long.TryParse(Request["hostId"], out long lResult))
+                long lResult = 0;
+                if (long.TryParse(Request["hostId"], out lResult))
                 {
                     _hostId = lResult;
                 }

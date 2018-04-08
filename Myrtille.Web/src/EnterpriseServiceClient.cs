@@ -137,5 +137,18 @@ namespace Myrtille.Web
                 throw;
             }
         }
+
+        public bool ChangeUserPassword(string username, string oldPassword, string newPassword)
+        {
+            try
+            {
+                return Channel.ChangeUserPassword(username, oldPassword, newPassword);
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to change user password ({0})", exc);
+                throw;
+            }
+        }
     }
 }

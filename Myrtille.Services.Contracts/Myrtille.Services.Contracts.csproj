@@ -58,6 +58,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -72,6 +73,7 @@
     <Compile Include="IFileStorage.cs" />
     <Compile Include="IMFAAuthentication.cs" />
     <Compile Include="IRemoteSessionProcess.cs" />
+    <Compile Include="Models\EnterpriseAuthenticationErrorHelper.cs" />
     <Compile Include="Models\EnterpriseConnectionDetails.cs" />
     <Compile Include="Models\EnterpriseHost.cs" />
     <Compile Include="Models\EnterpriseHostEdit.cs" />

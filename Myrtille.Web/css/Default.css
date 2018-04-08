@@ -360,6 +360,45 @@ label,
     width: 370px;
 }
 
+
+/* change password popup */
+
+#changePasswordPopup,
+#changePasswordPopupInner
+{
+    width: 400px;
+    height: 330px;
+}
+
+#changePasswordPopupInner
+{
+    color: #000;
+    background: #fff;
+}
+
+#changePasswordPopupTitle
+{
+    padding-top: 20px;
+    padding-left: 10px;
+}
+
+.changePasswordMessage{
+    padding-left: 10px;
+}
+
+.changePasswordPopupInput
+{
+    padding-left: 10px;
+}
+
+#changeError {
+    padding-left: 10px;
+    font-size: 10pt;
+    color: red;
+    width:380px;
+}
+
+
 /* remote session display */
 
 #displayDiv
