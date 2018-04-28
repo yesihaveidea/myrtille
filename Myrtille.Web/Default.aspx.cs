@@ -72,6 +72,15 @@ namespace Myrtille.Web
                 try
                 {
                     _enterpriseSession = (EnterpriseSession)HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
+
+                    var clientIP = ClientIPHelper.ClientIPFromRequest(new HttpContextWrapper(HttpContext.Current).Request, true, new string[] { });
+
+                    if (!_enterpriseSession.ClientRemoteIP.Equals(clientIP))
+                    {
+                        HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = null;
+                        _enterpriseSession = null;
+                    }
+
                 }
                 catch (Exception exc)
                 {
@@ -79,6 +88,16 @@ namespace Myrtille.Web
                 }
             }
 
+            //Retrieve remote session information from session url
+            if(Request.QueryString["SSE"] != null)
+            {
+                RemoteSession = GetSharedRemoteSession(Request.QueryString["SSE"]);
+                if (RemoteSession == null)
+                {
+                    Response.Redirect(string.Format("?oldSID={0}", HttpContext.Current.Session.SessionID), true);
+                }
+            }
+            else
             // retrieve the active remote session, if any
             if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] != null)
             {
@@ -234,7 +253,7 @@ namespace Myrtille.Web
             {
                 toolbar.Style["visibility"] = "visible";
                 toolbar.Style["display"] = "block";
-                serverInfo.Value = RemoteSession.ServerAddress;
+                serverInfo.Value = (!string.IsNullOrEmpty(RemoteSession.ServerName) ? RemoteSession.ServerName : RemoteSession.ServerAddress);
                 stat.Value = RemoteSession.StatMode ? "Hide Stat" : "Show Stat";
                 stat.Disabled = false;
                 debug.Value = RemoteSession.DebugMode ? "Hide Debug" : "Show Debug";
@@ -249,6 +268,7 @@ namespace Myrtille.Web
                 cad.Disabled = false;
                 mrc.Disabled = false;
                 disconnect.Disabled = false;
+                share.Disabled = RemoteSession.DisableSessionSharing(HttpContext.Current.Session.SessionID);
             }
             // login screen
             else
@@ -310,7 +330,6 @@ namespace Myrtille.Web
             // enterprise mode from login
             if (_enterpriseSession == null && _enterpriseClient.GetState())
             {
-                
                 CreateEnterpriseSessionFromLogin();
             }
             // connection from:
@@ -335,9 +354,6 @@ namespace Myrtille.Web
                         // in standard mode or enterprise mode from url, a new http session must be generated
                         if (_enterpriseSession == null || Request["SI"] != null)
                         {
-                            // cancel the current http session
-                            HttpContext.Current.Session.Abandon();
-
                             // prevent session fixation attack by generating a new session ID upon login
                             // also, using http get method to prevent the browser asking for http post data confirmation if the page is reloaded
                             // https://www.owasp.org/index.php/Session_Fixation
@@ -379,6 +395,7 @@ namespace Myrtille.Web
         private bool ConnectRemoteServer()
         {
             // connection parameters
+            string loginHostName = null;
             var loginServer = string.IsNullOrEmpty(server.Value) ? "localhost" : server.Value;
             var loginDomain = domain.Value;
             var loginUser = user.Value;
@@ -404,7 +421,7 @@ namespace Myrtille.Web
                         System.Diagnostics.Trace.TraceInformation("Unable to retrieve host {0} connection details (invalid host or one time session url already used?)", hostId);
                         return false;
                     }
-
+                    loginHostName = connection.HostName;
                     loginServer = !string.IsNullOrEmpty(connection.HostAddress) ? connection.HostAddress : connection.HostName;
                     loginDomain = string.Empty;     // domain is defined into myrtille services config
                     loginUser = connection.Username;
@@ -424,6 +441,12 @@ namespace Myrtille.Web
             if (bool.TryParse(ConfigurationManager.AppSettings["allowRemoteClipboard"], out bResult))
             {
                 allowRemoteClipboard = bResult;
+            }
+
+            var allowSessionSharing = false;
+            if (bool.TryParse(ConfigurationManager.AppSettings["allowSessionSharing"], out bResult))
+            {
+                allowSessionSharing = bResult;
             }
 
             // remove any active remote session (disconnected?)
@@ -449,6 +472,7 @@ namespace Myrtille.Web
                 {
                     Id = remoteSessionsCounter,
                     State = RemoteSessionState.NotConnected,
+                    ServerName = loginHostName,
                     ServerAddress = loginServer,
                     UserDomain = loginDomain,
                     UserName = loginUser,
@@ -457,7 +481,10 @@ namespace Myrtille.Web
                     ClientHeight = int.Parse(height.Value),
                     StartProgram = program.Value,
                     AllowRemoteClipboard = allowRemoteClipboard,
-                    SecurityProtocol = loginProtocol
+                    SecurityProtocol = loginProtocol,
+                    SessionKey = Guid.NewGuid().ToString(),
+                    AllowSessionSharing = allowSessionSharing,
+                    OwnerSession = HttpContext.Current.Session.SessionID
                 };
 
                 // bind the remote session to the current http session
@@ -526,20 +553,36 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
+
             // disconnect the active remote session, if any and connecting/connected
             if (RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected))
             {
                 try
                 {
-                    // update the remote session state
-                    RemoteSession.State = RemoteSessionState.Disconnecting;
+                    //Disconnect remote session but only if it is the owner session
+                    //prevents shared sessions being disconnected by guest
+                    if (RemoteSession.OwnerSession.Equals(HttpContext.Current.Session.SessionID))
+                    {
+                        // update the remote session state
+                        RemoteSession.State = RemoteSessionState.Disconnecting;
+                        // send a disconnect command to the rdp client
+                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.CloseRdpClient);
+                    }
+                    else
+                    {
+                        HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = null;
+                    }
 
-                    // send a disconnect command to the rdp client
-                    RemoteSession.Manager.SendCommand(RemoteSessionCommand.CloseRdpClient);
-
-                    // if running in enterprise mode, redirect to the hosts list
-                    // otherwise, redirect to the login screen
-                    Response.Redirect("?", true);
+                    if (_enterpriseSession != null && _enterpriseSession.SingleUseConnection)
+                    {
+                        LogoutButtonClick(this, EventArgs.Empty);
+                    }
+                    else
+                    {
+                        // if running in enterprise mode, redirect to the hosts list
+                        // otherwise, redirect to the login screen
+                        Response.Redirect(string.Format("?oldSID={0}", HttpContext.Current.Session.SessionID), true);
+                    }
                 }
                 catch (ThreadAbortException)
                 {
@@ -566,7 +609,8 @@ namespace Myrtille.Web
                 {
                     IsAdmin = false,    // simple host connection only (no hosts management)
                     SessionID = Request["SI"],
-                    SessionKey = Request["SK"]
+                    SessionKey = Request["SK"],
+                    SingleUseConnection = true
                 };
 
                 // bind the enterprise session to the current http session
@@ -587,6 +631,7 @@ namespace Myrtille.Web
             {
                 // authenticate the user against the enterprise active directory
                 _enterpriseSession = _enterpriseClient.Authenticate(user.Value, password.Value);
+
                 if (_enterpriseSession.AuthenticationErrorCode != EnterpriseAuthenticationErrorCode.NONE)
                 {
 
@@ -604,11 +649,10 @@ namespace Myrtille.Web
                     return;
                 }
 
+                _enterpriseSession.ClientRemoteIP = ClientIPHelper.ClientIPFromRequest(new HttpContextWrapper(HttpContext.Current).Request, true, new string[] { });
+
                 // bind the enterprise session to the current http session
                 HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = _enterpriseSession;
-
-                // cancel the current http session
-                HttpContext.Current.Session.Abandon();
 
                 // prevent session fixation attack by generating a new session ID upon login
                 // also, using http get method to prevent the browser asking for http post data confirmation if the page is reloaded
@@ -672,12 +716,9 @@ namespace Myrtille.Web
             {
                 // logout the enterprise session
                 _enterpriseClient.Logout(_enterpriseSession.SessionID);
-
-                // unbind the enterprise session from the current http session
                 HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = null;
 
-                // redirect to the login screen
-                Response.Redirect("?", true);
+                Response.Redirect(string.Format("?oldSID={0}", HttpContext.Current.Session.SessionID), true);
             }
             catch (ThreadAbortException)
             {
@@ -689,6 +730,70 @@ namespace Myrtille.Web
             }
         }
 
+        #endregion
+
+        #region shared session method
+        /// <summary>
+        /// Retrieve shared session from remote host
+        /// </summary>
+        /// <param name="sessionURL"></param>
+        /// <returns></returns>
+        private RemoteSession GetSharedRemoteSession(string sessionURL)
+        {
+            var sessionDetails = sessionURL.Split(':');
+            if (sessionDetails.Length != 2) return null;
+
+            var httpSessions = (IDictionary<string, HttpSessionState>)HttpContext.Current.Application[HttpApplicationStateVariables.HttpSessions.ToString()];
+            foreach(var httpSession in httpSessions)
+            {
+                try
+                {
+                    var remoteSession = (RemoteSession)httpSession.Value[HttpSessionStateVariables.RemoteSession.ToString()];
+
+                    if (remoteSession.Id.ToString().Equals(sessionDetails[0]))
+                    {
+                        var sessionKey = RDPCryptoHelper.GetSessionKey(remoteSession.Id, remoteSession.OwnerSession, remoteSession.SessionKey);
+
+                        if (!sessionKey.Equals(sessionURL)) return null;
+
+                        remoteSession.SessionKey = Guid.NewGuid().ToString();
+                        httpSession.Value[HttpSessionStateVariables.RemoteSession.ToString()] = remoteSession;
+
+                        HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = remoteSession;
+                        return remoteSession;
+                    }
+                }
+                catch
+                {
+                    
+                }
+            }
+
+            return null;
+            //var httpSession = httpSessions[sessionDetails[0]];
+
+            //if (httpSession == null) return null;
+
+            //try
+            //{
+            //    var remoteSession = (RemoteSession)httpSession[HttpSessionStateVariables.RemoteSession.ToString()];
+
+            //    var sessionKey = RDPCryptoHelper.GetSessionKey(sessionDetails[0], remoteSession.SessionKey);
+
+            //    if (!sessionKey.Equals(sessionURL)) return null;
+
+            //    remoteSession.SessionKey = Guid.NewGuid().ToString();
+            //    httpSession[HttpSessionStateVariables.RemoteSession.ToString()] = remoteSession;
+
+            //    HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = remoteSession;
+            //    return remoteSession;
+            //}
+            //catch
+            //{
+            //    return null;
+            //}
+
+        }
         #endregion
     }
 }

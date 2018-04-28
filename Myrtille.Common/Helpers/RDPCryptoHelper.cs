@@ -91,5 +91,25 @@ namespace Myrtille.Helpers
                 throw;
             }
         }
+
+        public static string GetSessionKey(int remoteSessionID, string sessionID, string sessionGuid)
+        {
+            using (var md5 = MD5.Create())
+            {
+                var input = string.Format("{0}:{1}", sessionID, sessionGuid);
+                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                // Convert the byte array to hexadecimal string
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    sb.Append(hashBytes[i].ToString("X2"));
+                }
+
+                return string.Format("{0}:{1}", remoteSessionID, sb.ToString());
+            }
+
+        }
     }
 }
