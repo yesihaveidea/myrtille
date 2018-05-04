@@ -84,6 +84,13 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="popups\ShareSession.aspx.cs">
+      <DependentUpon>ShareSession.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="popups\ShareSession.aspx.designer.cs">
+      <DependentUpon>ShareSession.aspx</DependentUpon>
+    </Compile>
     <Compile Include="popups\EditHostSession.aspx.cs">
       <DependentUpon>EditHostSession.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -201,6 +208,7 @@
     <Content Include="js\network\xmlhttp.js" />
     <Content Include="js\user\touchscreen.js" />
     <Content Include="myrtille.ico" />
+    <Content Include="popups\ShareSession.aspx" />
     <Content Include="popups\EditHostSession.aspx" />
     <Content Include="popups\EditHost.aspx" />
     <Content Include="popups\EnterpriseChangePassword.aspx" />

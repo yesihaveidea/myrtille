@@ -64,6 +64,11 @@ namespace Myrtille.Web
                 }
             }
 
+            if(_enterpriseSession == null || !_enterpriseSession.IsAdmin)
+            {
+                Response.Redirect("~/", true);
+            }
+
             // retrieve the host
             if (Request["hostId"] != null)
             {

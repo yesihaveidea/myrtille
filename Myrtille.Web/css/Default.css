@@ -198,10 +198,11 @@ label,
 #files,
 #cad,
 #mrc,
-#disconnect
+#disconnect,
+#share
 {
     float: left;
-    width: 12%;
+    width: 9%;
 }
 
 /* stat, debug and browser mode are now disabled by default (to enable for test or diagnostic, just comment out the css below and tweak the controls width above) */
@@ -358,6 +359,31 @@ label,
 #sessionUrl
 {
     width: 370px;
+}
+
+/* share session popup*/
+#shareSessionPopup,
+#shareSessionPopupInner
+{
+    width: 400px;
+    height: 270px;
+}
+
+#shareSessionPopupInner
+{
+    color: #000;
+    background: #fff;
+}
+
+#shareSessionPopupTitle
+{
+    padding-top: 20px;
+    padding-left: 10px;
+}
+
+.shareSessionPopupInput
+{
+    padding-left: 10px;
 }
 
 

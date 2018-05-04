@@ -115,6 +115,8 @@ namespace Myrtille.Enterprise
                         directoryGroups.AddRange(GetDirectoryGroups(entry));
                     }
 
+                    //Add user to directory group to allow restriction to host to specific username
+                    directoryGroups.Add(username);
 
                     bool isAdmin = directoryGroups.Any(m => m.Equals(adminGroup, StringComparison.InvariantCultureIgnoreCase));
 
@@ -152,8 +154,8 @@ namespace Myrtille.Enterprise
                         {
                             SessionID = sessionID,
                             SessionKey = sessionKey,
-                            IsAdmin = isAdmin
-
+                            IsAdmin = isAdmin,
+                            SingleUseConnection = false
                         };
                     }
                 }

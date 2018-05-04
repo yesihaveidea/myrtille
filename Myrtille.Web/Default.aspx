@@ -213,6 +213,9 @@
                 <!-- send a right-click on the next touch or left-click action. may be useful on touchpads or iOS devices -->
                 <input type="button" runat="server" id="mrc" value="Right-Click OFF" onclick="toggleRightClick(this);" title="if toggled on, send a Right-Click on the next touch or left-click action" disabled="disabled"/>
 
+                <!--Share session-->
+                <input type="button" runat="server" id="share" value="Share" onclick="openPopup('shareSessionPopup', 'ShareSession.aspx');" title="share session" disabled="disabled"/>
+
                 <!-- disconnect -->
                 <input type="button" runat="server" id="disconnect" value="Disconnect" onserverclick="DisconnectButtonClick" title="disconnect session" disabled="disabled"/>
 
@@ -231,6 +234,10 @@
         </form>
 
         <script type="text/javascript" language="javascript" defer="defer">
+            // call disconnect button in case then browser is being closed, this prevents rdp sessions being left open on server side
+            window.onbeforeunload = function(e) {
+			    document.getElementById('<%=disconnect.ClientID%>').click();
+            };
 
             // handle connection failure, disconnect and logout
             handleRemoteSessionExit(<%=RemoteSession != null && RemoteSession.State == RemoteSessionState.Disconnected && RemoteSession.ExitCode != 0 ? RemoteSession.ExitCode : 0%>);

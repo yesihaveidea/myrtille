@@ -1,4 +1,12 @@
-﻿2018-04-08 Version 1.8.2 (beta)
+﻿2018-04-28 Version 1.8.3 (beta)
+	added menu option when connected to a remote host to share session by generating a session url.
+	added option to web.config to enable session sharing option.
+	improved security by removing requirement for cookieless sessions (RECOMMENED as easy to steal session by copying URL).
+	security fixes with enterprise mode to ensure that shared sessions do not give access to owner hosts.
+	call disconnect RDP session when browser tab/window closed to prevent RDP sessions being left open.
+	added option to enterprise mode to allow RDP hosts to be restricted to specific users (by username).
+
+2018-04-08 Version 1.8.2 (beta)
 	enterprise mode now better reporting of login failures and includes change password dialog where user is required to change password
 	connectionString now in service app.config to allow to specify location for MyrtilleEnterprise.sdf or use SQL server
 	fixed issue with enterprise host create session including invalid /popup/ path in sessionURL

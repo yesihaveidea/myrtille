@@ -26,6 +26,7 @@ namespace Myrtille.Web
 
         public int Id;
         public RemoteSessionState State;
+        public string ServerName;
         public string ServerAddress;
         public string UserDomain;
         public string UserName;
@@ -43,6 +44,16 @@ namespace Myrtille.Web
         public bool AllowRemoteClipboard;               // set in myrtille web config
         public SecurityProtocolEnum SecurityProtocol;
         public int ExitCode;
+        public string SessionKey;
+        public bool AllowSessionSharing;
+        public string OwnerSession;
+
+        public bool DisableSessionSharing(string sessionID)
+        {
+            if (!AllowSessionSharing) return true;
+
+            return !sessionID.Equals(OwnerSession);
+        }
 
         public RemoteSession()
         {

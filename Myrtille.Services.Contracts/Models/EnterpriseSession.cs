@@ -25,5 +25,7 @@ namespace Myrtille.Services.Contracts
         public string SessionID { get; set; }
         public string SessionKey { get; set; }
         public EnterpriseAuthenticationErrorCode AuthenticationErrorCode { get; set; }
+        public bool SingleUseConnection { get; set; }
+        public string ClientRemoteIP { get; set; }
     }
 }
