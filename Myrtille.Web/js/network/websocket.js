@@ -222,10 +222,15 @@ function Websocket(config, dialog, display, network)
                 {
                     showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', message.substr(10, message.length - 10), true);
                 }
+                // print job
+                else if (message.length >= 9 && message.substr(0, 9) == 'printjob|')
+                {
+                    window.open(config.getHttpServerUrl() + 'PrintDocument.aspx?name=' + message.substr(9, message.length - 9), 'Myrtille PDF');
+                }
                 // disconnected session
                 else if (message == 'disconnected')
                 {
-                    window.location.href = config.getHttpServerUrl() + '?';
+                    window.location.href = config.getHttpServerUrl();
                 }
                 // server ack
                 else if (message.length >= 4 && message.substr(0, 4) == 'ack,')

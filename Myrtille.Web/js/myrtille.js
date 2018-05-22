@@ -265,8 +265,7 @@ this.sendText = function(text)
         if (text == null || text == '')
             return;
 
-        if (config.getAdaptiveFullscreenTimeout() > 0)
-            user.triggerActivity();
+        user.triggerActivity();
 
         var keys = new Array();
         for (var i = 0; i < text.length; i++)
@@ -299,8 +298,7 @@ function sendKey(keyCode, release)
         if (keyCode == null || keyCode == '')
             return;
 
-        if (config.getAdaptiveFullscreenTimeout() > 0)
-            user.triggerActivity();
+        user.triggerActivity();
 
         var keys = new Array();
                 

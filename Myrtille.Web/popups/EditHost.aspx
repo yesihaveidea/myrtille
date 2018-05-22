@@ -80,7 +80,6 @@
                 {
                     //alert('host was edited successfully');
                     parent.location.href = parent.location.href;
-                    parent.closePopup();
                 }
             }
 

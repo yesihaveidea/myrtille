@@ -163,6 +163,9 @@ function User(config, dialog, display, network)
 
     this.triggerActivity = function()
     {
+        if (config.getAdaptiveFullscreenTimeout() == 0)
+            return;
+
         try
         {
             //dialog.showDebug('user activity detected, sliding adaptive fullscreen update');

@@ -26,12 +26,15 @@ namespace Myrtille.Web
 {
     public class RemoteSessionSocketHandler : WebSocketHandler
     {
-        public bool BinaryMode { get; private set; }
+        private readonly HttpSessionState _session;
         private readonly RemoteSession _remoteSession;
+
+        public bool BinaryMode { get; private set; }
 
         public RemoteSessionSocketHandler(HttpSessionState session, bool binaryMode)
             : base()
         {
+            _session = session;
             BinaryMode = binaryMode;
 
             try
@@ -98,7 +101,7 @@ namespace Myrtille.Web
                 // process input(s)
                 if (!string.IsNullOrEmpty(data))
                 {
-                    _remoteSession.Manager.ProcessInputs(data);
+                    _remoteSession.Manager.ProcessInputs(_session, data);
                 }
 
                 // acknowledge the message processing with the given timestamp; it will be used by the client to compute the roundtrip time

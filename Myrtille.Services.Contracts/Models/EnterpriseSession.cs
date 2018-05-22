@@ -16,7 +16,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-using System.Runtime.Serialization;
+
 namespace Myrtille.Services.Contracts
 {
     public class EnterpriseSession
@@ -26,6 +26,5 @@ namespace Myrtille.Services.Contracts
         public string SessionKey { get; set; }
         public EnterpriseAuthenticationErrorCode AuthenticationErrorCode { get; set; }
         public bool SingleUseConnection { get; set; }
-        public string ClientRemoteIP { get; set; }
     }
 }

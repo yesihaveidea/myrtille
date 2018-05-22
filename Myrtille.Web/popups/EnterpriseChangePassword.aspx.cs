@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace Myrtille.Web
 {
-    public partial class EnterpriseChangePassword : System.Web.UI.Page
+    public partial class EnterpriseChangePassword : Page
     {
         private EnterpriseServiceClient _enterpriseClient;
-        private string _userName = null;
+
         /// <summary>
         /// page init
         /// </summary>
@@ -32,30 +28,10 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
-            // retrieve the host
-            if (Request["userId"] != null)
+            // retrieve the user
+            if (Request["userName"] != null)
             {
-                userName.Value = Request["userId"];
-                _userName = Request["userId"];
-
-                if (!IsPostBack && Request["edit"] == null)
-                {
-                    //try
-                    //{
-                    //    var host = _enterpriseClient.GetHost(_hostId.Value, _enterpriseSession.SessionID);
-                    //    if (host != null)
-                    //    {
-                    //        hostName.Value = host.HostName;
-                    //        hostAddress.Value = host.HostAddress;
-                    //        groupsAccess.Value = host.DirectoryGroups;
-                    //        securityProtocol.SelectedIndex = (int)host.Protocol;
-                    //    }
-                    //}
-                    //catch (Exception exc)
-                    //{
-                    //    System.Diagnostics.Trace.TraceError("Failed to retrieve host {0}, ({1})", _hostId, exc);
-                    //}
-                }
+                userName.Value = Request["userName"];
             }
             else
             {
@@ -72,24 +48,22 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
-            if (_enterpriseClient == null && !string.IsNullOrEmpty(_userName))
+            if (_enterpriseClient == null || string.IsNullOrEmpty(userName.Value))
                 return;
 
             try
             {
-                if(string.IsNullOrEmpty(oldPassword.Value))
+                if (string.IsNullOrEmpty(oldPassword.Value))
                 {
                     changeError.InnerText = "Old password must be specified";
-                }else
-                if (!string.Equals(newPassword.Value, confirmPassword.Value))
+                }
+                else if (!string.Equals(newPassword.Value, confirmPassword.Value))
                 {
                     changeError.InnerText = "New and confirmed passwords do not match";
                 }
                 else
                 {
-                    bool bResult = _enterpriseClient.ChangeUserPassword(_userName, oldPassword.Value, newPassword.Value);
-
-                    if (bResult)
+                    if (_enterpriseClient.ChangeUserPassword(userName.Value, oldPassword.Value, newPassword.Value))
                     {
                         Response.Redirect(Request.RawUrl + (Request.RawUrl.Contains("?") ? "&" : "?") + "change=success");
                     }
@@ -101,7 +75,7 @@ namespace Myrtille.Web
             }
             catch (Exception exc)
             {
-                System.Diagnostics.Trace.TraceError("Failed to change user password {0} ({1})", _userName, exc);
+                System.Diagnostics.Trace.TraceError("Failed to change user {0} password ({1})", userName.Value, exc);
                 changeError.InnerText = "Password change failed";
             }
         }

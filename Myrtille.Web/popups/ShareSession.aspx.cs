@@ -17,30 +17,16 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
-using System.Text;
 using System.Web;
 using System.Web.UI;
-using Myrtille.Services.Contracts;
-using Myrtille.Helpers;
 
 namespace Myrtille.Web
 {
     public partial class ShareSession : Page
     {
         private RemoteSession _remoteSession;
-
-        /// <summary>
-        /// page init
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void Page_Init(
-            object sender,
-            EventArgs e)
-        {
-            
-        }
 
         /// <summary>
         /// page load (postback data is now available)
@@ -51,31 +37,46 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
-            // retrieve the active enterprise session, if any
-            if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] != null)
+            try
             {
+                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                    throw new NullReferenceException();
+
+                _remoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
+
                 try
                 {
-                    _remoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
+                    Application.Lock();
 
-                    if(_remoteSession.DisableSessionSharing(HttpContext.Current.Session.SessionID)) Response.Redirect("~/", true); 
+                    // if remote session sharing is enabled, only the remote session owner can share it
+                    if (!_remoteSession.AllowSessionSharing || !HttpContext.Current.Session.SessionID.Equals(_remoteSession.OwnerSessionID))
+                    {
+                        Response.Redirect("~/", true);
+                    }
 
-                    _remoteSession.SessionKey = Guid.NewGuid().ToString();
-                    HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = _remoteSession;
-
-                    sessionUrl.Value = Request.Url.Scheme + "://" + Request.Url.Host + (Request.Url.Port != 80 && Request.Url.Port != 443 ? ":" + Request.Url.Port : "") + Request.ApplicationPath + "/?SSE=" + RDPCryptoHelper.GetSessionKey(_remoteSession.Id, HttpContext.Current.Session.SessionID, _remoteSession.SessionKey);
+                    // create a new guest for the remote session
+                    var sharedSessions = (IDictionary<string, RemoteSession>)Application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()];
+                    var guestGuid = Guid.NewGuid().ToString();
+                    sharedSessions.Add(guestGuid, _remoteSession);
+                    sessionUrl.Value = Request.Url.Scheme + "://" + Request.Url.Host + (Request.Url.Port != 80 && Request.Url.Port != 443 ? ":" + Request.Url.Port : "") + Request.ApplicationPath + "/?SSE=" + guestGuid;
+                }
+                catch (ThreadAbortException)
+                {
+                    // occurs because the response is ended after redirect
                 }
                 catch (Exception exc)
                 {
-                    System.Diagnostics.Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", HttpContext.Current.Session.SessionID, exc);
+                    System.Diagnostics.Trace.TraceError("Failed to generate a session sharing url ({0})", exc);
+                }
+                finally
+                {
+                    Application.UnLock();
                 }
             }
-            else
+            catch (Exception exc)
             {
-                Response.Redirect("~/", true);
+                System.Diagnostics.Trace.TraceError("Failed to retrieve the active remote session ({0})", exc);
             }
         }
-
-        
     }
 }

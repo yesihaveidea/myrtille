@@ -20,7 +20,6 @@ using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Configuration.Install;
-using System.Diagnostics;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
@@ -42,7 +41,7 @@ namespace Myrtille.Web
             // problem is, it won't uninstall it first... which is not fine because some components can't be installed twice!
             // thus, prior to any install, try to uninstall first
 
-            Trace.TraceInformation("Myrtille.Web is being installed, cleaning first");
+           Context.LogMessage("Myrtille.Web is being installed, cleaning first");
 
             try
             {
@@ -50,12 +49,12 @@ namespace Myrtille.Web
             }
             catch (Exception exc)
             {
-                Trace.TraceInformation("Failed to clean Myrtille.Web ({0})", exc);
+               Context.LogMessage(string.Format("Failed to clean Myrtille.Web ({0})", exc));
             }
 
-            base.Install(stateSaver);
+            Context.LogMessage("Installing Myrtille.Web");
 
-            Trace.TraceInformation("Installing Myrtille.Web");
+            base.Install(stateSaver);
 
             try
             {
@@ -85,12 +84,11 @@ namespace Myrtille.Web
                     PropagationFlags.None,
                     AccessControlType.Allow);
 
-                Trace.TraceInformation("Installed Myrtille.Web");
+               Context.LogMessage("Installed Myrtille.Web");
             }
             catch (Exception exc)
             {
-                Context.LogMessage(exc.InnerException != null ? exc.InnerException.Message: exc.Message);
-                Trace.TraceError("Failed to install Myrtille.Web ({0})", exc);
+                Context.LogMessage(string.Format("Failed to install Myrtille.Web ({0})", exc));
                 throw;
             }
         }
@@ -121,7 +119,7 @@ namespace Myrtille.Web
             // enable the line below to debug this installer; disable otherwise
             //MessageBox.Show("Attach the .NET debugger to the 'MSI Debug' msiexec.exe process now for debug. Click OK when ready...", "MSI Debug");
 
-            Trace.TraceInformation("Uninstalling Myrtille.Web");
+           Context.LogMessage("Uninstalling Myrtille.Web");
 
             try
             {
@@ -160,12 +158,11 @@ namespace Myrtille.Web
 
                 store.Close();
 
-                Trace.TraceInformation("Uninstalled Myrtille.Web");
+               Context.LogMessage("Uninstalled Myrtille.Web");
             }
             catch (Exception exc)
             {
-                Context.LogMessage(exc.InnerException != null ? exc.InnerException.Message : exc.Message);
-                Trace.TraceError("Failed to uninstall Myrtille.Web ({0})", exc);
+                Context.LogMessage(string.Format("Failed to uninstall Myrtille.Web ({0})", exc));
                 throw;
             }
         }

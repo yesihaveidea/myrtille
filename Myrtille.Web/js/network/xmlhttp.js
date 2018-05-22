@@ -221,10 +221,15 @@ function XmlHttp(config, dialog, display, network)
                 {
                     showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', xhrResponseText.substr(10, xhrResponseText.length - 10), true);
                 }
+                // print job
+                else if (xhrResponseText.length >= 9 && xhrResponseText.substr(0, 9) == 'printjob|')
+                {
+                    window.open(config.getHttpServerUrl() + 'PrintDocument.aspx?name=' + xhrResponseText.substr(9, xhrResponseText.length - 9), 'Myrtille PDF');
+                }
                 // disconnected session
                 else if (xhrResponseText == 'disconnected')
                 {
-                    window.location.href = config.getHttpServerUrl() + '?';
+                    window.location.href = config.getHttpServerUrl();
                 }
                 // new image
                 else

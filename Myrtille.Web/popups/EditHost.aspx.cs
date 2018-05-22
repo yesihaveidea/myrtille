@@ -51,58 +51,69 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
-            // retrieve the active enterprise session, if any
-            if (HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] != null)
+            try
             {
+                if (HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] == null)
+                    throw new NullReferenceException();
+
+                _enterpriseSession = (EnterpriseSession)HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
+
                 try
                 {
-                    _enterpriseSession = (EnterpriseSession)HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
-                }
-                catch (Exception exc)
-                {
-                    System.Diagnostics.Trace.TraceError("Failed to retrieve the enterprise session for the http session {0}, ({1})", HttpContext.Current.Session.SessionID, exc);
-                }
-            }
-
-            if(_enterpriseSession == null || !_enterpriseSession.IsAdmin)
-            {
-                Response.Redirect("~/", true);
-            }
-
-            // retrieve the host
-            if (Request["hostId"] != null)
-            {
-                long lResult = 0;
-                if (long.TryParse(Request["hostId"], out lResult))
-                {
-                    _hostId = lResult;
-                }
-
-                if (!IsPostBack && Request["edit"] == null)
-                {
-                    try
+                    if (!_enterpriseSession.IsAdmin)
                     {
-                        var host = _enterpriseClient.GetHost(_hostId.Value, _enterpriseSession.SessionID);
-                        if (host != null)
+                        Response.Redirect("~/", true);
+                    }
+
+                    // retrieve the host, if any (create if empty)
+                    if (Request["hostId"] != null)
+                    {
+                        long hostId;
+                        if (!long.TryParse(Request["hostId"], out hostId))
                         {
-                            hostName.Value = host.HostName;
-                            hostAddress.Value = host.HostAddress;
-                            groupsAccess.Value = host.DirectoryGroups;
-                            securityProtocol.SelectedIndex = (int)host.Protocol;
+                            hostId = 0;
+                        }
+
+                        if (hostId != 0)
+                        {
+                            _hostId = hostId;
+
+                            if (!IsPostBack && Request["edit"] == null)
+                            {
+                                try
+                                {
+                                    var host = _enterpriseClient.GetHost(_hostId.Value, _enterpriseSession.SessionID);
+                                    if (host != null)
+                                    {
+                                        hostName.Value = host.HostName;
+                                        hostAddress.Value = host.HostAddress;
+                                        groupsAccess.Value = host.DirectoryGroups;
+                                        securityProtocol.SelectedIndex = (int)host.Protocol;
+                                    }
+                                }
+                                catch (Exception exc)
+                                {
+                                    System.Diagnostics.Trace.TraceError("Failed to retrieve host {0}, ({1})", _hostId, exc);
+                                }
+                            }
+
+                            createSessionUrl.Attributes["onclick"] = string.Format("parent.openPopup('editHostSessionPopup', 'EditHostSession.aspx?hostId={0}');", _hostId);
                         }
                     }
-                    catch (Exception exc)
+                    else
                     {
-                        System.Diagnostics.Trace.TraceError("Failed to retrieve host {0}, ({1})", _hostId, exc);
+                        createSessionUrl.Disabled = true;
+                        deleteHost.Disabled = true;
                     }
                 }
-
-                createSessionUrl.Attributes["onclick"] = string.Format("parent.openPopup('editHostSessionPopup', 'EditHostSession.aspx?hostId={0}');", _hostId);
+                catch (ThreadAbortException)
+                {
+                    // occurs because the response is ended after redirect
+                }
             }
-            else
+            catch (Exception exc)
             {
-                createSessionUrl.Disabled = true;
-                deleteHost.Disabled = true;
+                System.Diagnostics.Trace.TraceError("Failed to retrieve the active enterprise session ({0})", exc);
             }
         }
 

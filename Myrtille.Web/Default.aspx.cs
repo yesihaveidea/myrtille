@@ -24,7 +24,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
-using System.Web.SessionState;
+using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -37,6 +37,8 @@ namespace Myrtille.Web
     {
         private MFAAuthenticationClient _mfaAuthClient;
         private EnterpriseServiceClient _enterpriseClient;
+
+        private bool _authorizedRequest = true;
 
         private EnterpriseSession _enterpriseSession;
         protected RemoteSession RemoteSession;
@@ -63,51 +65,98 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
-            // prevent session fixation or stealing
-            SessionFixationHandler();
+            // client ip protection
+            if (ClientIPTracking())
+            {
+                var clientIP = ClientIPHelper.ClientIPFromRequest(new HttpContextWrapper(HttpContext.Current).Request, true, new string[] { });
+                if (Session[HttpSessionStateVariables.ClientIP.ToString()] == null)
+                {
+                    Session[HttpSessionStateVariables.ClientIP.ToString()] = clientIP;
+                }
+                else if (!((string)Session[HttpSessionStateVariables.ClientIP.ToString()]).Equals(clientIP))
+                {
+                    System.Diagnostics.Trace.TraceWarning("Failed to validate the client ip");
+                    _authorizedRequest = false;
+                    UpdateControls();
+                    return;
+                }
+            }
+
+            // session spoofing protection
+            if (IsCookielessSession())
+            {
+                if (Request.Cookies["clientKey"] == null)
+                {
+                    if (Session[HttpSessionStateVariables.ClientKey.ToString()] == null)
+                    {
+                        var cookie = new HttpCookie("clientKey");
+                        cookie.Value = Guid.NewGuid().ToString();
+                        cookie.Path = "/";
+                        Response.Cookies.Add(cookie);
+                    }
+                    else
+                    {
+                        System.Diagnostics.Trace.TraceWarning("Failed to validate the client key: missing key");
+                        _authorizedRequest = false;
+                        UpdateControls();
+                        return;
+                    }
+                }
+                else
+                {
+                    var clientKey = Request.Cookies["clientKey"].Value;
+                    if (Session[HttpSessionStateVariables.ClientKey.ToString()] == null)
+                    {
+                        Session[HttpSessionStateVariables.ClientKey.ToString()] = clientKey;
+                    }
+                    else if (!((string)Session[HttpSessionStateVariables.ClientKey.ToString()]).Equals(clientKey))
+                    {
+                        System.Diagnostics.Trace.TraceWarning("Failed to validate the client key: key mismatch");
+                        _authorizedRequest = false;
+                        UpdateControls();
+                        return;
+                    }
+                }
+            }
 
             // retrieve the active enterprise session, if any
-            if (HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] != null)
+            if (Session[HttpSessionStateVariables.EnterpriseSession.ToString()] != null)
             {
                 try
                 {
-                    _enterpriseSession = (EnterpriseSession)HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
-
-                    var clientIP = ClientIPHelper.ClientIPFromRequest(new HttpContextWrapper(HttpContext.Current).Request, true, new string[] { });
-
-                    if (!_enterpriseSession.ClientRemoteIP.Equals(clientIP))
-                    {
-                        HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = null;
-                        _enterpriseSession = null;
-                    }
-
+                    _enterpriseSession = (EnterpriseSession)Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
                 }
                 catch (Exception exc)
                 {
-                    System.Diagnostics.Trace.TraceError("Failed to retrieve the enterprise session for the http session {0}, ({1})", HttpContext.Current.Session.SessionID, exc);
+                    System.Diagnostics.Trace.TraceError("Failed to retrieve the active enterprise session ({0})", exc);
                 }
             }
 
-            //Retrieve remote session information from session url
-            if(Request.QueryString["SSE"] != null)
-            {
-                RemoteSession = GetSharedRemoteSession(Request.QueryString["SSE"]);
-                if (RemoteSession == null)
-                {
-                    Response.Redirect(string.Format("?oldSID={0}", HttpContext.Current.Session.SessionID), true);
-                }
-            }
-            else
             // retrieve the active remote session, if any
-            if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] != null)
+            if (Session[HttpSessionStateVariables.RemoteSession.ToString()] != null)
             {
                 try
                 {
-                    RemoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
+                    RemoteSession = (RemoteSession)Session[HttpSessionStateVariables.RemoteSession.ToString()];
                 }
                 catch (Exception exc)
                 {
-                    System.Diagnostics.Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", HttpContext.Current.Session.SessionID, exc);
+                    System.Diagnostics.Trace.TraceError("Failed to retrieve the active remote session ({0})", exc);
+                }
+            }
+            // retrieve a shared remote session from url, if any
+            else if (Request["SSE"] != null)
+            {
+                Session[HttpSessionStateVariables.RemoteSession.ToString()] = GetSharedRemoteSession(Request["SSE"]);
+
+                try
+                {
+                    // remove the shared session guid from url
+                    Response.Redirect("~/", true);
+                }
+                catch (ThreadAbortException)
+                {
+                    // occurs because the response is ended after redirect
                 }
             }
 
@@ -156,84 +205,6 @@ namespace Myrtille.Web
         }
 
         /// <summary>
-        /// prevent http session fixation attack or stealing by generating a new http session ID upon login
-        /// https://www.owasp.org/index.php/Session_Fixation
-        /// </summary>
-        private void SessionFixationHandler()
-        {
-            // register the current http session
-            if (string.IsNullOrEmpty(HttpContext.Current.Request["oldSID"]))
-            {
-                try
-                {
-                    HttpContext.Current.Application.Lock();
-                    var httpSessions = (IDictionary<string, HttpSessionState>)HttpContext.Current.Application[HttpApplicationStateVariables.HttpSessions.ToString()];
-                    httpSessions[HttpContext.Current.Session.SessionID] = HttpContext.Current.Session;
-                }
-                catch (Exception exc)
-                {
-                    System.Diagnostics.Trace.TraceError("Failed to register http session ({0})", exc);
-                }
-                finally
-                {
-                    HttpContext.Current.Application.UnLock();
-                }
-            }
-            // generate a new http session
-            else
-            {
-                try
-                {
-                    HttpContext.Current.Application.Lock();
-
-                    // retrieve the old http session id from url
-                    var httpSessions = (IDictionary<string, HttpSessionState>)HttpContext.Current.Application[HttpApplicationStateVariables.HttpSessions.ToString()];
-                    var httpSession = httpSessions[HttpContext.Current.Request["oldSID"]];
-
-                    // retrieve the enterprise session bound to the old http session, if any
-                    var enterpriseSession = httpSession[HttpSessionStateVariables.EnterpriseSession.ToString()];
-                    if (enterpriseSession != null)
-                    {
-                        // unbind from the old http session
-                        httpSession[HttpSessionStateVariables.EnterpriseSession.ToString()] = null;
-
-                        // bind to the new http session
-                        HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = enterpriseSession;
-                    }
-
-                    // retrieve the remote session bound to the old http session, if any
-                    var remoteSession = httpSession[HttpSessionStateVariables.RemoteSession.ToString()];
-                    if (remoteSession != null)
-                    {
-                        // unbind from the old http session
-                        httpSession[HttpSessionStateVariables.RemoteSession.ToString()] = null;
-
-                        // bind to the new http session
-                        HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = remoteSession;
-                    }
-
-                    // unregister the old http session
-                    httpSessions.Remove(httpSession.SessionID);
-
-                    // remove the old http session id from url
-                    Response.Redirect("?", true);
-                }
-                catch (ThreadAbortException)
-                {
-                    // occurs because the response is ended after redirect
-                }
-                catch (Exception exc)
-                {
-                    System.Diagnostics.Trace.TraceError("Failed to generate a new http session upon login ({0})", exc);
-                }
-                finally
-                {
-                    HttpContext.Current.Application.UnLock();
-                }
-            }
-        }
-
-        /// <summary>
         /// update the UI
         /// </summary>
         private void UpdateControls()
@@ -264,11 +235,11 @@ namespace Myrtille.Web
                 scale.Disabled = false;
                 keyboard.Disabled = false;
                 clipboard.Disabled = !RemoteSession.AllowRemoteClipboard;
-                files.Disabled = RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != HttpContext.Current.Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain);
+                files.Disabled = RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain);
                 cad.Disabled = false;
                 mrc.Disabled = false;
+                share.Disabled = !RemoteSession.AllowSessionSharing || !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
                 disconnect.Disabled = false;
-                share.Disabled = RemoteSession.DisableSessionSharing(HttpContext.Current.Session.SessionID);
             }
             // login screen
             else
@@ -305,9 +276,12 @@ namespace Myrtille.Web
         /// <param name="sender"></param>
         /// <param name="e"></param>
         protected void ConnectButtonClick(
-        object sender,
-        EventArgs e)
+            object sender,
+            EventArgs e)
         {
+            if (!_authorizedRequest)
+                return;
+
             // one time usage enterprise session url
             if (Request["SI"] != null && Request["SD"] != null && Request["SK"] != null)
             {
@@ -322,7 +296,6 @@ namespace Myrtille.Web
                 {
                     connectError.InnerText = "MFA Authentication failed!";
                     UpdateControls();
-
                     return;
                 }
             }
@@ -348,22 +321,22 @@ namespace Myrtille.Web
                 // connect
                 if (ConnectRemoteServer())
                 {
+                    // in enterprise mode from login, a new http session id was already generated (no need to do it each time an host is connected!)
+                    // in standard mode or enterprise mode from url, a new http session id must be generated
+                    if (_enterpriseSession == null || Request["SI"] != null)
+                    {
+                        // session fixation protection
+                        if (IsCookielessSession())
+                        {
+                            // generate a new http session id
+                            RemoteSession.OwnerSessionID = HttpSessionHelper.RegenerateSessionId();
+                        }
+                    }
                     try
                     {
-                        // in enterprise mode from login, a new http session was already generated (no need to do it each time an host is connected!)
-                        // in standard mode or enterprise mode from url, a new http session must be generated
-                        if (_enterpriseSession == null || Request["SI"] != null)
-                        {
-                            // prevent session fixation attack by generating a new session ID upon login
-                            // also, using http get method to prevent the browser asking for http post data confirmation if the page is reloaded
-                            // https://www.owasp.org/index.php/Session_Fixation
-                            Response.Redirect(string.Format("?oldSID={0}", HttpContext.Current.Session.SessionID), true);
-                        }
-                        // remove the host id from url
-                        else
-                        {
-                            Response.Redirect("?", true);
-                        }
+                        // standard mode: switch to http get (standard login) or remove the connection params from url (auto-connect / start program from url)
+                        // enterprise mode: remove the host id from url
+                        Response.Redirect("~/", true);
                     }
                     catch (ThreadAbortException)
                     {
@@ -376,7 +349,7 @@ namespace Myrtille.Web
                     try
                     {
                         // remove the host id from url
-                        Response.Redirect("?", true);
+                        Response.Redirect("~/", true);
                     }
                     catch (ThreadAbortException)
                     {
@@ -423,7 +396,7 @@ namespace Myrtille.Web
                     }
                     loginHostName = connection.HostName;
                     loginServer = !string.IsNullOrEmpty(connection.HostAddress) ? connection.HostAddress : connection.HostName;
-                    loginDomain = string.Empty;     // domain is defined into myrtille services config
+                    loginDomain = connection.Domain;
                     loginUser = connection.Username;
                     loginPassword = RDPCryptoHelper.DecryptPassword(connection.Password);
                     loginProtocol = connection.Protocol;
@@ -435,7 +408,7 @@ namespace Myrtille.Web
                 }
             }
 
-            // remote clipboard access
+            // remote clipboard
             var allowRemoteClipboard = true;
             bool bResult = false;
             if (bool.TryParse(ConfigurationManager.AppSettings["allowRemoteClipboard"], out bResult))
@@ -443,6 +416,7 @@ namespace Myrtille.Web
                 allowRemoteClipboard = bResult;
             }
 
+            // session sharing
             var allowSessionSharing = false;
             if (bool.TryParse(ConfigurationManager.AppSettings["allowSessionSharing"], out bResult))
             {
@@ -453,18 +427,18 @@ namespace Myrtille.Web
             if (RemoteSession != null)
             {
                 // unset the remote session for the current http session
-                HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = null;
+                Session[HttpSessionStateVariables.RemoteSession.ToString()] = null;
                 RemoteSession = null;
             }
 
             // create a new remote session
             try
             {
-                HttpContext.Current.Application.Lock();
+                Application.Lock();
 
                 // auto-increment the remote sessions counter
                 // note that it doesn't really count the active remote sessions... it's just an auto-increment for the remote session id, ensuring it's unique...
-                var remoteSessionsCounter = (int)HttpContext.Current.Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()];
+                var remoteSessionsCounter = (int)Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()];
                 remoteSessionsCounter++;
 
                 // create the remote session
@@ -482,16 +456,15 @@ namespace Myrtille.Web
                     StartProgram = program.Value,
                     AllowRemoteClipboard = allowRemoteClipboard,
                     SecurityProtocol = loginProtocol,
-                    SessionKey = Guid.NewGuid().ToString(),
                     AllowSessionSharing = allowSessionSharing,
-                    OwnerSession = HttpContext.Current.Session.SessionID
+                    OwnerSessionID = Session.SessionID
                 };
 
                 // bind the remote session to the current http session
-                HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = RemoteSession;
+                Session[HttpSessionStateVariables.RemoteSession.ToString()] = RemoteSession;
 
                 // update the remote sessions auto-increment counter
-                HttpContext.Current.Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()] = remoteSessionsCounter;
+                Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()] = remoteSessionsCounter;
             }
             catch (Exception exc)
             {
@@ -500,7 +473,7 @@ namespace Myrtille.Web
             }
             finally
             {
-                HttpContext.Current.Application.UnLock();
+                Application.UnLock();
             }
 
             // connect it
@@ -553,36 +526,35 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
+            if (!_authorizedRequest)
+                return;
 
             // disconnect the active remote session, if any and connecting/connected
             if (RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected))
             {
                 try
                 {
-                    //Disconnect remote session but only if it is the owner session
-                    //prevents shared sessions being disconnected by guest
-                    if (RemoteSession.OwnerSession.Equals(HttpContext.Current.Session.SessionID))
+                    // prevent the remote session from being disconnected by a guest
+                    if (Session.SessionID.Equals(RemoteSession.OwnerSessionID))
                     {
-                        // update the remote session state
                         RemoteSession.State = RemoteSessionState.Disconnecting;
-                        // send a disconnect command to the rdp client
                         RemoteSession.Manager.SendCommand(RemoteSessionCommand.CloseRdpClient);
                     }
                     else
                     {
-                        HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = null;
+                        Session[HttpSessionStateVariables.RemoteSession.ToString()] = null;
+                        RemoteSession = null;
                     }
 
+                    // logout the enterprise session if single use only
                     if (_enterpriseSession != null && _enterpriseSession.SingleUseConnection)
                     {
                         LogoutButtonClick(this, EventArgs.Empty);
                     }
-                    else
-                    {
-                        // if running in enterprise mode, redirect to the hosts list
-                        // otherwise, redirect to the login screen
-                        Response.Redirect(string.Format("?oldSID={0}", HttpContext.Current.Session.SessionID), true);
-                    }
+
+                    // enterprise mode: redirect to the hosts list
+                    // standard mode: redirect to the login screen
+                    Response.Redirect("~/", true);
                 }
                 catch (ThreadAbortException)
                 {
@@ -615,6 +587,13 @@ namespace Myrtille.Web
 
                 // bind the enterprise session to the current http session
                 HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = _enterpriseSession;
+
+                // session fixation protection
+                if (IsCookielessSession())
+                {
+                    // generate a new http session id
+                    HttpSessionHelper.RegenerateSessionId();
+                }
             }
             catch (Exception exc)
             {
@@ -634,30 +613,30 @@ namespace Myrtille.Web
 
                 if (_enterpriseSession.AuthenticationErrorCode != EnterpriseAuthenticationErrorCode.NONE)
                 {
-
                     if (_enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.PASSWORD_EXPIRED)
                     {
-                        Page.ClientScript.RegisterClientScriptBlock(this.GetType(), Guid.NewGuid().ToString(), string.Format("openPopup('changePasswordPopup', 'EnterpriseChangePassword.aspx?userId={0}');", user.Value),true);
+                        ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), string.Format("openPopup('changePasswordPopup', 'EnterpriseChangePassword.aspx?userName={0}');", user.Value), true);
                     }
                     else
                     {
-                        connectError.InnerText = EnterpriseAuthenticationErrorHelper
-                                                .GetErrorDescription(_enterpriseSession.AuthenticationErrorCode);
-                        
+                        connectError.InnerText = EnterpriseAuthenticationErrorHelper.GetErrorDescription(_enterpriseSession.AuthenticationErrorCode);
                     }
                     UpdateControls();
                     return;
                 }
 
-                _enterpriseSession.ClientRemoteIP = ClientIPHelper.ClientIPFromRequest(new HttpContextWrapper(HttpContext.Current).Request, true, new string[] { });
-
                 // bind the enterprise session to the current http session
-                HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = _enterpriseSession;
+                Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = _enterpriseSession;
 
-                // prevent session fixation attack by generating a new session ID upon login
-                // also, using http get method to prevent the browser asking for http post data confirmation if the page is reloaded
-                // https://www.owasp.org/index.php/Session_Fixation
-                Response.Redirect(string.Format("?oldSID={0}", HttpContext.Current.Session.SessionID), true);
+                // session fixation protection
+                if (IsCookielessSession())
+                {
+                    // generate a new http session id
+                    HttpSessionHelper.RegenerateSessionId();
+                }
+
+                // redirect to the hosts list
+                Response.Redirect("~/", true);
             }
             catch (ThreadAbortException)
             {
@@ -709,6 +688,9 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
+            if (!_authorizedRequest)
+                return;
+
             if (_enterpriseSession == null)
                 return;
 
@@ -716,9 +698,11 @@ namespace Myrtille.Web
             {
                 // logout the enterprise session
                 _enterpriseClient.Logout(_enterpriseSession.SessionID);
-                HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = null;
+                Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = null;
+                _enterpriseSession = null;
 
-                Response.Redirect(string.Format("?oldSID={0}", HttpContext.Current.Session.SessionID), true);
+                // redirect to the login screen
+                Response.Redirect("~/", true);
             }
             catch (ThreadAbortException)
             {
@@ -732,68 +716,65 @@ namespace Myrtille.Web
 
         #endregion
 
-        #region shared session method
+        #region session sharing
+
         /// <summary>
-        /// Retrieve shared session from remote host
+        /// retrieve a shared remote session
         /// </summary>
-        /// <param name="sessionURL"></param>
+        /// <param name="guestGuid">guest guid</param>
         /// <returns></returns>
-        private RemoteSession GetSharedRemoteSession(string sessionURL)
+        private RemoteSession GetSharedRemoteSession(
+            string guestGuid)
         {
-            var sessionDetails = sessionURL.Split(':');
-            if (sessionDetails.Length != 2) return null;
+            RemoteSession remoteSession = null;
 
-            var httpSessions = (IDictionary<string, HttpSessionState>)HttpContext.Current.Application[HttpApplicationStateVariables.HttpSessions.ToString()];
-            foreach(var httpSession in httpSessions)
+            try
             {
-                try
+                Application.Lock();
+
+                var sharedSessions = (IDictionary<string, RemoteSession>)Application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()];
+                if (sharedSessions.ContainsKey(guestGuid))
                 {
-                    var remoteSession = (RemoteSession)httpSession.Value[HttpSessionStateVariables.RemoteSession.ToString()];
-
-                    if (remoteSession.Id.ToString().Equals(sessionDetails[0]))
-                    {
-                        var sessionKey = RDPCryptoHelper.GetSessionKey(remoteSession.Id, remoteSession.OwnerSession, remoteSession.SessionKey);
-
-                        if (!sessionKey.Equals(sessionURL)) return null;
-
-                        remoteSession.SessionKey = Guid.NewGuid().ToString();
-                        httpSession.Value[HttpSessionStateVariables.RemoteSession.ToString()] = remoteSession;
-
-                        HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = remoteSession;
-                        return remoteSession;
-                    }
-                }
-                catch
-                {
-                    
+                    remoteSession = sharedSessions[guestGuid];
+                    sharedSessions.Remove(guestGuid);
                 }
             }
+            catch (Exception exc)
+            {
+                System.Diagnostics.Trace.TraceError("Failed to retrieve the shared remote session ({0})", exc);
+            }
+            finally
+            {
+                Application.UnLock();
+            }
 
-            return null;
-            //var httpSession = httpSessions[sessionDetails[0]];
-
-            //if (httpSession == null) return null;
-
-            //try
-            //{
-            //    var remoteSession = (RemoteSession)httpSession[HttpSessionStateVariables.RemoteSession.ToString()];
-
-            //    var sessionKey = RDPCryptoHelper.GetSessionKey(sessionDetails[0], remoteSession.SessionKey);
-
-            //    if (!sessionKey.Equals(sessionURL)) return null;
-
-            //    remoteSession.SessionKey = Guid.NewGuid().ToString();
-            //    httpSession[HttpSessionStateVariables.RemoteSession.ToString()] = remoteSession;
-
-            //    HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] = remoteSession;
-            //    return remoteSession;
-            //}
-            //catch
-            //{
-            //    return null;
-            //}
-
+            return remoteSession;
         }
+
+        #endregion
+
+        #region client ip tracking
+
+        private bool ClientIPTracking()
+        {
+            bool clientIPTracking;
+            if (!bool.TryParse(ConfigurationManager.AppSettings["clientIPTracking"], out clientIPTracking))
+            {
+                clientIPTracking = false;
+            }
+            return clientIPTracking;
+        }
+
+        #endregion
+
+        #region cookieless session
+
+        private bool IsCookielessSession()
+        {
+            var sessionStateSection = (SessionStateSection)ConfigurationManager.GetSection("system.web/sessionState");
+            return sessionStateSection.Cookieless == HttpCookieMode.UseUri;
+        }
+
         #endregion
     }
 }

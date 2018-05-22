@@ -185,7 +185,7 @@ label,
 #serverInfo
 {
     float: left;
-    width: 14%;
+    width: 12%;
 }
 
 /* controls */
@@ -198,11 +198,11 @@ label,
 #files,
 #cad,
 #mrc,
-#disconnect,
-#share
+#share,
+#disconnect
 {
     float: left;
-    width: 9%;
+    width: 10%;
 }
 
 /* stat, debug and browser mode are now disabled by default (to enable for test or diagnostic, just comment out the css below and tweak the controls width above) */
@@ -336,7 +336,7 @@ label,
 #editHostSessionPopupInner
 {
     width: 400px;
-    height: 400px;
+    height: 450px;
 }
 
 #editHostSessionPopupInner
@@ -362,11 +362,12 @@ label,
 }
 
 /* share session popup*/
+
 #shareSessionPopup,
 #shareSessionPopupInner
 {
     width: 400px;
-    height: 270px;
+    height: 300px;
 }
 
 #shareSessionPopupInner

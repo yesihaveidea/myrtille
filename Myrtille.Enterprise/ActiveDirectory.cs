@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
     Copyright(c) 2014-2018 Cedric Coste
@@ -35,7 +34,6 @@ namespace Myrtille.Enterprise
 {
     public class ActiveDirectory : IEnterpriseAdapter
     {
-
         public void Initialize()
         {
             using (var db = new MyrtilleEnterpriseDBContext())
@@ -659,7 +657,6 @@ namespace Myrtille.Enterprise
 
             return decryptedString;
         }
-
 
         #endregion
     }

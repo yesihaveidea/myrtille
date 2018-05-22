@@ -20,10 +20,12 @@ using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Configuration.Install;
-using System.Diagnostics;
+using System.IO;
 using System.ServiceProcess;
 using System.Windows.Forms;
+using System.Xml;
 using Myrtille.Helpers;
+using Myrtille.PdfScribe;
 
 namespace Myrtille.Services
 {
@@ -77,7 +79,7 @@ namespace Myrtille.Services
             // problem is, it won't uninstall it first... which is not fine because some components can't be installed twice!
             // thus, prior to any install, try to uninstall first
 
-            Trace.TraceInformation("Myrtille.Services is being installed, cleaning first");
+            Context.LogMessage("Myrtille.Services is being installed, cleaning first");
 
             try
             {
@@ -85,11 +87,99 @@ namespace Myrtille.Services
             }
             catch (Exception exc)
             {
-                Trace.TraceInformation("Failed to clean Myrtille.Services ({0})", exc);
+               Context.LogMessage(string.Format("Failed to clean Myrtille.Services ({0})", exc));
             }
 
+            Context.LogMessage("Installing Myrtille.Services");
+
             base.Install(stateSaver);
-            // insert code as needed
+
+            try
+            {
+                // install Myrtille PDF printer
+                var scribeInstaller = new PdfScribeInstaller(Context);
+                var printerDir = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin");
+                var driversDir = Path.Combine(printerDir, Environment.Is64BitOperatingSystem ? "amd64" : "x86");
+                if (!scribeInstaller.InstallPdfScribePrinter(driversDir, Path.Combine(printerDir, "Myrtille.Printer.exe"), string.Empty))
+                {
+                    MessageBox.Show(
+                        ActiveWindow.Active,
+                        "the myrtille virtual pdf printer could not be installed. Please check logs (into the install log folder)",
+                        serviceInstaller.ServiceName,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+
+                // multifactor authentication
+                string oasisApiKey = null;
+                if (!string.IsNullOrEmpty(Context.Parameters["OASISAPIKEY"]))
+                {
+                    oasisApiKey = Context.Parameters["OASISAPIKEY"];
+                }
+
+                string oasisAppKey = null;
+                if (!string.IsNullOrEmpty(Context.Parameters["OASISAPPKEY"]))
+                {
+                    oasisAppKey = Context.Parameters["OASISAPPKEY"];
+                }
+
+                string oasisAppId = null;
+                if (!string.IsNullOrEmpty(Context.Parameters["OASISAPPID"]))
+                {
+                    oasisAppId = Context.Parameters["OASISAPPID"];
+                }
+
+                // enterprise mode
+                string enterpriseAdminGroup = null;
+                if (!string.IsNullOrEmpty(Context.Parameters["ENTERPRISEADMINGROUP"]))
+                {
+                    enterpriseAdminGroup = Context.Parameters["ENTERPRISEADMINGROUP"];
+                }
+
+                string enterpriseDomain = null;
+                if (!string.IsNullOrEmpty(Context.Parameters["ENTERPRISEDOMAIN"]))
+                {
+                    enterpriseDomain = Context.Parameters["ENTERPRISEDOMAIN"];
+                }
+
+                // load config
+                var config = new XmlDocument();
+                var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Services.exe.config");
+                config.Load(configPath);
+
+                // app settings
+                var navigator = config.CreateNavigator();
+                var appSettings = XmlTools.GetNode(navigator, "/configuration/appSettings");
+                if (appSettings != null)
+                {
+                    // MFAAuthAdapter
+                    if (!string.IsNullOrEmpty(oasisApiKey) && !string.IsNullOrEmpty(oasisAppKey) && !string.IsNullOrEmpty(oasisAppId))
+                    {
+                        XmlTools.UncommentConfigKey(config, appSettings, "MFAAuthAdapter");
+                        XmlTools.WriteConfigKey(appSettings, "OASISApiKey", oasisApiKey);
+                        XmlTools.WriteConfigKey(appSettings, "OASISAppKey", oasisAppKey);
+                        XmlTools.WriteConfigKey(appSettings, "OASISAppID", oasisAppId);
+                    }
+
+                    // EnterpriseAdapter
+                    if (!string.IsNullOrEmpty(enterpriseAdminGroup) && !string.IsNullOrEmpty(enterpriseDomain))
+                    {
+                        XmlTools.UncommentConfigKey(config, appSettings, "EnterpriseAdapter");
+                        XmlTools.WriteConfigKey(appSettings, "EnterpriseAdminGroup", enterpriseAdminGroup);
+                        XmlTools.WriteConfigKey(appSettings, "EnterpriseDomain", enterpriseDomain);
+                    }
+                }
+
+                // save config
+                config.Save(configPath);
+
+                Context.LogMessage("Installed Myrtille.Services");
+            }
+            catch (Exception exc)
+            {
+                Context.LogMessage(string.Format("Failed to install Myrtille.Services ({0})", exc));
+                throw;
+            }
         }
 
         public override void Commit(
@@ -104,21 +194,20 @@ namespace Myrtille.Services
         {
             StopService();
             base.Rollback(savedState);
+            DoUninstall();
         }
 
         public override void Uninstall(
             IDictionary savedState)
         {
-            // enable the line below to debug this installer; disable otherwise
-            //MessageBox.Show("Attach the .NET debugger to the 'MSI Debug' msiexec.exe process now for debug. Click OK when ready...", "MSI Debug");
-
             StopService();
             base.Uninstall(savedState);
+            DoUninstall();
         }
 
         private void StartService()
         {
-            Trace.TraceInformation("Starting Myrtille.Services");
+           Context.LogMessage("Starting Myrtille.Services");
 
             // try to start the service
             // in case of failure, ask for a manual start after install
@@ -129,11 +218,11 @@ namespace Myrtille.Services
                 if (sc.Status == ServiceControllerStatus.Stopped)
                 {
                     sc.Start();
-                    Trace.TraceInformation("Started Myrtille.Services");
+                   Context.LogMessage("Started Myrtille.Services");
                 }
                 else
                 {
-                    Trace.TraceInformation("Myrtille.Services is not stopped (status: {0})", sc.Status);
+                   Context.LogMessage(string.Format("Myrtille.Services is not stopped (status: {0})", sc.Status));
                 }
             }
             catch (Exception exc)
@@ -145,14 +234,13 @@ namespace Myrtille.Services
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
 
-                Context.LogMessage(exc.InnerException != null ? exc.InnerException.Message : exc.Message);
-                Trace.TraceError("Failed to start Myrtille.Services ({0})", exc);
+                Context.LogMessage(string.Format("Failed to start Myrtille.Services ({0})", exc));
             }
         }
 
         private void StopService()
         {
-            Trace.TraceInformation("Stopping Myrtille.Services");
+           Context.LogMessage("Stopping Myrtille.Services");
 
             // if the service is running while uninstall is going on, the user is asked wether to stop it or not
             // problem is, if the user choose "no", the service is not stopped thus won't be removed
@@ -164,23 +252,42 @@ namespace Myrtille.Services
                 if (sc.Status == ServiceControllerStatus.Running)
                 {
                     sc.Stop();
-                    Trace.TraceInformation("Stopped Myrtille.Services");
+                   Context.LogMessage("Stopped Myrtille.Services");
                 }
                 else
                 {
-                    Trace.TraceInformation("Myrtille.Services is not running (status: {0})", sc.Status);
+                   Context.LogMessage(string.Format("Myrtille.Services is not running (status: {0})", sc.Status));
                 }
             }
             catch (Exception exc)
             {
-                Context.LogMessage(exc.InnerException != null ? exc.InnerException.Message : exc.Message);
-                Trace.TraceError("Failed to stop Myrtille.Services ({0})", exc);
+                Context.LogMessage(string.Format("Failed to stop Myrtille.Services ({0})", exc));
             }
         }
 
-		/// <summary> 
-		/// Clean up any resources being used.
-		/// </summary>
+        private void DoUninstall()
+        {
+            // enable the line below to debug this installer; disable otherwise
+            //MessageBox.Show("Attach the .NET debugger to the 'MSI Debug' msiexec.exe process now for debug. Click OK when ready...", "MSI Debug");
+
+            Context.LogMessage("Uninstalling Myrtille.Services");
+
+            try
+            {
+                // uninstall Myrtille PDF printer
+                var scribeInstaller = new PdfScribeInstaller(Context);
+                scribeInstaller.UninstallPdfScribePrinter();
+            }
+            catch (Exception exc)
+            {
+                Context.LogMessage(string.Format("Failed to uninstall Myrtille.Services ({0})", exc));
+                throw;
+            }
+        }
+
+        /// <summary> 
+        /// Clean up any resources being used.
+        /// </summary>
         protected override void Dispose(
             bool disposing)
 		{
