@@ -79,7 +79,7 @@ namespace Myrtille.Web
                         // print job
                         else if (remoteSession.Manager.PrintJobAvailable)
                         {
-                            Response.Write(string.Format("<script>parent.window.open(parent.getConfig().getHttpServerUrl() + 'PrintDocument.aspx?name={0}', 'Myrtille PDF');</script>", remoteSession.Manager.PrintJobName));
+                            Response.Write(string.Format("<script>parent.downloadPdf('{0}');</script>", remoteSession.Manager.PrintJobName));
                             Response.Flush();
                             remoteSession.Manager.PrintJobAvailable = false;
                         }

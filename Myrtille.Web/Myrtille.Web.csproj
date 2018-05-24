@@ -239,7 +239,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="log\README" />
-    <Content Include="packages.config" />
+    <None Include="packages.config" />
     <Content Include="SocketHandler.ashx" />
     <None Include="Web.Base.config">
       <DependentUpon>Web.config</DependentUpon>

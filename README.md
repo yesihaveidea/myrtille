@@ -70,7 +70,7 @@ The remote clipboard content can also be retrieved locally with the "Clipboard" 
 
 You can upload/download file(s) to/from the user documents folder with the "Files" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified.
 
-You can print any document on a local or network printer by using the "Myrtille PDF" virtual printer. Simply use the print feature of your application, then open/print the downloaded pdf.
+You can print any document on a local or network printer by using the "Myrtille PDF" (redirected) virtual printer. Simply use the print feature of your application, then open/print the downloaded pdf.
 
 ## Third-party
 Myrtille uses the following licensed software:

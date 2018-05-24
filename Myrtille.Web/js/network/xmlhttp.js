@@ -224,7 +224,7 @@ function XmlHttp(config, dialog, display, network)
                 // print job
                 else if (xhrResponseText.length >= 9 && xhrResponseText.substr(0, 9) == 'printjob|')
                 {
-                    window.open(config.getHttpServerUrl() + 'PrintDocument.aspx?name=' + xhrResponseText.substr(9, xhrResponseText.length - 9), 'Myrtille PDF');
+                    downloadPdf(xhrResponseText.substr(9, xhrResponseText.length - 9));
                 }
                 // disconnected session
                 else if (xhrResponseText == 'disconnected')

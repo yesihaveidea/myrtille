@@ -225,7 +225,7 @@ function Websocket(config, dialog, display, network)
                 // print job
                 else if (message.length >= 9 && message.substr(0, 9) == 'printjob|')
                 {
-                    window.open(config.getHttpServerUrl() + 'PrintDocument.aspx?name=' + message.substr(9, message.length - 9), 'Myrtille PDF');
+                    downloadPdf(message.substr(9, message.length - 9));
                 }
                 // disconnected session
                 else if (message == 'disconnected')

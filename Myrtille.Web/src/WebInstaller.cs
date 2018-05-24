@@ -41,7 +41,7 @@ namespace Myrtille.Web
             // problem is, it won't uninstall it first... which is not fine because some components can't be installed twice!
             // thus, prior to any install, try to uninstall first
 
-           Context.LogMessage("Myrtille.Web is being installed, cleaning first");
+            Context.LogMessage("Myrtille.Web is being installed, cleaning first");
 
             try
             {
@@ -84,7 +84,7 @@ namespace Myrtille.Web
                     PropagationFlags.None,
                     AccessControlType.Allow);
 
-               Context.LogMessage("Installed Myrtille.Web");
+                Context.LogMessage("Installed Myrtille.Web");
             }
             catch (Exception exc)
             {
@@ -119,7 +119,7 @@ namespace Myrtille.Web
             // enable the line below to debug this installer; disable otherwise
             //MessageBox.Show("Attach the .NET debugger to the 'MSI Debug' msiexec.exe process now for debug. Click OK when ready...", "MSI Debug");
 
-           Context.LogMessage("Uninstalling Myrtille.Web");
+            Context.LogMessage("Uninstalling Myrtille.Web");
 
             try
             {
@@ -158,7 +158,7 @@ namespace Myrtille.Web
 
                 store.Close();
 
-               Context.LogMessage("Uninstalled Myrtille.Web");
+                Context.LogMessage("Uninstalled Myrtille.Web");
             }
             catch (Exception exc)
             {

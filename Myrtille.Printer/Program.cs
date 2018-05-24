@@ -66,7 +66,16 @@ namespace Myrtille.Printer
             parentProcess = ProcessHelper.GetParentProcess();
             if (parentProcess == null || parentProcess.ProcessName != "spoolsv")
             {
-                throw new Exception("This program is meant to be called by the spooler service");
+                if (Environment.UserInteractive)
+                {
+                    MessageBox.Show("This program is meant to be called by the spooler service",
+                                    errorDialogCaption,
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error,
+                                    MessageBoxDefaultButton.Button1,
+                                    MessageBoxOptions.DefaultDesktopOnly);
+                }
+                return;
             }
 
             #endregion

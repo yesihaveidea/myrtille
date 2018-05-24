@@ -407,3 +407,25 @@ function handleRemoteSessionExit(exitCode)
             alert('The remote connection failed or was closed unexpectedly');
     }
 }
+
+this.downloadPdf = function(name)
+{
+    try
+    {
+        //alert('creating iframe to download pdf: ' + name);
+
+        var pdf = document.createElement('iframe');
+
+        pdf.style.width = '0px';
+        pdf.style.height = '0px';
+        pdf.frameBorder = 0;
+
+        pdf.src = config.getHttpServerUrl() + 'PrintDocument.aspx?name=' + name;
+            
+        document.body.appendChild(pdf);
+    }
+	catch (exc)
+	{
+        alert('myrtille downloadPdf error: ' + exc.message);
+	}
+}

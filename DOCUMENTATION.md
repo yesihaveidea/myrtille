@@ -86,8 +86,8 @@ Myrtille supports both local and network file storage. If you want your domain u
 
 ## Print document
 From version 1.9.0, myrtille does support local or network printing through a pdf virtual printer, "**Myrtille PDF**", installed on the gateway. This feature can be disabled into bin/Myrtille.Services.exe.config ("FreeRDPPdfPrinter" key).
-It works like any other printer, using the print feature of your application. The resulting pdf is then downloaded to the browser and can be opened/saved/printed from there.
-It can also work standalone (without myrtille integration). If used directly on the gateway, or through a network/redirection, it will ask for the pdf output location (to change that default behavior, see bin/Myrtille.Printer.exe.config).
+It works like any other printer, using the print feature of your application. The resulting pdf is downloaded to the browser and can be opened/saved/printed from there.
+It can also work standalone (without myrtille integration). If used directly on the gateway (without the "redirected" suffix), or as a network printer, it will ask for the pdf output location (to change that default behavior, see bin/Myrtille.Printer.exe.config).
 
 Alternatively, on Windows 10 / Server 2016, Windows provides a "Microsoft Print to PDF" printer. You can thus create a pdf on the remote server then download it (using the file transfer), but it implies an additional step.
 
@@ -276,6 +276,10 @@ First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (prefe
 
 - I don't have a mouse (or a right button), how can I Right-Click? (i.e.: on a touchpad or iOS device)
 	- You can toggle on the "Right-Click" button into the toolbar, then touch or left-click the screen to trigger a right-click at that position
+
+- Nothing happens when I click on some toolbar buttons
+- Nothing happens when I print with the "Myrtille PDF" redirected printer
+	- Although myrtille dialogs should work (same domain origin policy), ensure you don't have a popup blocker (Chrome have one by default), or disable it or add an exception for the myrtille domain
 
 - The RDP session continues to run after clicking "Disconnect"
 	- Check the RDP server configuration (session disconnect timeout in particular). You can setup it automatically by importing the Myrtille "myrtille\bin\RDPSetup.reg" file into registry.
