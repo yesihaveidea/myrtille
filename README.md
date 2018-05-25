@@ -106,6 +106,7 @@ Cedric Coste (cedrozor@gmail.com).
 - Catalin Trifanescu (AppliKr developer: application server. Steemind cofounder)
 - Fabien Janvier (AppliKr developer: website css, clipping algorithm, websocket server)
 - UltraSam (AppliKr developer: rdp client, http gateway)
+- Paul Oliver (Olive Innovations Ltd: MFA, enterprise mode)
 
 ## Links
 - Website:	http://cedrozor.github.io/myrtille
