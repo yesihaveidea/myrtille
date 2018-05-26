@@ -1,15 +1,20 @@
-﻿2018-04-28 Version 1.8.3 (beta)
-	added menu option when connected to a remote host to share session by generating a session url.
-	added option to web.config to enable session sharing option.
-	improved security by removing requirement for cookieless sessions (RECOMMENED as easy to steal session by copying URL).
-	security fixes with enterprise mode to ensure that shared sessions do not give access to owner hosts.
-	call disconnect RDP session when browser tab/window closed to prevent RDP sessions being left open.
-	added option to enterprise mode to allow RDP hosts to be restricted to specific users (by username).
-
-2018-04-08 Version 1.8.2 (beta)
-	enterprise mode now better reporting of login failures and includes change password dialog where user is required to change password
-	connectionString now in service app.config to allow to specify location for MyrtilleEnterprise.sdf or use SQL server
-	fixed issue with enterprise host create session including invalid /popup/ path in sessionURL
+﻿2018-05-24 Version 1.9.0 (stable)
+	resynced FreeRDP (version 2.0-RC2-dev3), now using the openssl 1.1.x architecture. Should fix any previously reported FQDN and NLA issues
+	added a pdf virtual printer; any document printed with the "Myrtille PDF" printer is downloaded to the browser and can be opened/saved/printed from there
+	pdf content is now downloaded into an hidden iframe, instead of a new tab, to prevent popup blockers to block it
+	added a client ip tracking option to prevent unauthorized accesses. configurable into web.config (thanks bigpjo)
+	cookieless sessions are now disabled by default. This lowers the risk of session stealing (by simply copying the url) but also removes the ability to have multiple connections/tabs. can still be enabled into web.config, but use at your own risk! (thanks bigpjo)
+	strengthened security to prevent session fixation attack or spoofing if cookieless sessions are enabled
+	the remote session can now be shared with a new toolbar button that generates a one time usage url. can be disabled into web.config. (thanks bigpjo)
+	a shared session now can't be disconnected by a guest. (thanks bigpjo)
+	security fixes with enterprise mode to ensure that shared sessions do not give access to owner hosts. (thanks bigpjo)
+	added an option to enterprise mode to allow hosts to be restricted to specific users (by username). (thanks bigpjo)
+	enterprise mode now have a better reporting of login failures and includes a change password dialog if the user is required to change it. (thanks bigpjo)
+	fixed issue with enterprise host create session including invalid /popup/ path in sessionURL. (thanks bigpjo)
+	the remote session is now disconnected after the browser window/tab is closed, or connection is lost, to prevent it from being left open server side. configurable into web.config (thanks bigpjo)
+	the database connection string (into bin/Myrtille.Services.exe.config) can now be configured to specify the SQLCE file location or use a standard SQL server (useful for a centralized database, with myrtille clustered). (thanks bigpjo)
+	added MFA and enterprise mode configuration steps into the installer
+	installer logs are now created into the install log folder (log/Myrtille.Setup.log)
 
 2018-04-02 Version 1.8.1 (beta)
 	enterprise mode data folder is now created by the installer (thanks hac)

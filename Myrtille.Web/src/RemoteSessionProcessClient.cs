@@ -110,6 +110,12 @@ namespace Myrtille.Web
                 // process exit code
                 _remoteSessionManager.RemoteSession.ExitCode = exitCode;
 
+                // stop monitoring the remote session owner activity, if enabled
+                if (_remoteSessionManager.ClientIdleTimeout != null)
+                {
+                    _remoteSessionManager.ClientIdleTimeout.Cancel();
+                }
+
                 // release the communication pipes, if any
                 if (_remoteSessionManager.Pipes != null)
                 {

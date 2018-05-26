@@ -133,10 +133,18 @@
     <Compile Include="popups\VirtualKeyboard.aspx.designer.cs">
       <DependentUpon>VirtualKeyboard.aspx</DependentUpon>
     </Compile>
+    <Compile Include="PrintDocument.aspx.cs">
+      <DependentUpon>PrintDocument.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="PrintDocument.aspx.designer.cs">
+      <DependentUpon>PrintDocument.aspx</DependentUpon>
+    </Compile>
     <Compile Include="SocketHandler.ashx.cs">
       <DependentUpon>SocketHandler.ashx</DependentUpon>
     </Compile>
     <Compile Include="src\EnterpriseServiceClient.cs" />
+    <Compile Include="src\PrinterServiceClient.cs" />
     <Compile Include="src\FileStorageClient.cs" />
     <Compile Include="src\MFAAuthenticationClient.cs" />
     <Compile Include="src\RemoteSession.cs" />
@@ -224,13 +232,14 @@
     <Content Include="GetUpdate.aspx" />
     <Content Include="js\user\keyboard.js" />
     <Content Include="js\user\mouse.js" />
+    <Content Include="PrintDocument.aspx" />
     <Content Include="PushUpdates.aspx" />
     <Content Include="SendInputs.aspx" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="log\README" />
-    <Content Include="packages.config" />
+    <None Include="packages.config" />
     <Content Include="SocketHandler.ashx" />
     <None Include="Web.Base.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -259,28 +268,6 @@
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>myrtille.ico</ApplicationIcon>

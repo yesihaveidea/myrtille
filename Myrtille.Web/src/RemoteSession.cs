@@ -44,16 +44,8 @@ namespace Myrtille.Web
         public bool AllowRemoteClipboard;               // set in myrtille web config
         public SecurityProtocolEnum SecurityProtocol;
         public int ExitCode;
-        public string SessionKey;
-        public bool AllowSessionSharing;
-        public string OwnerSession;
-
-        public bool DisableSessionSharing(string sessionID)
-        {
-            if (!AllowSessionSharing) return true;
-
-            return !sessionID.Equals(OwnerSession);
-        }
+        public bool AllowSessionSharing;                // set in myrtille web config
+        public string OwnerSessionID;                   // the http session on which the remote session is bound to
 
         public RemoteSession()
         {

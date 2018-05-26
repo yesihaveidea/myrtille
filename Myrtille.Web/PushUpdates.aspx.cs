@@ -41,91 +41,97 @@ namespace Myrtille.Web
 
             try
             {
-                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                if (Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
                     throw new NullReferenceException();
 
                 // retrieve the remote session for the current http session
-                remoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
-            }
-            catch (Exception exc)
-            {
-                System.Diagnostics.Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", HttpContext.Current.Session.SessionID, exc);
-                return;
-            }
+                remoteSession = (RemoteSession)Session[HttpSessionStateVariables.RemoteSession.ToString()];
 
-            try
-            {
-                // retrieve params
-                var longPollingDuration = int.Parse(HttpContext.Current.Request.QueryString["longPollingDuration"]);
-                var imgIdx = int.Parse(HttpContext.Current.Request.QueryString["imgIdx"]);
-
-                // stream image(s) data within the response for the given duration
-                // the connection will be automatically reseted by the client when the request ends
-                var startTime = DateTime.Now;
-                var remainingTime = longPollingDuration;
-                var currentImgIdx = imgIdx;
-
-                while (remainingTime > 0)
+                try
                 {
-                    // reload page
-                    if (remoteSession.Manager.ReloadPage)
+                    // retrieve params
+                    var longPollingDuration = int.Parse(Request.QueryString["longPollingDuration"]);
+                    var imgIdx = int.Parse(Request.QueryString["imgIdx"]);
+
+                    // stream image(s) data within the response for the given duration
+                    // the connection will be automatically reseted by the client when the request ends
+                    var startTime = DateTime.Now;
+                    var remainingTime = longPollingDuration;
+                    var currentImgIdx = imgIdx;
+
+                    while (remainingTime > 0)
                     {
-                        HttpContext.Current.Response.Write("<script>parent.location.href = parent.location.href;</script>");
-                        HttpContext.Current.Response.Flush();
-                        remoteSession.Manager.ReloadPage = false;
-                        break;
+                        // reload page
+                        if (remoteSession.Manager.ReloadPage)
+                        {
+                            Response.Write("<script>parent.location.href = parent.location.href;</script>");
+                            Response.Flush();
+                            remoteSession.Manager.ReloadPage = false;
+                            break;
+                        }
+                        // remote clipboard
+                        else if (remoteSession.Manager.ClipboardAvailable)
+                        {
+                            Response.Write(string.Format("<script>parent.showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', '{0}', true);</script>", remoteSession.Manager.ClipboardText));
+                            Response.Flush();
+                            remoteSession.Manager.ClipboardAvailable = false;
+                        }
+                        // print job
+                        else if (remoteSession.Manager.PrintJobAvailable)
+                        {
+                            Response.Write(string.Format("<script>parent.downloadPdf('{0}');</script>", remoteSession.Manager.PrintJobName));
+                            Response.Flush();
+                            remoteSession.Manager.PrintJobAvailable = false;
+                        }
+                        // disconnected session
+                        else if (remoteSession.State == RemoteSessionState.Disconnected)
+                        {
+                            Response.Write("<script>parent.location.href = parent.getConfig().getHttpServerUrl();</script>");
+                            Response.Flush();
+                            break;
+                        }
+
+                        // retrieve the next update, if available; otherwise, wait it for the remaining time
+                        var image = remoteSession.Manager.GetNextUpdate(currentImgIdx, remainingTime);
+                        if (image != null)
+                        {
+                            System.Diagnostics.Trace.TraceInformation("Pushing image {0} ({1}), remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), remoteSession.Id);
+
+                            var imgData =
+                                image.Idx + "," +
+                                image.PosX + "," +
+                                image.PosY + "," +
+                                image.Width + "," +
+                                image.Height + "," +
+                                "'" + image.Format.ToString().ToLower() + "'," +
+                                image.Quality + "," +
+                                image.Fullscreen.ToString().ToLower() + "," +
+                                "'" + Convert.ToBase64String(image.Data) + "'";
+
+                            imgData = "<script>parent.pushImage(" + imgData + ");</script>";
+
+                            // write the output
+                            Response.Write(imgData);
+                            Response.Flush();
+
+                            currentImgIdx = image.Idx;
+                        }
+
+                        remainingTime = longPollingDuration - Convert.ToInt32((DateTime.Now - startTime).TotalMilliseconds);
                     }
-                    // remote clipboard
-                    else if (remoteSession.Manager.ClipboardAvailable)
-                    {
-                        HttpContext.Current.Response.Write(string.Format("<script>parent.showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', '{0}', true);</script>", remoteSession.Manager.ClipboardText));
-                        HttpContext.Current.Response.Flush();
-                        remoteSession.Manager.ClipboardAvailable = false;
-                    }
-                    // disconnected session
-                    else if (remoteSession.State == RemoteSessionState.Disconnected)
-                    {
-                        HttpContext.Current.Response.Write("<script>parent.location.href = parent.getConfig().getHttpServerUrl() + '?';</script>");
-                        HttpContext.Current.Response.Flush();
-                        break;
-                    }
-
-                    // retrieve the next update, if available; otherwise, wait it for the remaining time
-                    var image = remoteSession.Manager.GetNextUpdate(currentImgIdx, remainingTime);
-                    if (image != null)
-                    {
-                        System.Diagnostics.Trace.TraceInformation("Pushing image {0} ({1}), remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), remoteSession.Id);
-
-                        var imgData =
-                            image.Idx + "," +
-                            image.PosX + "," +
-                            image.PosY + "," +
-                            image.Width + "," +
-                            image.Height + "," +
-                            "'" + image.Format.ToString().ToLower() + "'," +
-                            image.Quality + "," +
-                            image.Fullscreen.ToString().ToLower() + "," +
-                            "'" + Convert.ToBase64String(image.Data) + "'";
-
-                        imgData = "<script>parent.pushImage(" + imgData + ");</script>";
-
-                        // write the output
-                        HttpContext.Current.Response.Write(imgData);
-                        HttpContext.Current.Response.Flush();
-
-                        currentImgIdx = image.Idx;
-                    }
-
-                    remainingTime = longPollingDuration - Convert.ToInt32((DateTime.Now - startTime).TotalMilliseconds);
+                }
+                catch (HttpException)
+                {
+                    // this occurs if the user reloads the page while the long-polling request is going on...
+                }
+                catch (Exception exc)
+                {
+                    System.Diagnostics.Trace.TraceError("Failed to push display update(s), remote session {0} ({1})", remoteSession.Id, exc);
                 }
             }
-            catch (HttpException)
-            {
-                // this occurs if the user reloads the page while the long-polling request is going on...
-            }
             catch (Exception exc)
             {
-                System.Diagnostics.Trace.TraceError("Failed to push display update(s), remote session {0} ({1})", remoteSession.Id, exc);
+                System.Diagnostics.Trace.TraceError("Failed to retrieve the active remote session ({0})", exc);
             }
         }
     }

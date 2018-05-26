@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Web;
-using System.Web.SessionState;
 using log4net.Config;
 
 namespace Myrtille.Web
@@ -29,11 +28,13 @@ namespace Myrtille.Web
     {
         Cache,
         RemoteSessionsCounter,
-        HttpSessions
+        SharedRemoteSessions
     }
 
     public enum HttpSessionStateVariables
     {
+        ClientIP,
+        ClientKey,
         EnterpriseSession,
         RemoteSession
     }
@@ -55,8 +56,8 @@ namespace Myrtille.Web
                 // remote sessions auto-incremented counter
                 Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()] = 0;
 
-                // http sessions
-                Application[HttpApplicationStateVariables.HttpSessions.ToString()] = new Dictionary<string, HttpSessionState>();
+                // shared remote sessions
+                Application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()] = new Dictionary<string, RemoteSession>();
             }
             catch (Exception exc)
             {

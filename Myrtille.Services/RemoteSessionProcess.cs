@@ -87,21 +87,19 @@ namespace Myrtille.Services
                 }
 
                 // log remote session events into a file (located into <Myrtille folder>\log)
-                var remoteSessionLog = false;
-                bool bResult = false;
-                if (bool.TryParse(ConfigurationManager.AppSettings["RemoteSessionLog"], out bResult))
+                bool remoteSessionLog;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["RemoteSessionLog"], out remoteSessionLog))
                 {
-                    remoteSessionLog = bResult;
+                    remoteSessionLog = false;
                 }
 
                 #region FreeRDP params
 
                 // color depth
-                var bpp = 16;
-                int iResult = 16;
-                if (int.TryParse(ConfigurationManager.AppSettings["FreeRDPBpp"], out iResult))
+                int bpp;
+                if (!int.TryParse(ConfigurationManager.AppSettings["FreeRDPBpp"], out bpp))
                 {
-                    bpp = iResult;
+                    bpp = 16;
                 }
 
                 // gdi mode (sw: software, hw: hardware). default software because there is a palette issue with windows server 2008; also, the performance gain is small and even null on most virtual machines, when hardware isn't available
@@ -112,53 +110,64 @@ namespace Myrtille.Services
                 }
 
                 // wallpaper
-                var wallpaper = false;
-                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPWallpaper"], out bResult))
+                bool wallpaper;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPWallpaper"], out wallpaper))
                 {
-                    wallpaper = bResult;
+                    wallpaper = false;
                 }
 
-
                 // desktop composition
-                var aero = false;
-                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPAero"], out bResult))
+                bool aero;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPAero"], out aero))
                 {
-                    aero = bResult;
+                    aero = false;
                 }
 
                 // window drag
-                var windowDrag = false;
-                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPWindowDrag"], out bResult))
+                bool windowDrag;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPWindowDrag"], out windowDrag))
                 {
-                    windowDrag = bResult;
+                    windowDrag = false;
                 }
 
                 // menu animations
-                var menuAnims = false;
-                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPMenuAnims"], out bResult))
+                bool menuAnims;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPMenuAnims"], out menuAnims))
                 {
-                    menuAnims = bResult;
+                    menuAnims = false;
                 }
 
                 // themes
-                var themes = false;
-                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPThemes"], out bResult))
+                bool themes;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPThemes"], out themes))
                 {
-                    themes = bResult;
+                    themes = false;
                 }
 
                 // smooth fonts (requires ClearType enabled on the remote server)
-                var smoothFonts = true;
-                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPSmoothFonts"], out bResult))
+                bool smoothFonts;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPSmoothFonts"], out smoothFonts))
                 {
-                    smoothFonts = bResult;
+                    smoothFonts = true;
                 }
 
                 // ignore certificate warning (when using NLA); may happen, for example, with a self-signed certificate (not trusted) or if the server joined a domain after the certificate was issued (name mismatch). more details here: http://www.vkernel.ro/blog/configuring-certificates-in-2012r2-remote-desktop-services-rds
-                var certIgnore = true;
-                if (bool.TryParse(ConfigurationManager.AppSettings["FreeRDPCertIgnore"], out bResult))
+                bool certIgnore;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPCertIgnore"], out certIgnore))
                 {
-                    certIgnore = bResult;
+                    certIgnore = true;
+                }
+
+                // pdf virtual printer redirection
+
+                // TOCHECK: for some reason, using the exact pdf virtual printer driver name ("PDF Scribe Virtual Printer") doesn't work (the printer doesn't show into the remote session) with wfreerdp, while it works with mstsc (!)
+                // it may have something to do with the driver not being installed on the remote server, but as the underlying driver is the standard "Microsoft Postscript Printer Driver (v3)" (pscript5.dll), it should have worked...
+                // as a workaround for now, the same way freerdp does in CUPS mode (printer redirection under Linux), it's possible to use the "MS Publisher Imagesetter" driver; it's also based on pscript5.dll and support basic print features (portrait/landscape orientation, custom fonts, color mode, etc.)
+
+                bool pdfPrinter;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPPdfPrinter"], out pdfPrinter))
+                {
+                    pdfPrinter = true;
                 }
 
                 #endregion
@@ -167,32 +176,33 @@ namespace Myrtille.Services
                 // Syntax: /flag enables flag, +toggle or -toggle enables or disables toggle. /toggle and +toggle are the same. Options with values work like this: /option:<value>
                 // as the process command line can be displayed into the task manager / process explorer, the connection settings (including user credentials) are now passed to the rdp client through the inputs pipe
                 _process.StartInfo.Arguments =
-                    "/myrtille-sid:" + _remoteSessionId +                                                           // session id
-                    (!Environment.UserInteractive ? string.Empty : " /myrtille-window") +                           // session window
-                    (!remoteSessionLog ? string.Empty : " /myrtille-log") +                                         // session log
-                    " /w:" + clientWidth +                                                                          // display width
-                    " /h:" + clientHeight +                                                                         // display height
-                    " /bpp:" + bpp +                                                                                // color depth
-                    " /gdi:" + gdi +                                                                                // gdi mode (sw: software, hw: hardware)
-                    (wallpaper ? " +" : " -") + "wallpaper" +                                                       // wallpaper
-                    (aero ? " +" : " -") + "aero" +                                                                 // desktop composition
-                    (windowDrag ? " +" : " -") + "window-drag" +                                                    // window drag
-                    (menuAnims ? " +" : " -") + "menu-anims" +                                                      // menu animations
-                    (themes ? " +" : " -") + "themes" +                                                             // themes
-                    (smoothFonts ? " +" : " -") + "fonts" +                                                         // smooth fonts (requires ClearType enabled on the remote server)
-                    " +compression" +                                                                               // bulk compression (level is autodetected from the rdp version)
-                    (certIgnore ? " /cert-ignore" : "") +                                                           // ignore certificate warning (when using NLA)
-                    " -mouse-motion" +                                                                              // mouse motion
-                    " +bitmap-cache" +                                                                              // bitmap cache
-                    " -offscreen-cache" +                                                                           // offscreen cache
-                    " +glyph-cache" +                                                                               // glyph cache
-                    " -async-input" +                                                                               // async input
-                    " -async-update" +                                                                              // async update
-                    " -async-channels" +                                                                            // async channels
-                    " -async-transport" +                                                                           // async transport
-                    (allowRemoteClipboard ? " +" : " -") + "clipboard" +                                            // clipboard support
-                    (securityProtocol != SecurityProtocolEnum.auto ? " /sec:" + securityProtocol.ToString() : "") + // security protocol
-                    " /audio-mode:2";                                                                               // audio mode (not supported for now, 2: do not play)
+                    "/myrtille-sid:" + _remoteSessionId +                                                                       // session id
+                    (!Environment.UserInteractive ? string.Empty : " /myrtille-window") +                                       // session window
+                    (!remoteSessionLog ? string.Empty : " /myrtille-log") +                                                     // session log
+                    " /w:" + clientWidth +                                                                                      // display width
+                    " /h:" + clientHeight +                                                                                     // display height
+                    " /bpp:" + bpp +                                                                                            // color depth
+                    " /gdi:" + gdi +                                                                                            // gdi mode (sw: software, hw: hardware)
+                    (wallpaper ? " +" : " -") + "wallpaper" +                                                                   // wallpaper
+                    (aero ? " +" : " -") + "aero" +                                                                             // desktop composition
+                    (windowDrag ? " +" : " -") + "window-drag" +                                                                // window drag
+                    (menuAnims ? " +" : " -") + "menu-anims" +                                                                  // menu animations
+                    (themes ? " +" : " -") + "themes" +                                                                         // themes
+                    (smoothFonts ? " +" : " -") + "fonts" +                                                                     // smooth fonts (requires ClearType enabled on the remote server)
+                    " +compression" +                                                                                           // bulk compression (level is autodetected from the rdp version)
+                    (certIgnore ? " /cert-ignore" : string.Empty) +                                                             // ignore certificate warning (when using NLA)
+                    (pdfPrinter ? " /printer:\"Myrtille PDF\",\"MS Publisher Imagesetter\"" : string.Empty) +                   // pdf virtual printer
+                    " -mouse-motion" +                                                                                          // mouse motion
+                    " +bitmap-cache" +                                                                                          // bitmap cache
+                    " -offscreen-cache" +                                                                                       // offscreen cache
+                    " +glyph-cache" +                                                                                           // glyph cache
+                    " -async-input" +                                                                                           // async input
+                    " -async-update" +                                                                                          // async update
+                    " -async-channels" +                                                                                        // async channels
+                    " -async-transport" +                                                                                       // async transport
+                    (allowRemoteClipboard ? " +" : " -") + "clipboard" +                                                        // clipboard support
+                    (securityProtocol != SecurityProtocolEnum.auto ? " /sec:" + securityProtocol.ToString() : string.Empty) +   // security protocol
+                    " /audio-mode:2";                                                                                           // audio mode (not supported for now, 2: do not play)
 
                 if (!Environment.UserInteractive)
                 {

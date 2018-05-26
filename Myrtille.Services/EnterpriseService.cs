@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using Myrtille.Services.Contracts;
 
@@ -123,9 +124,14 @@ namespace Myrtille.Services
             try
             {
                 Trace.TraceInformation("Requesting session details");
-                return Program._enterpriseAdapter.GetSessionConnectionDetails(sessionID, hostID, sessionKey);
+                var result = Program._enterpriseAdapter.GetSessionConnectionDetails(sessionID, hostID, sessionKey);
+                if (result != null && ConfigurationManager.AppSettings["EnterpriseDomain"] != null)
+                {
+                    result.Domain = ConfigurationManager.AppSettings["EnterpriseDomain"];
+                }
+                return result;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Trace.TraceError("Unable to get session connection details {0}", ex);
                 return null;

@@ -5,6 +5,7 @@
 - [Syntax](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#syntax)
 - [Password Hash](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#password-hash)
 - [File transfer](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#file-transfer)
+- [Print document](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#print-document)
 - [Security](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#security)
 - [Configuration / Performance tweaks](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#configuration--performance-tweaks)
 - [Code organization](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#code-organization)
@@ -52,7 +53,7 @@ All releases here: https://github.com/cedrozor/myrtille/releases
 ## Auto-connect / Start remote application from URL
 Starting from version 1.3.0, it's possible to connect and run a program automatically, on session start, from an URL. It's a feature comparable to remoteApp (.rdp files).
 
-From version 1.5.0, Myrtille does support hashed passwords (so that the password is not plain text into the url).
+From version 1.5.0, Myrtille does support hashed passwords (so that the password is not plain text into the url). The objective is to have distributable urls to third parties without compromising on security (by giving real passwords); connections are then only possible through myrtille (because direct connections would require the real passwords) and access control could be added into IIS.
 
 The start remote application from url feature only works on Windows Servers editions (starting from Server 2012) and only if the program is allowed to run (remoteApp policy). See notes and limitations.
 
@@ -83,20 +84,46 @@ Myrtille supports both local and network file storage. If you want your domain u
 - In the target tab, select basic configuration to redirect everyone's folder to the same location, with create a folder for each user under the root path (the network share)
 - In the settings tab, ensure the user doesn't have exclusive rights to the documents folder (otherwise Myrtille won't be able to access it)
 
+## Print document
+From version 1.9.0, myrtille does support local or network printing through a pdf virtual printer, "**Myrtille PDF**", installed on the gateway. This feature can be disabled into bin/Myrtille.Services.exe.config ("FreeRDPPdfPrinter" key).
+It works like any other printer, using the print feature of your application. The resulting pdf is downloaded to the browser and can be opened/saved/printed from there.
+It can also work standalone (without myrtille integration). If used directly on the gateway (without the "redirected" suffix), or as a network printer, it will ask for the pdf output location (to change that default behavior, see bin/Myrtille.Printer.exe.config).
+
+Alternatively, on Windows 10 / Server 2016, Windows provides a "Microsoft Print to PDF" printer. You can thus create a pdf on the remote server then download it (using the file transfer), but it implies an additional step.
+
+If your browser machine is on the same network as the gateway or the remote server, you also have the option to use a network printer directly from the remote session.
+
+If your remote server have internet access, you can also use a cloud printer (such a Google Print).
+
 ## Security
 The installer creates a self-signed certificate for myrtille (so you can use it at https://myserver/myrtille), but you can set your own certificate (if you wish).
 
 ## Configuration / Performance tweaks
 Both the gateway and services have their own .NET config files; the gateway also uses XDT transform files to adapt the settings depending on the current solution configuration.
 
-You may also play with the "js/config.js" file settings to fine tune the configuration depending on your needs.
+You may also play with the "js/config.js" file settings to fine tune the client configuration depending on your needs.
 
-The most important settings are:
+The most important client settings (js/config.js) are:
 - **imageEncoding**: set the format used to render the display; possible values: AUTO, PNG (default), JPEG or WEBP. For best performance, the encoding is defined to PNG in version 1.6.0. For optimized bandwidth usage (if your bandwidth is small or if you use graphical applications), the recommanded encoding is AUTO.
 - **imageQuality**: set the % quality of the rendering (higher = better); not applicable for PNG (lossless)
 - **imageQuantity**: set the % completeness of the rendering (lower = higher drop rate); useful for low server CPU / bandwidth; use with caution as skipping some images may result in display inconsistencies
 - **mouseMoveSamplingRate**: set the % sampling of the mouse moves (lower = higher drop rate); useful to reduce the server load in applications that trigger a lot of updates (i.e.: graphical applications)
 - **bufferEnabled**: buffer for user inputs; adjusted dynamically to fit the latency (more latency = more bufferization)
+
+Into the gateway settings (Web.config):
+- **allowRemoteClipboard**: allow to access to the remote clipboard (default enabled); can be disabled depending on your security policy
+- **allowSessionSharing**: allow to share the remote session (default enabled); can also be disabled
+- **clientIPTracking**: track the client ip (default disabled) and denies access in case of ip change; this should be disabled in some network configurations: shared proxy, roaming connection, private browsing, etc.
+- **clientIdleTimeout**: disconnect the session after a period of time if the browser window/tab is closed, or connection is lost, to prevent it from being left open server side; default 60000 ms (1 mn). 0 to disable
+
+Into the services settings (bin/Myrtille.Services.exe.config):
+- **RemoteSessionLog**: rdp client logs (default disabled); stored into the log folder
+- **FreeRDPxxx**: rdp client settings; allow to tweak the remote connection options (wallpaper theme, color depth, pdf printer, etc.). use with caution!
+- Multifactor Authentication and Enterprise Mode configuration
+
+Into the PDF virtual printer settings (bin/Myrtille.Printer.exe.config):
+- **OutputFile**: default output file name, if the printer is used standalone (without myrtille integration)
+- **AskUserForOutputFilename**: whether to display or not a dialog box to prompt for output file name, if the printer is used standalone
 
 ## Code organization
 - **Myrtille.RDP**: link to the myrtille FreeRDP fork. C++ code. RDP client, modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
@@ -249,6 +276,10 @@ First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (prefe
 
 - I don't have a mouse (or a right button), how can I Right-Click? (i.e.: on a touchpad or iOS device)
 	- You can toggle on the "Right-Click" button into the toolbar, then touch or left-click the screen to trigger a right-click at that position
+
+- Nothing happens when I click on some toolbar buttons
+- Nothing happens when I print with the "Myrtille PDF" redirected printer
+	- Although myrtille dialogs should work (same domain origin policy), ensure you don't have a popup blocker (Chrome have one by default), or disable it or add an exception for the myrtille domain
 
 - The RDP session continues to run after clicking "Disconnect"
 	- Check the RDP server configuration (session disconnect timeout in particular). You can setup it automatically by importing the Myrtille "myrtille\bin\RDPSetup.reg" file into registry.

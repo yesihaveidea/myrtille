@@ -18,6 +18,7 @@ More information in the DOCUMENTATION.md file.
 - Active Directory integration
 - Start remote application from URL
 - File transfer (local and roaming accounts)
+- PDF Virtual Printer
 - HTML4 and HTML5 support
 - Responsive design
 - Remote clipboard support
@@ -32,7 +33,7 @@ More information in the DOCUMENTATION.md file.
 - RDP server: any RDP enabled computer (preferably Windows Server but can also be Windows XP, 7, 8, 10)
 
 ## Resources
-Myrtille does support multiple users sessions/tabs.
+Myrtille does support multiple connections/tabs in cookieless session mode. From version 1.9.0, this mode is disabled by default (OWASP recommendation) but can still be enabled, if required (into web.config, carefully read comments there).
 
 There is no limitation about the maximal number of concurrent users beside what the rdp server(s) can handle (number of CALs, CPU, RAM?).
 
@@ -55,7 +56,7 @@ Multifactor Authentication and Active Directory integration (Enterprise Mode) ar
 
 You can also connect a remote desktop and **start a program automatically from an url** (see DOCUMENTATION.md). From version 1.5.0, Myrtille does support encrypted credentials (aka "password 51" into .rdp files) so the urls can be distributed to third parties without compromising on security.
 
-The installer creates a self-signed certificate for https://myserver/myrtille. Like for all self-signed certificates, you will have to add a security exception into your browser (just ignore the warning message and proceed to the website).
+The installer creates a self-signed certificate for https://myserver/myrtille. Like for all self-signed certificates, you will have to add a security exception into your browser (just ignore the warning message and proceed to the website). **Usage of https is recommended** to secure your remote connection.
 Of course, you can avoid that by installing a certificate provided by a trusted Certification Authority (see DOCUMENTATION.md).
 
 If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (logs are saved under the Myrtille "log" folder). *Hidden from version 1.5.0 (can be enabled into default.css)*.
@@ -69,6 +70,8 @@ The remote clipboard content can also be retrieved locally with the "Clipboard" 
 
 You can upload/download file(s) to/from the user documents folder with the "Files" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified.
 
+You can print any document on a local or network printer by using the "Myrtille PDF" (redirected) virtual printer. Simply use the print feature of your application, then open/print the downloaded pdf.
+
 ## Third-party
 Myrtille uses the following licensed software:
 - RDP client: FreeRDP (https://github.com/FreeRDP/FreeRDP), licensed under Apache 2.0 license. Myrtille uses a fork of FreeRDP (https://github.com/cedrozor/FreeRDP), to enforce a loose coupling architecture and always use the latest version of FreeRDP (the fork is periodically synchronized with the FreeRDP master branch).
@@ -77,6 +80,10 @@ Myrtille uses the following licensed software:
 - HTML5 websockets: Microsoft.WebSockets 0.2.3.1 (https://www.nuget.org/packages/Microsoft.WebSockets/0.2.3.1), licensed under MIT license. Copyright (c) Microsoft 2012.
 - Logging: Log4net 2.0.8 (https://logging.apache.org/log4net/), licensed under Apache 2.0 license.
 - Multifactor Authentication: OASIS.Integration 1.6.1 (https://www.nuget.org/packages/OASIS.Integration/1.6.1), licensed under Apache 2.0 license. Source code available at https://github.com/OliveInnovations/OASIS. Copyright Olive Innovations Ltd 2017.
+- PDF Virtual Printer: PdfScribe 1.0.5 (https://github.com/stchan/PdfScribe), licensed under LGPL v3 license.
+- Redirection Port Monitor: RedMon 1.9 (http://pages.cs.wisc.edu/~ghost/redmon/index.htm), licensed under GPL v3 license.
+- Postscript Printer Drivers: Microsoft Postscript Printer Driver V3 (https://docs.microsoft.com/en-us/windows-hardware/drivers/print/microsoft-postscript-printer-driver), copyright (c) Microsoft Corporation. All rights reserved.
+- Postscript and PDF interpreter/renderer: Ghostscript 9.23 (https://www.ghostscript.com/download/gsdnld.html), licensed under AGPL v3 license.
 
 See DISCLAIMERS.md file.
 
@@ -99,6 +106,7 @@ Cedric Coste (cedrozor@gmail.com).
 - Catalin Trifanescu (AppliKr developer: application server. Steemind cofounder)
 - Fabien Janvier (AppliKr developer: website css, clipping algorithm, websocket server)
 - UltraSam (AppliKr developer: rdp client, http gateway)
+- Paul Oliver (Olive Innovations Ltd: MFA, enterprise mode)
 
 ## Links
 - Website:	http://cedrozor.github.io/myrtille

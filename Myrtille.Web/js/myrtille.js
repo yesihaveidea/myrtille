@@ -265,8 +265,7 @@ this.sendText = function(text)
         if (text == null || text == '')
             return;
 
-        if (config.getAdaptiveFullscreenTimeout() > 0)
-            user.triggerActivity();
+        user.triggerActivity();
 
         var keys = new Array();
         for (var i = 0; i < text.length; i++)
@@ -299,8 +298,7 @@ function sendKey(keyCode, release)
         if (keyCode == null || keyCode == '')
             return;
 
-        if (config.getAdaptiveFullscreenTimeout() > 0)
-            user.triggerActivity();
+        user.triggerActivity();
 
         var keys = new Array();
                 
@@ -408,4 +406,26 @@ function handleRemoteSessionExit(exitCode)
         default:
             alert('The remote connection failed or was closed unexpectedly');
     }
+}
+
+this.downloadPdf = function(name)
+{
+    try
+    {
+        //alert('creating iframe to download pdf: ' + name);
+
+        var pdf = document.createElement('iframe');
+
+        pdf.style.width = '0px';
+        pdf.style.height = '0px';
+        pdf.frameBorder = 0;
+
+        pdf.src = config.getHttpServerUrl() + 'PrintDocument.aspx?name=' + name;
+            
+        document.body.appendChild(pdf);
+    }
+	catch (exc)
+	{
+        alert('myrtille downloadPdf error: ' + exc.message);
+	}
 }

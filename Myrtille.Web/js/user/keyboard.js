@@ -45,8 +45,7 @@ function Keyboard(config, dialog, display, network, user)
         if (e == null)
             return false;
 
-        if (config.getAdaptiveFullscreenTimeout() > 0)
-            user.triggerActivity();
+        user.triggerActivity();
 
         return true;
     }

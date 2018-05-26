@@ -28,7 +28,7 @@
         <link rel="stylesheet" type="text/css" href="../css/Default.css"/>
 	</head>    
 
-    <body>
+    <body onload="selectText();">
         
         <form method="post" runat="server">
             
@@ -48,6 +48,21 @@
             </div>
 
         </form>
+
+		<script type="text/javascript" language="javascript" defer="defer">
+
+		    function selectText()
+		    {
+		        var sessionUrl = document.getElementById('sessionUrl');
+		        if (sessionUrl != null)
+                {
+		            sessionUrl.focus();
+		            sessionUrl.select();
+                }
+            }
+
+		</script>
+
 	</body>
 
 </html>

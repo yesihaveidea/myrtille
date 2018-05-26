@@ -18,12 +18,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.ServiceModel;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Caching;
+using System.Web.SessionState;
 using Myrtille.Helpers;
 
 namespace Myrtille.Web
@@ -60,6 +63,13 @@ namespace Myrtille.Web
 
                 // cache
                 _imageCache = (Cache)HttpContext.Current.Application[HttpApplicationStateVariables.Cache.ToString()];
+
+                // timeout
+                _clientIdleTimeoutDelay = ClientIdleTimeoutDelay();
+                if (_clientIdleTimeoutDelay > 0)
+                {
+                    ClientIdleTimeout = new CancellationTokenSource();
+                }
             }
             catch (Exception exc)
             {
@@ -114,7 +124,7 @@ namespace Myrtille.Web
                             StopWaitForImageEvent();
                         }
                     }
-                    // remote clipboard is available
+                    // remote clipboard
                     else if (message.StartsWith("clipboard|"))
                     {
                         if (WebSockets.Count > 0)
@@ -129,6 +139,24 @@ namespace Myrtille.Web
                         {
                             ClipboardText = message.Remove(0, 10);
                             ClipboardAvailable = true;
+                            StopWaitForImageEvent();
+                        }
+                    }
+                    // print job
+                    else if (message.StartsWith("printjob|"))
+                    {
+                        if (WebSockets.Count > 0)
+                        {
+                            Trace.TraceInformation("Sending print job {0} on websocket(s), remote session {1}", message, RemoteSession.Id);
+                            foreach (var webSocket in WebSockets)
+                            {
+                                webSocket.Send(message);
+                            }
+                        }
+                        else
+                        {
+                            PrintJobName = message.Remove(0, 9);
+                            PrintJobAvailable = true;
                             StopWaitForImageEvent();
                         }
                     }
@@ -281,10 +309,30 @@ namespace Myrtille.Web
 
         #region Inputs
 
-        public void ProcessInputs(string data)
+        public void ProcessInputs(HttpSessionState session, string data)
         {
+            if (RemoteSession.State == RemoteSessionState.NotConnected || RemoteSession.State == RemoteSessionState.Disconnected)
+                return;
+
             try
             {
+                // monitor the activity of the remote session owner; if its browser window/tab is closed without disconnecting first, or if the connection is lost, there won't be anymore input
+                // in that case, disconnect the remote session after some time (set in web.config); if the session is shared, guests will be disconnected too
+                // this comes in addition (but not replace) the session idle timeout which may defined (or not) for the remote server
+                if (ClientIdleTimeout != null && session.SessionID.Equals(RemoteSession.OwnerSessionID))
+                {
+                    ClientIdleTimeout.Cancel();
+                    ClientIdleTimeout = new CancellationTokenSource();
+                    Task.Delay(_clientIdleTimeoutDelay, ClientIdleTimeout.Token).ContinueWith(task =>
+                    {
+                        if (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected)
+                        {
+                            RemoteSession.State = RemoteSessionState.Disconnecting;
+                            SendCommand(RemoteSessionCommand.CloseRdpClient);
+                        }
+                    }, TaskContinuationOptions.NotOnCanceled);
+                }
+
                 var inputs = data.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var input in inputs)
                 {
@@ -298,6 +346,26 @@ namespace Myrtille.Web
             {
                 Trace.TraceError("Failed to process input(s) {0}, remote session {1} ({2})", data, RemoteSession.Id, exc);
             }
+        }
+
+        #endregion
+
+        #region Timeout
+
+        public CancellationTokenSource ClientIdleTimeout { get; private set; }
+        private int _clientIdleTimeoutDelay = 0;
+
+        private int ClientIdleTimeoutDelay()
+        {
+            var clientIdleTimeout = 0;
+
+            int iResult;
+            if (int.TryParse(ConfigurationManager.AppSettings["clientIdleTimeout"], out iResult))
+            {
+                clientIdleTimeout = iResult;
+            }
+
+            return clientIdleTimeout;
         }
 
         #endregion
@@ -506,6 +574,23 @@ namespace Myrtille.Web
                 lock (_messageEventLock)
                 {
                     _clipboardAvailable = value;
+                }
+            }
+        }
+
+        public string PrintJobName { get; private set; }
+        private bool _printJobAvailable;
+        public bool PrintJobAvailable
+        {
+            get
+            {
+                return _printJobAvailable;
+            }
+            set
+            {
+                lock (_messageEventLock)
+                {
+                    _printJobAvailable = value;
                 }
             }
         }

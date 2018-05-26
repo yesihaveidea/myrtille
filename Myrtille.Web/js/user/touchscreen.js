@@ -135,9 +135,7 @@ function Touchscreen(config, dialog, display, network, user)
 
             if (send)
             {
-                if (config.getAdaptiveFullscreenTimeout() > 0)
-                    user.triggerActivity();
-
+                user.triggerActivity();
                 sendEvent(network.getCommandEnum().SEND_MOUSE_MOVE.text + touchX + '-' + touchY);  // same event as mouse move
             }
 
@@ -173,8 +171,7 @@ function Touchscreen(config, dialog, display, network, user)
             if (!processEvent(e))
                 return false;
 
-            if (config.getAdaptiveFullscreenTimeout() > 0)
-                user.triggerActivity();
+            user.triggerActivity();
 
             //dialog.showDebug('touch ' + (start ? 'start' : 'end'));
             if (user.getRightClickButton() != null && user.getRightClickButton().value == 'Right-Click ON')
