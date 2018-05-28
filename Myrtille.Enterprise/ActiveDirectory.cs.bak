@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
     Copyright(c) 2014-2018 Cedric Coste
@@ -35,7 +34,6 @@ namespace Myrtille.Enterprise
 {
     public class ActiveDirectory : IEnterpriseAdapter
     {
-
         public void Initialize()
         {
             using (var db = new MyrtilleEnterpriseDBContext())
@@ -221,9 +219,7 @@ namespace Myrtille.Enterprise
                 {
                     HostName = editHost.HostName,
                     HostAddress = editHost.HostAddress,
-                    Protocol = editHost.Protocol,
-                    HostType = editHost.HostType,
-                    StartRemoteProgram = editHost.StartRemoteProgram
+                    Protocol = editHost.Protocol
                 };
 
                 db.Host.Add(host);
@@ -276,10 +272,9 @@ namespace Myrtille.Enterprise
                     HostID = host.ID,
                     HostName = host.HostName,
                     HostAddress = host.HostAddress,
-                    DirectoryGroups = directoryGroups.ToString(),
-                    Protocol = host.Protocol,
-                    HostType = (host.HostType ?? "RDP"),
-                    StartRemoteProgram = host.StartRemoteProgram
+                    DirectoryGroups = directoryGroups.ToString()
+                    ,
+                    Protocol = host.Protocol
                 };
             }
         }
@@ -301,7 +296,6 @@ namespace Myrtille.Enterprise
                 host.HostName = editHost.HostName;
                 host.HostAddress = editHost.HostAddress;
                 host.Protocol = editHost.Protocol;
-                host.StartRemoteProgram = editHost.StartRemoteProgram;
 
                 var currentGroups = db.HostAccessGroups
                                         .Where(m => m.HostID == editHost.HostID)
@@ -416,9 +410,7 @@ namespace Myrtille.Enterprise
                             {
                                 HostID = h.ID,
                                 HostName = h.HostName,
-                                HostAddress = h.HostAddress,
-                                HostType = (h.HostType ?? "RDP"),
-                                StartRemoteProgram = h.StartRemoteProgram
+                                HostAddress = h.HostAddress
                             })
                         .Distinct()
                         .OrderBy(m => m.HostName)
@@ -436,9 +428,7 @@ namespace Myrtille.Enterprise
                             {
                                 HostID = h.ID,
                                 HostName = h.HostName,
-                                HostAddress = h.HostAddress,
-                                HostType = (h.HostType ?? "RDP"),
-                                StartRemoteProgram = h.StartRemoteProgram
+                                HostAddress = h.HostAddress
                             })
                             .Distinct()
                             .OrderBy(m => m.HostName)
@@ -486,15 +476,11 @@ namespace Myrtille.Enterprise
                                       ,
                                       HostAddress = h.HostAddress
                                       ,
-                                      HostType = (h.HostType ?? "RDP")
-                                      ,
                                       Username = s.Username
                                       ,
                                       Password = s.Password
                                       ,
                                       Protocol = h.Protocol
-                                      ,
-                                      StartRemoteProgram = h.StartRemoteProgram
                                   })
                                 .FirstOrDefault();
                     }
@@ -515,15 +501,11 @@ namespace Myrtille.Enterprise
                                       ,
                                       HostAddress = h.HostAddress
                                       ,
-                                      HostType = (h.HostType ?? "RDP")
-                                      ,
                                       Username = s.Username
                                       ,
                                       Password = s.Password
                                       ,
                                       Protocol = h.Protocol
-                                      ,
-                                      StartRemoteProgram = h.StartRemoteProgram
                                   })
                                 .FirstOrDefault();
                     }
@@ -675,7 +657,6 @@ namespace Myrtille.Enterprise
 
             return decryptedString;
         }
-
 
         #endregion
     }

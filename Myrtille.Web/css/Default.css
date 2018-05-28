@@ -101,6 +101,11 @@ label,
     margin-top: 2px;
 }
 
+#hostType {
+    width: 204px;
+    margin-top: 2px;
+}
+
 /* program to run is better defined into an URL, but can be enabled into the login screen */
 #programLabel,
 #program
@@ -310,7 +315,7 @@ label,
 #editHostPopupInner
 {
     width: 400px;
-    height: 270px;
+    height: 310px;
 }
 
 #editHostPopupInner

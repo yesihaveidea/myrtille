@@ -59,6 +59,7 @@
     <Compile Include="Models\EnterpriseHost.cs" />
     <Compile Include="Models\EnterpriseHostEdit.cs" />
     <Compile Include="Models\EnterpriseSession.cs" />
+    <Compile Include="Models\HostTypeEnum.cs" />
     <Compile Include="Models\SecurityProtocolEnum.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

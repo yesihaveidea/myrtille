@@ -1,8 +1,9 @@
-﻿/*
+﻿using System.Collections;
+
+/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
-    Copyright(c) 2014-2018 Paul Oliver
+    Copyright(c) 2018 Olive Innovations Ltd
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,16 +18,23 @@
     limitations under the License.
 */
 
-namespace Myrtille.Services.Contracts
+namespace Myrtille.Web
 {
-    public class EnterpriseHostEdit
+
+
+    public static class JSKeyCodeToSSHBashShellUniCodeMapping
     {
-        public long HostID { get; set; }
-        public string HostName { get; set; }
-        public string HostAddress { get; set; }
-        public string DirectoryGroups { get; set; }
-        public SecurityProtocolEnum Protocol { get; set; }
-        public string HostType { get; set; }
-        public string StartRemoteProgram { get; set; }
+        public static Hashtable MapTable { get; private set; }
+
+        static JSKeyCodeToSSHBashShellUniCodeMapping()
+        {
+
+            MapTable = new Hashtable();
+
+            MapTable.Add(163, 156);           // £
+
+            MapTable.Add(172, 170);           // ¬
+
+        }
     }
 }

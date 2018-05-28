@@ -49,7 +49,11 @@
                     <h5><label id="groupsAccessLabel" for="groupsAccess">Domain Groups Allowed (comma separated)</label></h5>
                     <input type="text" runat="server" id="groupsAccess" title="groups access"/>
                 </div>
-                <div class="editHostPopupInput">
+                <div class="editHostPopupInput" runat="server" id="startProgramInput">
+                    <h5><label id="startProgramLabel" for="startProgram">Start Remote App Program</label></h5>
+                    <input type="text" runat="server" id="startProgram" title="remote program"/>
+                </div>
+                <div class="editHostPopupInput" runat="server" id="rdpSecurityInput">
                     <h5><label id="securityProtocolLabel" for="securityProtocol">RDP Security Protocol</label></h5>
                     <select runat="server" id="securityProtocol">
                         <option value="0">auto</option>
