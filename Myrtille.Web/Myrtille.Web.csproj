@@ -84,6 +84,13 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="popups\CredentialsPrompt.aspx.cs">
+      <DependentUpon>CredentialsPrompt.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="popups\CredentialsPrompt.aspx.designer.cs">
+      <DependentUpon>CredentialsPrompt.aspx</DependentUpon>
+    </Compile>
     <Compile Include="popups\ShareSession.aspx.cs">
       <DependentUpon>ShareSession.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -222,6 +229,7 @@
     <Content Include="js\xterm\addons\fit\fit.js" />
     <Content Include="js\xterm\xterm.js" />
     <Content Include="myrtille.ico" />
+    <Content Include="popups\CredentialsPrompt.aspx" />
     <Content Include="popups\ShareSession.aspx" />
     <Content Include="popups\EditHostSession.aspx" />
     <Content Include="popups\EditHost.aspx" />

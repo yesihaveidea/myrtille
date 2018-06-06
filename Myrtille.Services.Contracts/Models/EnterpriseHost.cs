@@ -38,5 +38,6 @@ namespace Myrtille.Services.Contracts
                 return "./img/RemoteDesktop.png";
             }
         }
+        public bool PromptForCredentials { get; set; }
     }
 }

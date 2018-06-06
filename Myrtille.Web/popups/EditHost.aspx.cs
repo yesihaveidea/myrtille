@@ -100,6 +100,7 @@ namespace Myrtille.Web
                                         groupsAccess.Value = host.DirectoryGroups;
                                         securityProtocol.SelectedIndex = (int)host.Protocol;
                                         _hostType = host.HostType.ToString();
+                                        promptCredentials.Checked = host.PromptForCredentials;
                                     }
                                 }
                                 catch (Exception exc)
@@ -153,7 +154,8 @@ namespace Myrtille.Web
                     DirectoryGroups = groupsAccess.Value,
                     Protocol = (SecurityProtocolEnum)securityProtocol.SelectedIndex,
                     HostType = _hostType,
-                    StartRemoteProgram = startProgram.Value
+                    StartRemoteProgram = startProgram.Value,
+                    PromptForCredentials = promptCredentials.Checked
                 };
 
                 if(_hostId != null)

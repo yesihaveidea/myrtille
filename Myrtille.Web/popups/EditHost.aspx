@@ -63,6 +63,11 @@
                         <option value="4">nla-ext</option>
                     </select>
                 </div>
+                <div class="editHostPopupInput" runat="server" id="Div1">
+                    <h5><label id="promptCredentialsLabel" for="promptCredentials">Prompt for Credentials</label></h5>
+                    <input type="checkbox" runat="server" id="promptCredentials" title="prompt for credentials"/>
+                </div>
+
                 <br/>
                 <div class="editHostPopupInput">
                     <input type="button" runat="server" id="createSessionUrl" value="Create Single Use Session URL"/>

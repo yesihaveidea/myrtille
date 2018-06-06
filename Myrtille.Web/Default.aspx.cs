@@ -670,9 +670,19 @@ namespace Myrtille.Web
             {
                 var host = e.Item.DataItem as EnterpriseHost;
 
-                var hostLink = e.Item.FindControl("hostLink") as HtmlAnchor;
-                hostLink.HRef = string.Format("?SD={0}&__EVENTTARGET=&__EVENTARGUMENT=&connect=Connect%21", host.HostID);
-                hostLink.Attributes["class"] = "hostLink";
+                if (host.PromptForCredentials)
+                {
+                    var hostLink = e.Item.FindControl("hostLink") as HtmlAnchor;
+                    hostLink.HRef = null;
+                    hostLink.Attributes["onclick"] = string.Format("openPopup('editCredentialPopup', 'CredentialsPrompt.aspx?hostId={0}');", host.HostID);
+                    hostLink.Attributes["class"] = "hostLink";
+                }
+                else
+                {
+                    var hostLink = e.Item.FindControl("hostLink") as HtmlAnchor;
+                    hostLink.HRef = string.Format("?SD={0}&__EVENTTARGET=&__EVENTARGUMENT=&connect=Connect%21", host.HostID);
+                    hostLink.Attributes["class"] = "hostLink";
+                }
 
                 var hostName = e.Item.FindControl("hostName") as HtmlGenericControl;
                 hostName.InnerText = (_enterpriseSession.IsAdmin ? "Edit " : "") + host.HostName;

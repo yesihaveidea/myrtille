@@ -76,6 +76,24 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlSelect securityProtocol;
         
         /// <summary>
+        /// Div1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Div1;
+        
+        /// <summary>
+        /// promptCredentials control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox promptCredentials;
+        
+        /// <summary>
         /// createSessionUrl control.
         /// </summary>
         /// <remarks>
