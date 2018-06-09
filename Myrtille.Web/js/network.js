@@ -282,7 +282,7 @@ function Network(config, dialog, display)
                 //dialog.showDebug('checking bandwidth usage');
                 dialog.showStat(dialog.getShowStatEnum().BANDWIDTH_USAGE, Math.ceil(bandwidthUsage / 1024));
 
-                // throttle the image quality & quantity depending on the bandwidth usage
+                // throttle image quality & quantity depending on the bandwidth usage and average latency
                 tweakDisplay();
 
                 // reset bandwidth usage
@@ -445,36 +445,97 @@ function Network(config, dialog, display)
     {
         try
         {
+            var commands = new Array();
+
+            /*
+            small bandwidth = lower quality
+            latency shouldn't affect image quality because each update, whatever its size, will be received within the same delay
+            for example, if latency = 100ms, both a 10KB and 100KB image will be received in 100ms (given the bandwidth is good enough)
+            */
+
             var tweak = false;
 
-            var bandwidthRatio = bandwidthUsage != null && bandwidthSize != null && bandwidthSize > 0 ? Math.round((bandwidthUsage * 100) / bandwidthSize) : 0;
-            if (bandwidthRatio >= config.getImageTweakHigherThreshold())
+            var bandwidthUsageRatio = bandwidthUsage != null && bandwidthSize != null && bandwidthSize > 0 ? Math.round((bandwidthUsage * 100) / bandwidthSize) : 0;
+            if (bandwidthUsageRatio >= config.getImageTweakBandwidthHigherThreshold())
             {
-                config.setImageQuality(10);
-                config.setImageQuantity(25);
-                tweak = true;
+                if (config.getImageQuality() != 10)
+                {
+                    config.setImageQuality(10);
+                    tweak = true;
+                }
             }
-            else if (bandwidthRatio >= config.getImageTweakLowerThreshold() && bandwidthRatio < config.getImageTweakHigherThreshold())
+            else if (bandwidthUsageRatio >= config.getImageTweakBandwidthLowerThreshold() && bandwidthUsageRatio < config.getImageTweakBandwidthHigherThreshold())
             {
-                config.setImageQuality(25);
-                config.setImageQuantity(50);
-                tweak = true;
+                if (config.getImageQuality() != 25)
+                {
+                    config.setImageQuality(25);
+                    tweak = true;
+                }
             }
-            else if (config.getImageQuality() != originalImageQuality || config.getImageQuantity() != originalImageQuantity)
+            else if (config.getImageQuality() != originalImageQuality)
             {
                 config.setImageQuality(originalImageQuality);
+                tweak = true;
+            }
+
+            if (tweak)
+            {
+                //dialog.showDebug('tweaking image quality: ' + config.getImageQuality());
+                commands.push(commandEnum.SET_IMAGE_QUALITY.text + config.getImageQuality());
+            }
+
+            /*
+            small bandwidth = lower quantity
+            latency is relevant there because each update, whatever its size, is affected by latency
+            sending many updates may result in an increasing lag, so better reduce their number if the latency goes high
+            for example, if latency = 100ms, 10 images will be received in 10 x 100 = 1000ms (1 sec)
+            this is mitigated when using websockets or long-polling, because the connection remains open, but the latency still applies
+
+            that said, it's also important to preserve the user experience as best as possible
+            dropping some updates may help to restrain the lag but it will also disrupt the display, and the user might think its actions aren't processed (!)
+            therefore, updates should only be dropped if their display rate is significant enough
+            */
+
+            // computed latency and display rate may change outside of this function; use snapshot values
+            var latency = roundtripDurationAvg;
+            var ips = display.getLastImgCountPerSec();
+
+            //dialog.showDebug('latency: ' + latency + ', ips: ' + ips);
+
+            tweak = false;
+
+            if (bandwidthUsageRatio >= config.getImageTweakBandwidthHigherThreshold() ||
+               (latency >= config.getImageTweakLatencyHigherThreshold() && ips >= config.getImageTweakLatencyCountPerSec()))
+            {
+                if (config.getImageQuantity() != 25)
+                {
+                    config.setImageQuantity(25);
+                    tweak = true;
+                }
+            }
+            else if ((bandwidthUsageRatio >= config.getImageTweakBandwidthLowerThreshold() && bandwidthUsageRatio < config.getImageTweakBandwidthHigherThreshold()) ||
+                     (latency >= config.getImageTweakLatencyLowerThreshold() && latency < config.getImageTweakLatencyHigherThreshold() && ips >= config.getImageTweakLatencyCountPerSec()))
+            {
+                if (config.getImageQuantity() != 50)
+                {
+                    config.setImageQuantity(50);
+                    tweak = true;
+                }
+            }
+            else if (config.getImageQuantity() != originalImageQuantity)
+            {
                 config.setImageQuantity(originalImageQuantity);
                 tweak = true;
             }
 
             if (tweak)
             {
-                var commands = new Array();
-
-                dialog.showDebug('tweaking display, image quality: ' + config.getImageQuality() + ', quantity: ' + config.getImageQuantity());
-                commands.push(commandEnum.SET_IMAGE_QUALITY.text + config.getImageQuality());
+                //dialog.showDebug('tweaking image quantity: ' + config.getImageQuantity());
                 commands.push(commandEnum.SET_IMAGE_QUANTITY.text + config.getImageQuantity());
+            }
 
+            if (commands.length > 0)
+            {
                 doSend(commands.toString());
             }
         }

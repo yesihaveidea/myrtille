@@ -1,4 +1,8 @@
-﻿2018-05-24 Version 1.9.0 (stable)
+﻿2018-06-09 Version 1.9.1 (stable)
+	reinstated the hotfix removed into version 1.9.0, forcing IP connection when using FQDN; fact is, some people still have issues even with openssl 1.1.x (unable to reproduce, may depend on a specific configuration). more details here: https://github.com/FreeRDP/FreeRDP/issues/4525#issuecomment-380635647
+	improved performance mitigation in case of high latency network
+
+2018-05-24 Version 1.9.0 (stable)
 	resynced FreeRDP (version 2.0-RC2-dev3), now using the openssl 1.1.x architecture. Should fix any previously reported FQDN and NLA issues
 	added a pdf virtual printer; any document printed with the "Myrtille PDF" printer is downloaded to the browser and can be opened/saved/printed from there
 	pdf content is now downloaded into an hidden iframe, instead of a new tab, to prevent popup blockers to block it

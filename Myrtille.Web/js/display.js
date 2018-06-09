@@ -122,6 +122,7 @@ function Display(config, dialog)
             {
                 //dialog.showDebug('checking image count per second');
                 dialog.showStat(dialog.getShowStatEnum().IMAGE_COUNT_PER_SEC, imgCountPerSec);
+                lastImgCountPerSec = imgCountPerSec;
                 imgCountPerSec = 0;
             },
             1000);
@@ -322,6 +323,10 @@ function Display(config, dialog)
 
     // number of displayed images per second
     var imgCountPerSec = 0;
+
+    // last number of displayed images per second
+    var lastImgCountPerSec = 0;
+    this.getLastImgCountPerSec = function() { return lastImgCountPerSec; };
 
     // last displayed image
     var imgIdx = 0;

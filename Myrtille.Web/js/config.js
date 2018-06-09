@@ -95,8 +95,11 @@ function Config(
     var imageEncoding = imageEncodingEnum.PNG;          // image encoding
     var imageQuality = 100;                             // image quality (%) higher = better; not applicable for PNG (lossless); tweaked dynamically to fit the available bandwidth if using JPEG, PNG_JPEG or WEBP encoding. for best user experience, fullscreen updates are always done in higher quality (75%), regardless of this setting and bandwidth
     var imageQuantity = 100;                            // image quantity (%) less images = lower cpu and bandwidth usage / faster; more = smoother display (skipping images may result in some display inconsistencies). tweaked dynamically to fit the available bandwidth; possible values: 5, 10, 20, 25, 50, 100 (lower = higher drop rate)
-    var imageTweakLowerThreshold = 50;                  // tweak the image quality & quantity depending on the available bandwidth: lower threshold
-    var imageTweakHigherThreshold = 90;                 // tweak the image quality & quantity depending on the available bandwidth: higher threshold
+    var imageTweakBandwidthLowerThreshold = 50;         // tweak the image quality & quantity depending on the available bandwidth (%): lower threshold
+    var imageTweakBandwidthHigherThreshold = 90;        // tweak the image quality & quantity depending on the available bandwidth (%): higher threshold
+    var imageTweakLatencyLowerThreshold = 250;          // tweak the image quantity depending on the average latency (ms): lower threshold
+    var imageTweakLatencyHigherThreshold = 750;         // tweak the image quantity depending on the average latency (ms): higher threshold
+    var imageTweakLatencyCountPerSec = 20;              // tweak the image quantity depending on the average latency and image count per second
     var imageCountOk = 500;                             // reasonable number of images to display at once; for HTML4 (divs), used to clean the DOM (by requesting a fullscreen update) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
     var imageCountMax = 1000;                           // maximal number of images to display at once; for HTML4 (divs), used to clean the DOM (by reloading the page) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
     var imageMode = imageModeEnum.AUTO;                 // image mode
@@ -155,8 +158,11 @@ function Config(
     this.setImageQuality = function(quality) { imageQuality = quality; };
     this.getImageQuantity = function() { return imageQuantity; };
     this.setImageQuantity = function(quantity) { imageQuantity = quantity; };
-    this.getImageTweakLowerThreshold = function() { return imageTweakLowerThreshold; };
-    this.getImageTweakHigherThreshold = function() { return imageTweakHigherThreshold; };
+    this.getImageTweakBandwidthLowerThreshold = function() { return imageTweakBandwidthLowerThreshold; };
+    this.getImageTweakBandwidthHigherThreshold = function() { return imageTweakBandwidthHigherThreshold; };
+    this.getImageTweakLatencyLowerThreshold = function() { return imageTweakLatencyLowerThreshold; };
+    this.getImageTweakLatencyHigherThreshold = function() { return imageTweakLatencyHigherThreshold; };
+    this.getImageTweakLatencyCountPerSec = function() { return imageTweakLatencyCountPerSec; };
     this.getImageCountOk = function() { return imageCountOk; };
     this.getImageCountMax = function() { return imageCountMax; };
     this.getImageModeEnum = function() { return imageModeEnum; };
