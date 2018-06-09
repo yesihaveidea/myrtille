@@ -1,6 +1,7 @@
 ﻿2018-06-09 Version 1.9.1 (stable)
 	reinstated the hotfix removed into version 1.9.0, forcing IP connection when using FQDN; fact is, some people still have issues even with openssl 1.1.x (unable to reproduce, may depend on a specific configuration). more details here: https://github.com/FreeRDP/FreeRDP/issues/4525#issuecomment-380635647
 	improved performance mitigation in case of high latency network
+	the installer no longer requires administrator rights by default (but may still needs elevation during the installation, depending on the installed component(s))
 
 2018-05-24 Version 1.9.0 (stable)
 	resynced FreeRDP (version 2.0-RC2-dev3), now using the openssl 1.1.x architecture. Should fix any previously reported FQDN and NLA issues

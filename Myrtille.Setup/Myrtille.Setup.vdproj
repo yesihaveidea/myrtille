@@ -1831,13 +1831,6 @@
         }
         "LaunchCondition"
         {
-            "{836E08B8-0285-4809-BA42-01DB6754A45D}:_2BA2698A031748E3816CE6F35AAF7B46"
-            {
-            "Name" = "8:Administrator"
-            "Condition" = "8:Privileged"
-            "Message" = "8:This installation requires elevated permissions to continue (must be run as administrator)"
-            "InstallUrl" = "8:"
-            }
         }
         "Locator"
         {
@@ -1852,14 +1845,14 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Myrtille"
         "ProductCode" = "8:{B00BCC6F-3958-4726-9D99-DBAC78513C26}"
-        "PackageCode" = "8:{354281DB-A126-490E-89BB-8169B22B2F6F}"
+        "PackageCode" = "8:{E6FD7D5C-27F8-486C-8166-3E434880C4AF}"
         "UpgradeCode" = "8:{86A6145E-11DB-4EE7-9CE0-53F997050716}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.9.0"
+        "ProductVersion" = "8:1.9.1"
         "Manufacturer" = "8:Cedric Coste"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://cedrozor.github.io/myrtille"
