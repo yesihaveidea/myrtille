@@ -233,7 +233,7 @@ namespace Myrtille.Web
                 browser.Value = RemoteSession.CompatibilityMode ? "HTML5" : "HTML4";
                 browser.Disabled = false;
                 scale.Value = RemoteSession.ScaleDisplay ? "Unscale" : "Scale";
-                scale.Disabled = RemoteSession.HostType == HostTypeEnum.RDP;
+                scale.Disabled = RemoteSession.HostType != HostTypeEnum.RDP;
                 keyboard.Disabled = false;
                 // disable clipboard for SSH or if set to disable in config
                 clipboard.Disabled = RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowRemoteClipboard;

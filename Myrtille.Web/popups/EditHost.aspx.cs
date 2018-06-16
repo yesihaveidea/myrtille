@@ -101,6 +101,7 @@ namespace Myrtille.Web
                                         securityProtocol.SelectedIndex = (int)host.Protocol;
                                         _hostType = host.HostType.ToString();
                                         promptCredentials.Checked = host.PromptForCredentials;
+                                        startProgram.Value = host.StartRemoteProgram;
                                     }
                                 }
                                 catch (Exception exc)
