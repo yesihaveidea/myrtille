@@ -1929,24 +1929,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Myrtille"
-<<<<<<< HEAD
         "ProductCode" = "8:{BD1F5393-5FC8-44AF-B727-66A6F3F4AAF3}"
         "PackageCode" = "8:{A627694D-412A-4C48-AA5B-D3381E465E22}"
-=======
-        "ProductCode" = "8:{B00BCC6F-3958-4726-9D99-DBAC78513C26}"
-        "PackageCode" = "8:{E6FD7D5C-27F8-486C-8166-3E434880C4AF}"
->>>>>>> refs/remotes/cedrozor/master
         "UpgradeCode" = "8:{86A6145E-11DB-4EE7-9CE0-53F997050716}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-<<<<<<< HEAD
         "ProductVersion" = "8:2.0.0"
-=======
-        "ProductVersion" = "8:1.9.1"
->>>>>>> refs/remotes/cedrozor/master
         "Manufacturer" = "8:Cedric Coste"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://cedrozor.github.io/myrtille"

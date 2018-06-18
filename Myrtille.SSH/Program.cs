@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop and SSH Protocol client.
 
-    Copyright(c) 2018 bigpjo/Olive Innovations
+    Copyright(c) 2018 Paul Oliver (Olive Innovations)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
