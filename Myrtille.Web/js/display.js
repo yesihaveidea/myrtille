@@ -120,6 +120,7 @@ function Display(config, dialog)
                     checkWebpSupport();
                 }
 
+<<<<<<< HEAD
                 // image count per second; currently just an information but could be used for throttling display, if needed
                 window.setInterval(function()
                 {
@@ -128,6 +129,17 @@ function Display(config, dialog)
                     imgCountPerSec = 0;
                 },
                 1000);
+=======
+            // image count per second; currently just an information but could be used for throttling display, if needed
+            window.setInterval(function()
+            {
+                //dialog.showDebug('checking image count per second');
+                dialog.showStat(dialog.getShowStatEnum().IMAGE_COUNT_PER_SEC, imgCountPerSec);
+                lastImgCountPerSec = imgCountPerSec;
+                imgCountPerSec = 0;
+            },
+            1000);
+>>>>>>> refs/remotes/cedrozor/master
 
                 // reasonable number of images to display when using divs
                 dialog.showStat(dialog.getShowStatEnum().IMAGE_COUNT_OK, (config.getDisplayMode() == config.getDisplayModeEnum().CANVAS ? 'N/A' : config.getImageCountOk()));
@@ -333,6 +345,10 @@ function Display(config, dialog)
 
     // number of displayed images per second
     var imgCountPerSec = 0;
+
+    // last number of displayed images per second
+    var lastImgCountPerSec = 0;
+    this.getLastImgCountPerSec = function() { return lastImgCountPerSec; };
 
     // last displayed image
     var imgIdx = 0;

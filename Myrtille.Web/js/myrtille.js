@@ -128,9 +128,9 @@ this.pushImage = function(idx, posX, posY, width, height, format, quality, fulls
 {
     try
     {
-        if (config.additionalLatency > 0)
+        if (config.getAdditionalLatency() > 0)
         {
-            window.setTimeout(function() { processImage(idx, posX, posY, width, height, format, quality, fullscreen, base64Data); }, Math.round(config.additionalLatency / 2));
+            window.setTimeout(function() { processImage(idx, posX, posY, width, height, format, quality, fullscreen, base64Data); }, Math.round(config.getAdditionalLatency() / 2));
         }
         else
         {
