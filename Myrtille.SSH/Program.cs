@@ -74,6 +74,7 @@ namespace Myrtille.SSH
                     DisconnectSSHClient();
                 }
             }
+
         }
 
         /// <summary>

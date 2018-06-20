@@ -48,7 +48,14 @@ namespace Myrtille.Services
 
         public void Logout(string sessionID)
         {
-            Program._enterpriseAdapter.Logout(sessionID);
+            try
+            {
+                Program._enterpriseAdapter.Logout(sessionID);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Failed to logout session {0}", sessionID, ex);
+            }
         }
 
         public long? AddHost(EnterpriseHostEdit editHost, string sessionID)
@@ -126,9 +133,16 @@ namespace Myrtille.Services
             {
                 Trace.TraceInformation("Requesting session details");
                 var result = Program._enterpriseAdapter.GetSessionConnectionDetails(sessionID, hostID, sessionKey);
+
                 var domain = ConfigurationManager.AppSettings["EnterpriseDomain"];
-                if (result != null && domain != null 
-                    && IPAddress.TryParse(domain, out IPAddress address) //check if domain is IP, prevent login failure if FQDN not used
+                var netbiosDomain = ConfigurationManager.AppSettings["EnterpriseNetbiosDomain"];
+
+                if (!string.IsNullOrEmpty(netbiosDomain) && !result.PromptForCredentials)
+                {
+                    result.Domain = netbiosDomain;
+                }
+                else if (result != null && domain != null 
+                    && !IPAddress.TryParse(domain, out IPAddress address) //check if domain is IP, prevent login failure if FQDN not used
                     && !result.PromptForCredentials) //no need to set this automatically if the user is prompted for credentials
                 {
                     result.Domain = domain;
