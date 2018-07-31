@@ -1,7 +1,8 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2018 Paul Oliver (Olive Innovations)
+    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2018 Paul Oliver (Olive Innovations)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,23 +16,15 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-using System;
-using System.Collections.Generic;
 
-namespace Myrtille.SSH
+namespace Myrtille.Services.Contracts
 {
-    static class KeyboardIgnoreKeys
+    public enum SecurityProtocolEnum
     {
-        public static List<int> IgnoreKeys { get; private set; }
-        
-        static KeyboardIgnoreKeys()
-        {
-            IgnoreKeys = new List<int>();
-
-            IgnoreKeys.Add(16); // shift key
-            IgnoreKeys.Add(17); //ctl key
-            IgnoreKeys.Add(18); //alt key
-
-        } 
+        auto = 0,
+        rdp = 1,
+        tls = 2,
+        nla = 3,
+        ext = 4
     }
 }

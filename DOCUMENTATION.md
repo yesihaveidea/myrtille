@@ -7,7 +7,7 @@
 - [File transfer](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#file-transfer)
 - [Print document](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#print-document)
 - [Security](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#security)
-- [Configuration / Performance tweaks](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#configuration--performance-tweaks)
+- [Configuration / Performance tweaks / Debug](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#configuration--performance-tweaks--debug)
 - [Code organization](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#code-organization)
 - [Build](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#build)
 - [Startup projects](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#startup-projects)
@@ -96,29 +96,32 @@ If your browser machine is on the same network as the gateway or the remote serv
 If your remote server have internet access, you can also use a cloud printer (such a Google Print).
 
 ## Security
-The installer creates a self-signed certificate for myrtille (so you can use it at https://myserver/myrtille), but you can set your own certificate (if you wish).
+The installer can create a self-signed certificate for myrtille (so you can use it at https://myserver/myrtille), but you can set your own certificate (if you wish).
 
-## Configuration / Performance tweaks
+## Configuration / Performance tweaks / Debug
 Both the gateway and services have their own .NET config files; the gateway also uses XDT transform files to adapt the settings depending on the current solution configuration.
 
 You may also play with the "js/config.js" file settings to fine tune the client configuration depending on your needs.
 
 The most important client settings (js/config.js) are:
-- **imageEncoding**: set the format used to render the display; possible values: AUTO, PNG (default), JPEG or WEBP. For best performance, the encoding is defined to PNG in version 1.6.0. For optimized bandwidth usage (if your bandwidth is small or if you use graphical applications), the recommanded encoding is AUTO.
-- **imageQuality**: set the % quality of the rendering (higher = better); not applicable for PNG (lossless)
-- **imageQuantity**: set the % completeness of the rendering (lower = higher drop rate); useful for low server CPU / bandwidth; use with caution as skipping some images may result in display inconsistencies
+- **imageEncoding**: set the format used to render the display; possible values: AUTO, PNG (default, best performance and quality), JPEG or WEBP. For optimized bandwidth, the recommended setting is AUTO (encode in both PNG and JPEG and send the lowest sized); adjusted dynamically to fit the latency (more latency = switch to JPEG)
+- **imageQuality**: set the % quality of the rendering (higher = better); not applicable for PNG (lossless); adjusted dynamically to fit the latency (more latency = switch to JPEG and lower the image quality)
+- **imageQuantity**: set the % completeness of the rendering (lower = higher drop rate); useful for low server CPU / bandwidth; use with caution as skipping some images may result in display inconsistencies; adjusted dynamically to fit the latency (more latency = switch to JPEG and lower the image quantity)
 - **mouseMoveSamplingRate**: set the % sampling of the mouse moves (lower = higher drop rate); useful to reduce the server load in applications that trigger a lot of updates (i.e.: graphical applications)
 - **bufferEnabled**: buffer for user inputs; adjusted dynamically to fit the latency (more latency = more bufferization)
 
 Into the gateway settings (Web.config):
-- **allowRemoteClipboard**: allow to access to the remote clipboard (default enabled); can be disabled depending on your security policy
-- **allowSessionSharing**: allow to share the remote session (default enabled); can also be disabled
-- **clientIPTracking**: track the client ip (default disabled) and denies access in case of ip change; this should be disabled in some network configurations: shared proxy, roaming connection, private browsing, etc.
-- **clientIdleTimeout**: disconnect the session after a period of time if the browser window/tab is closed, or connection is lost, to prevent it from being left open server side; default 60000 ms (1 mn). 0 to disable
+- **AllowRemoteClipboard**: allow to access the remote clipboard (default enabled)
+- **AllowFileTransfer**: allow to upload/download files (default enabled)
+- **AllowPrintDownload**: allow to print to pdf (default enabled)
+- **AllowSessionSharing**: allow to share a remote session (default enabled); from version 2.0.0, guests can't interact with the shared session (view only)
+- **ClientIPTracking**: track the client IP (default disabled) and denies access in case of IP change; this should be disabled in some network configurations: shared proxy, roaming connection, private browsing, etc.
+- **ClientIdleTimeout**: disconnect the session after a period of time if the browser window/tab is closed, or connection is lost, to prevent it from being left open server side; default 60000 ms (1 mn). 0 to disable
+- **WebsocketBuffering**: buffer for display updates, when using websockets; updates are sent together (grouped) when the latency gets high and dropped when the bandwidth gets low (>= 1 sec)
 
 Into the services settings (bin/Myrtille.Services.exe.config):
-- **RemoteSessionLog**: rdp client logs (default disabled); stored into the log folder
-- **FreeRDPxxx**: rdp client settings; allow to tweak the remote connection options (wallpaper theme, color depth, pdf printer, etc.). use with caution!
+- **RemoteSessionLog**: rdp/ssh client logs (default disabled); stored into the log folder
+- **FreeRDPxxx**: rdp client settings; allow to tweak the remote connection options (wallpaper, theme, color depth, etc.). use with caution!
 - Multifactor Authentication and Enterprise Mode configuration
 
 Into the PDF virtual printer settings (bin/Myrtille.Printer.exe.config):
@@ -127,9 +130,12 @@ Into the PDF virtual printer settings (bin/Myrtille.Printer.exe.config):
 
 ## Code organization
 - **Myrtille.RDP**: link to the myrtille FreeRDP fork. C++ code. RDP client, modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
-- **Myrtille.Common**: C# code. Common helpers.
+- **Myrtille.SSH**: SSH.NET client. Same logic as for FreeRDP, use named pipes to communicate with the gateway.
+- **Myrtille.Common**: C# code. Common helpers. These are static libs which could be used for any project (not only myrtille).
 - **Myrtille.Services**: C# code. WCF services, hosted by a Windows Service (or a console application in debug build). start/stop the rdp client and upload/download file(s) to/from the connected user documents folder.
 - **Myrtille.Services.Contracts**: C# code. WCF contracts (interfaces).
+- **Myrtille.MFAProviders**: C# code. Multifactor Authentication providers. Currently used with the OASIS adapter but could be any other.
+- **Myrtille.Enterprise**: C# code. Integration with Active Directory. Provides a dashboard to administrate the RDP and SSH hosts on a domain.
 - **Myrtille.Web**: C# code. IIS Web application; gateway between the browser and the rdp client; maintain correlation between http and rdp sessions.
 - **Myrtille.Setup**: MSI installer.
 
@@ -150,8 +156,9 @@ The objectives are:
 
 Steps to build the FreeRDP fork (and have it working with myrtille):
 - Git clone https://github.com/cedrozor/FreeRDP.git into "<myrtille root folder>\Myrtille.RDP\FreeRDP\" (**NOTE** if using TortoiseGit, the contextual menu won't show the "Git clone" option from the "Myrtille.RDP" folder; you will have to do it from elsewhere, outside of the myrtille tree; also, don't create the "FreeRDP" folder manually, just write it into the clone target path)
-- Use cmake on it as detailed here: https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) to generate the Visual Studio solution and projects accordingly to your dev environment (don't forget to install OpenSSL first; precompiled installers here: https://wiki.openssl.org/index.php/Binaries)
-- Open and build the generated solution. **CAUTION** if OpenSSL is configured standalone (dlls not present into the Windows "System32" folder), you will have to copy *"libeay32.dll"* and *"ssleay32.dll"* files (located into "OpenSSL\bin") into the FreeRDP build output folder
+- Install OpenSSL; precompiled installers here: https://slproweb.com/products/Win32OpenSSL.html (use the **32 bits** full version (not the light one))
+- Run cmake as detailed here: https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) to generate the Visual Studio solution and projects accordingly to your dev environment
+- Open and build the generated solution
 
 If you plan to build the myrtille installer, you have first to build the FreeRDP fork (or you can add the FreeRDP fork solution to the myrtille solution and use the FreeRDP projects outputs instead of files).
 
@@ -172,14 +179,15 @@ Hit F5 to start debugging.
 
 ## Communication
 ### Overview
-web browser <-> web gateway <-> wcf services <-> rdp client <-> rdp server
+web browser <-> web gateway <-> wcf services <-> client <-> host
 
 ### Protocols
 web browser <-HTTP(S),XMLHTTP,WS(S)-> web gateway <-WCF-> wcf services <-SYSTEM-> rdp client <-RDP-> rdp server
+web browser <-HTTP(S),XMLHTTP,WS(S)-> web gateway <-WCF-> wcf services <-SYSTEM-> ssh client <-SSH-> ssh server
 
-"SYSTEM" is simply starting FreeRDP as a local process, and capture the event of it being stopped.
+"SYSTEM" is simply starting the client as a local process, and capture the event of it being stopped.
 
-In order to speed up the communication between the web gateway and the rdp client, I decided to bypass the wcf services layer and set a direct communication between the two by using named pipes.
+In order to speed up the communication between the web gateway and the client, I decided to bypass the wcf services layer and set a direct communication between the two by using named pipes.
 
 It has 2 advantages: first, it's a bit faster than using TCP and, second, it guarantees a FIFO unstacking to preserve the images order.	It has also a drawback: both the web gateway and the wcf services must be on the same machine.
 
@@ -216,7 +224,10 @@ The included MFA adapter is written by Olive Innovations Ltd for use with the OA
 If you wish to create your own MFA adapter, `Myrtille.Services.Contracts` contains the interfaces you need.
 
 ## Enterprise Mode
-When enabled, the enterprise mode authenticates users against a domain and allows administrators to create hosts connections which can be restricted to the security groups the authenticated users belongs to.
+When enabled, the enterprise mode authenticates users against a domain and allows administrators to create hosts connections (which can be restricted to the security groups the authenticated users belongs to).
+
+Hosts are presented into a simple dashboard and can be connected in 1 click.
+
 **CAUTION** This requires the myrtille machine to have joined the domain or be able to resolve the domain controller FQDN or IP.
 
 The enterprise mode provides the following additional features:
@@ -231,7 +242,7 @@ To enable enterprise mode, edit the app.config file of Myrtille.Services and unc
 - `EnterpriseDomain`, this is the name of your domain (i.e. MYDOMAIN or mydomain.local) if myrtille is part of it or the domain controller FQDN or IP otherwise
 - Restart Myrtille.Services windows service to use the new settings
 
-To specify a customer path for the MyrtilleEnterprise database or use another SQL server amend Myrtille.Services app.config connectionString
+To specify a customer path for the MyrtilleEnterprise database or use another SQL server, amend Myrtille.Services app.config connectionString
 
 If you wish to create your own enterprise adapter (with a different authentication, database or behavior), `Myrtille.Services.Contracts` contains the interfaces you need.
 
@@ -245,6 +256,8 @@ If you wish to create your own enterprise adapter (with a different authenticati
 - Safari 5.1.7 doesn't support the IIS 8+ websocket implementation because it's based on an older version of the websocket standard (hybi instead of RFC6455) (http://stackoverflow.com/questions/32628211/connecting-to-iis-8-from-safari-5-1-7-by-websocket). Myrtille does fallback to long-polling if websockets aren't supported or fail.
 
 - In order to keep the installation simple, both the myrtille gateway and services are installed on the same machine. They do however conform to a distributed architecture; if needed, given some additionnal code, myrtille services could acts as a proxy, so the gateway could be installed and operate separately (this could be handy if the gateway should go into a DMZ).
+
+- Keyboard is mapped to english/US (latin QWERTY) layout by default. If you have troubles with some characters/keys not working as expected, try to add that keyboard layout to your server (and select it when connected).
 
 ## Troubleshoot
 First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+). Note that IIS must be installed separately, before running the installer (see "Installation").
@@ -274,6 +287,9 @@ First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (prefe
 	- Check the gateway windows event logs, particulary regarding .NET.
 	- Retry with debug enabled and check logs (into the "log" folder). You can change their verbosity level in config (but be warned it will affect peformance and flood the disk if set too verbose).
 
+- Some characters/keys are not working as expected
+	- Keyboard is mapped to english/US layout by default. Try to add that layout to your server (and select it when connected).
+
 - I don't have a mouse (or a right button), how can I Right-Click? (i.e.: on a touchpad or iOS device)
 	- You can toggle on the "Right-Click" button into the toolbar, then touch or left-click the screen to trigger a right-click at that position
 
@@ -290,5 +306,6 @@ First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (prefe
 	- If debug is enabled and you are running Myrtille in debug mode under Visual Studio, you will have the FreeRDP window (session display) and console (rdp events) shown to you. It may help to debug.
 	- Switch from HTML4 to HTML5 rendering, or inversely (should be faster with HTML5).
 	- Check your network configuration (is something filtering the traffic?) and capabilities (high latency or small bandwidth?).
+	- Ensure buffering is enabled on both client and gateway (see configuration / performance tweaks / Debug (https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#configuration--performance-tweaks--debug))
 	- Maybe the default settings are not adapted to your configuration. You can tweak the "js/config.js" file as you wish (see extensive comments there).
 	- Despite my best efforts to produce quality and efficient code, I may have missed/messed something... Please don't hesitate to tell me or add your contribution! Thanks! :)

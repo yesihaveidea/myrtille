@@ -53,7 +53,7 @@ namespace Myrtille.Services
 
             this.serviceInstaller = new ServiceInstaller();
             this.serviceInstaller.ServiceName = "Myrtille.Services";
-            this.serviceInstaller.Description = "Myrtille HTTP(S) to RDP gateway";
+            this.serviceInstaller.Description = "Myrtille HTTP(S) to RDP and SSH gateway";
             this.serviceInstaller.StartType = ServiceStartMode.Automatic;
 
             this.Installers.AddRange(new Installer[] {
@@ -96,18 +96,28 @@ namespace Myrtille.Services
 
             try
             {
-                // install Myrtille PDF printer
-                var scribeInstaller = new PdfScribeInstaller(Context);
-                var printerDir = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin");
-                var driversDir = Path.Combine(printerDir, Environment.Is64BitOperatingSystem ? "amd64" : "x86");
-                if (!scribeInstaller.InstallPdfScribePrinter(driversDir, Path.Combine(printerDir, "Myrtille.Printer.exe"), string.Empty))
+                // load config
+                var config = new XmlDocument();
+                var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Services.exe.config");
+                config.Load(configPath);
+
+                var navigator = config.CreateNavigator();
+
+                // services port
+                int servicesPort = 8080;
+                if (!string.IsNullOrEmpty(Context.Parameters["SERVICESPORT"]))
                 {
-                    MessageBox.Show(
-                        ActiveWindow.Active,
-                        "the myrtille virtual pdf printer could not be installed. Please check logs (into the install log folder)",
-                        serviceInstaller.ServiceName,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                    int.TryParse(Context.Parameters["SERVICESPORT"], out servicesPort);
+                }
+
+                if (servicesPort != 8080)
+                {
+                    // services endpoints
+                    var services = XmlTools.GetNode(navigator, "/configuration/system.serviceModel/services");
+                    if (services != null)
+                    {
+                        services.InnerXml = services.InnerXml.Replace("8080", servicesPort.ToString());
+                    }
                 }
 
                 // multifactor authentication
@@ -147,15 +157,8 @@ namespace Myrtille.Services
                 {
                     enterpriseNetbiosDomain = Context.Parameters["ENTERPRISENETBIOSDOMAIN"];
                 }
-                
-
-                // load config
-                var config = new XmlDocument();
-                var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Services.exe.config");
-                config.Load(configPath);
 
                 // app settings
-                var navigator = config.CreateNavigator();
                 var appSettings = XmlTools.GetNode(navigator, "/configuration/appSettings");
                 if (appSettings != null)
                 {
@@ -180,6 +183,24 @@ namespace Myrtille.Services
 
                 // save config
                 config.Save(configPath);
+
+                // pdf printer
+                if (!string.IsNullOrEmpty(Context.Parameters["PDFPRINTER"]))
+                {
+                    // install Myrtille PDF printer
+                    var scribeInstaller = new PdfScribeInstaller(Context);
+                    var printerDir = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin");
+                    var driversDir = Path.Combine(printerDir, Environment.Is64BitOperatingSystem ? "amd64" : "x86");
+                    if (!scribeInstaller.InstallPdfScribePrinter(driversDir, Path.Combine(printerDir, "Myrtille.Printer.exe"), string.Empty))
+                    {
+                        MessageBox.Show(
+                            ActiveWindow.Active,
+                            "the myrtille virtual pdf printer could not be installed. Please check logs (into the install log folder)",
+                            serviceInstaller.ServiceName,
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+                    }
+                }
 
                 Context.LogMessage("Installed Myrtille.Services");
             }
@@ -282,7 +303,7 @@ namespace Myrtille.Services
 
             try
             {
-                // uninstall Myrtille PDF printer
+                // uninstall Myrtille PDF printer, if exists
                 var scribeInstaller = new PdfScribeInstaller(Context);
                 scribeInstaller.UninstallPdfScribePrinter();
             }

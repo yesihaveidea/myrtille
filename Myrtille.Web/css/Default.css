@@ -18,7 +18,8 @@
 
 /* Windows style UI */
 
-body {
+body
+{
     padding: 0px;
     margin: 0px;
     background-color: #34495e;
@@ -45,7 +46,8 @@ a img
 /*** LOGIN                                                                                                                                                                                         ***/
 /*****************************************************************************************************************************************************************************************************/
 
-#login {
+#login
+{
     position: absolute;
     top: 50%;
     left: 50%;
@@ -58,7 +60,8 @@ a img
 
 /* customizable logo (replace the background image by yours) */
 /* remote desktop logo, credits BlackVariant (Patrick) http://blackvariant.deviantart.com */
-#logo {
+#logo
+{
     background-image: url("../img/RemoteDesktop.png");
     background-repeat: no-repeat;
     background-position: center;
@@ -92,6 +95,13 @@ label,
     text-decoration: underline;
 }
 
+#hostType,
+#securityProtocol
+{
+    width: 204px;
+    margin-top: 2px;
+}
+
 #server,
 #domain,
 #user,
@@ -100,11 +110,6 @@ label,
 #program
 {
     width: 200px;
-    margin-top: 2px;
-}
-
-#hostType {
-    width: 204px;
     margin-top: 2px;
 }
 
@@ -168,7 +173,8 @@ label,
 }
 
 .hostLink,
-.hostName {
+.hostName
+{
     cursor: pointer;
 }
 
@@ -181,6 +187,14 @@ label,
 /*** TOOLBAR                                                                                                                                                                                       ***/
 /*****************************************************************************************************************************************************************************************************/
 
+#toolbarToggle
+{
+    position: absolute;
+    border: 1px solid #ddd;
+    background-color: #F4F4F4;
+    z-index: 200;
+}
+
 #toolbar
 {
     overflow: auto;
@@ -190,6 +204,7 @@ label,
 /* server info */
 #serverInfo
 {
+    margin-left: 23px;
     float: left;
     width: 12%;
 }
@@ -208,11 +223,10 @@ label,
 #disconnect
 {
     float: left;
-    width: 10%;
+    width: 9%;
 }
 
-/* stat, debug and browser mode are now disabled by default (to enable for test or diagnostic, just comment out the css below and tweak the controls width above) */
-#stat,
+/* debug and browser mode are disabled by default (to enable for test or diagnostic, just comment out the css below and tweak the controls width above) */
 #debug,
 #browser
 {
@@ -316,7 +330,7 @@ label,
 #editHostPopupInner
 {
     width: 400px;
-    height: 340px;
+    height: 360px;
 }
 
 #editHostPopupInner
@@ -337,31 +351,38 @@ label,
 }
 
 /* credential popup*/
+
 #editCredentialPopup,
-#editCredentialPopupInner {
+#editCredentialPopupInner
+{
     width: 400px;
     height: 200px;
 }
-#editCredentialPopupInner {
+
+#editCredentialPopupInner
+{
     color: #000;
     background: #fff;
 }
 
-#editCredentialsPopupTitle {
+#editCredentialsPopupTitle
+{
     padding-top: 20px;
     padding-left: 10px;
 }
 
-.editCredentialPopupInput {
+.editCredentialPopupInput
+{
     padding-left: 10px;
 }
 
 /* host session popup */
 
 #editHostSessionPopup,
-#editHostSessionPopupInner {
+#editHostSessionPopupInner
+{
     width: 400px;
-    height: 350px;
+    height: 450px;
 }
 
 #editHostSessionPopupInner
@@ -434,7 +455,8 @@ label,
     padding-left: 10px;
 }
 
-.changePasswordMessage{
+.changePasswordMessage
+{
     padding-left: 10px;
 }
 
@@ -443,7 +465,8 @@ label,
     padding-left: 10px;
 }
 
-#changeError {
+#changeError
+{
     padding-left: 10px;
     font-size: 10pt;
     color: red;
@@ -484,7 +507,7 @@ canvas
     position: absolute;
     visibility: hidden;
 	display: none;
-	float: left;
+	margin-left: 23px;
 	font-size: 10px;
 	border: none;
 	background-color: black;

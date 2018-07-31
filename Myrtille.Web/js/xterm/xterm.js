@@ -3340,12 +3340,18 @@ var DEFAULT_OPTIONS = {
 };
 var Terminal = (function (_super) {
     __extends(Terminal, _super);
-    function Terminal(options) {
+    // <Myrtille>
+    //function Terminal(options) {
+    function Terminal(config, dialog, display, network, user, options) {
+    // </Myrtille>
         if (options === void 0) { options = {}; }
         var _this = _super.call(this) || this;
         _this.browser = Browser;
         _this.options = Clone_1.clone(options);
-        _this._setup();
+        // <Myrtille>
+        //_this._setup();
+        _this._setup(config, dialog, display, network, user);
+        // </Myrtille>
         return _this;
     }
     Terminal.prototype.dispose = function () {
@@ -3362,7 +3368,15 @@ var Terminal = (function (_super) {
     Terminal.prototype.destroy = function () {
         this.dispose();
     };
-    Terminal.prototype._setup = function () {
+    // <Myrtille>
+    //Terminal.prototype._setup = function () {
+    Terminal.prototype._setup = function (config, dialog, display, network, user) {
+        this.config = config;
+        this.dialog = dialog;
+        this.display = display;
+        this.network = network;
+        this.user = user;
+    // </Myrtille>
         var _this = this;
         this._disposables = [];
         Object.keys(DEFAULT_OPTIONS).forEach(function (key) {
@@ -4689,6 +4703,12 @@ var Terminal = (function (_super) {
             this.scrollToBottom();
         }
         this.emit('data', data);
+        // <Myrtille>
+        this.user.triggerActivity();
+        //this.dialog.showDebug('terminal read: ' + data);
+        var keyEvent = this.network.getCommandEnum().SEND_KEY_UNICODE.text + data;
+        this.network.processUserEvent('keyboard', keyEvent);
+        // </Myrtille>
     };
     Terminal.prototype.handleTitle = function (title) {
         this.emit('title', title);
@@ -6319,7 +6339,11 @@ var TextRenderLayer = (function (_super) {
                 nextFillStyle = _this._colors.foreground.css;
             }
             else if (bg < 256) {
-                nextFillStyle = _this._colors.ansi[bg].css;
+                // <Myrtille>
+                //nextFillStyle = _this._colors.ansi[bg].css;
+                // this fix a background color issue on connect or after hitting a function key
+                nextFillStyle = _this._colors.background.css;
+                // </Myrtille>
             }
             if (prevFillStyle === null) {
                 startX = x;

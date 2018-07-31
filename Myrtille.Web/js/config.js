@@ -21,7 +21,7 @@
 /*****************************************************************************************************************************************************************************************************/
 
 function Config(
-    httpServerUrl,                                      // myrtille web server url (rdp gateway)
+    httpServerUrl,                                      // myrtille web server url (rdp/ssh gateway)
     statEnabled,                                        // displays various stats above the remote session display
     debugEnabled,                                       // displays debug messages; more traces can be enabled by uncommenting them in js files
     compatibilityMode,                                  // old HTML4 browsers (no websocket, no canvas) or HTML5 otherwise
@@ -33,6 +33,12 @@ function Config(
     /*************************************************************************************************************************************************************************************************/
     /*** Enums                                                                                                                                                                                     ***/
     /*************************************************************************************************************************************************************************************************/
+
+    var hostTypeEnum =
+    {
+        RDP: { value: 0, text: 'RDP' },
+        SSH: { value: 1, text: 'SSH' }
+    };
 
     // see comments into display.js
     var displayModeEnum =
@@ -74,6 +80,7 @@ function Config(
 
     if (Object.freeze)
     {
+        Object.freeze(hostTypeEnum);
         Object.freeze(displayModeEnum);
         Object.freeze(imageEncodingEnum);
         Object.freeze(imageModeEnum);
@@ -134,7 +141,11 @@ function Config(
 
     // server
     this.getHttpServerUrl = function() { return httpServerUrl; };
-    
+
+    // host type
+    this.getHostType = function() { return hostType == 'RDP' ? hostTypeEnum.RDP : hostTypeEnum.SSH; }
+    this.getHostTypeEnum = function() { return hostTypeEnum; };
+
     // dialog
     this.getStatEnabled = function() { return statEnabled; };
     this.getDebugEnabled = function() { return debugEnabled; };
@@ -200,8 +211,5 @@ function Config(
     this.getBufferSize = function() { return bufferSize; };
     
     // mouse
-    this.getMouseMoveSamplingRate = function () { return mouseMoveSamplingRate; };
-
-    // host type
-    this.getHostType = function () { return hostType; }
+    this.getMouseMoveSamplingRate = function() { return mouseMoveSamplingRate; };
 }

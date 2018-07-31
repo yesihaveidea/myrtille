@@ -2,6 +2,7 @@
     Myrtille: A native HTML4/5 Remote Desktop and SSH Protocol client.
 
     Copyright(c) 2018 Paul Oliver (Olive Innovations)
+    Copyright(c) 2014-2018 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,78 +18,103 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
-using Myrtille.Helpers;
+using System.Windows.Forms;
+using log4net.Config;
 using Renci.SshNet;
+using Renci.SshNet.Common;
+using Myrtille.Services.Contracts;
 
 namespace Myrtille.SSH
 {
-    class Program
+    public class Program
     {
         private static PipeMessaging pipeMessaging;
-        private static string LastKeyCode { get; set; }
         private static SshClient client;
         private static ShellStream shellStream;
 
-
-        static void Main(string[] args)
+        private static int Main(string[] args)
         {
-            string argOptionParamterSeperators = ":";
+            // enable the code below for debug; disable otherwise
+            //if (Environment.UserInteractive)
+            //{
+            //    MessageBox.Show("Attach the .NET debugger to the 'SSH Debug' Myrtille.SSH.exe process now for debug. Click OK when ready...", "SSH Debug");
+            //}
+            //else
+            //{
+            //    Thread.Sleep(10000);
+            //}
 
-            foreach(string arg in args)
+            // logger
+            XmlConfigurator.Configure();
+
+            string argKeyValueSeparator = ":";
+            foreach (string arg in args)
             {
-                var argParts = arg.Trim().Split(argOptionParamterSeperators.ToCharArray(), 2);
+                var argParts = arg.Trim().Split(argKeyValueSeparator.ToCharArray(), 2);
                 parseCommandLineArg(argParts[0].ToLower(), (argParts.Length > 1 ? argParts[1] : ""));
             }
 
-            
-            if (!ValidConfig) return;
+            if (!ValidConfig)
+            {
+                return (int)RemoteSessionExitCode.InvalidConfiguration;
+            }
 
-            // Use a slight delay before continuing to ensure pipes are created by the myrtille.services
-            Thread.Sleep(600);
-
-            
             pipeMessaging = new PipeMessaging(RemoteSessionID);
 
-            // Connect to myrtille input and update pipes
-            if (pipeMessaging.CreateCommunicationPipes())
+            if (pipeMessaging.ConnectPipes())
             {
                 pipeMessaging.OnMessageReceivedEvent += PipeMessaging_OnMessageReceivedEvent;
+
                 try
                 {
-                    // Read input from pipes
-                    pipeMessaging.ReadInputPipes();
+                    pipeMessaging.ReadInputsPipe();
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    if(ConsoleOutput)
+                    if (ConsoleOutput)
                     {
-                        Console.WriteLine(ex.Message);
+                        Console.WriteLine(e.Message);
                     }
+
+                    Trace.TraceError("SSH error, remote session {0} ({1})", RemoteSessionID, e);
+
+                    if (e is SshAuthenticationException)
+                    {
+                        if (e.Message == "Missing Username")
+                            return (int)RemoteSessionExitCode.MissingUserName;
+                        else if (e.Message == "Missing Password")
+                            return (int)RemoteSessionExitCode.MissingPassword;
+                        else
+                            return (int)RemoteSessionExitCode.InvalidCredentials;
+                    }
+
+                    return (int)RemoteSessionExitCode.Unknown;
                 }
                 finally
                 {
+                    pipeMessaging.ClosePipes();
                     DisconnectSSHClient();
                 }
             }
 
+            return (int)RemoteSessionExitCode.Success;
         }
 
         /// <summary>
-        /// Handle messages from input pipe
+        /// Handle commands from inputs pipe
         /// </summary>
         /// <param name="command"></param>
         /// <param name="data"></param>
-        private static void PipeMessaging_OnMessageReceivedEvent(string command, string data)
+        private static void PipeMessaging_OnMessageReceivedEvent(RemoteSessionCommand command, string data = "")
         {
-            switch((RemoteSessionCommand)RemoteSessionCommandMapping.FromPrefix[command])
+            switch (command)
             {
                 case RemoteSessionCommand.RequestFullscreenUpdate:
                     WriteOutput(command, data);
-                    CheckSSHClientState();
+                    ClearOrExitTerminal(data);
                     break;
                 case RemoteSessionCommand.SendUserName:
                     WriteOutput(command, data);
@@ -99,21 +125,49 @@ namespace Myrtille.SSH
                     ServerAddress = data;
                     break;
                 case RemoteSessionCommand.SendUserPassword:
-                    WriteOutput(command, "Credentials received, connecting to remote host");
-                    ConnectSSHClient(data);
+                    WriteOutput(command, "Credentials received");
+                    Password = data;
                     break;
-                case RemoteSessionCommand.CloseRdpClient:
-                    WriteOutput(command, "Disconnect from remote host");
+                case RemoteSessionCommand.ConnectClient:
+                    WriteOutput(command, "Connecting to remote host");
+                    ConnectSSHClient();
+                    break;
+                case RemoteSessionCommand.CloseClient:
+                    WriteOutput(command, "Disconnecting from remote host");
                     pipeMessaging.ClosePipes();
                     break;
-                case RemoteSessionCommand.SendKeyScancode:
-                    WriteOutput(command, data);
-                    HandleKeyboardInput(data,true);
-                    break;
                 case RemoteSessionCommand.SendKeyUnicode:
-                    WriteOutput(command, data);
-                    HandleKeyboardInput(data,false);
+                    WriteOutput(command, string.IsNullOrEmpty(data) ? "," : data);
+                    HandleKeyboardInput(string.IsNullOrEmpty(data) ? "," : data);
                     break;
+                case RemoteSessionCommand.SetStatMode:
+                case RemoteSessionCommand.SetDebugMode:
+                case RemoteSessionCommand.SetCompatibilityMode:
+                    WriteOutput(command, "Reloading terminal");
+                    pipeMessaging.SendUpdatesPipeMessage("reload");
+                    break;
+            }
+        }
+
+        private static void ClearOrExitTerminal(string fsuType)
+        {
+            // initial FSU (page (re)load)
+            if (fsuType == "initial")
+            {
+                // cancel the current command line, if any
+                SendSSHClientData(Encoding.UTF8.GetBytes("\u001b"));    // esc (27)
+
+                // give some time to process data
+                Thread.Sleep(1000);
+
+                // clear the terminal
+                SendSSHClientData(Encoding.UTF8.GetBytes("cls\r"));     // cls + enter (13)
+            }
+            // periodical or adaptive FSU
+            // close the ssh client if disconnected
+            else
+            {
+                CheckSSHClientState();
             }
         }
 
@@ -128,31 +182,29 @@ namespace Myrtille.SSH
             {
                 shellStream.Write(byteData, 0, byteData.Length);
                 shellStream.Flush();
-
             }
             catch (Exception e)
             {
-                pipeMessaging.ClosePipes();
-                DisconnectSSHClient();
+                Trace.TraceError("Failed to send data to ssh client, remote session {0} ({1})", RemoteSessionID, e);
+                throw;
             }
         }
 
         /// <summary>
         /// Send data to ssh client
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="byteData"></param>
         private static void SendSSHClientData(byte byteData)
         {
             try
             {
                 shellStream.WriteByte(byteData);
                 shellStream.Flush();
-                
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                pipeMessaging.ClosePipes();
-                DisconnectSSHClient();
+                Trace.TraceError("Failed to send data to ssh client, remote session {0} ({1})", RemoteSessionID, e);
+                throw;
             }
         }
 
@@ -168,9 +220,9 @@ namespace Myrtille.SSH
                     client.Disconnect();
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-
+                Trace.TraceError("Failed to disconnect ssh client, remote session {0} ({1})", RemoteSessionID, e);
             }
             finally
             {
@@ -182,43 +234,59 @@ namespace Myrtille.SSH
         /// <summary>
         /// Connect SSH client to remote host
         /// </summary>
-        /// <param name="password"></param>
-        private static void ConnectSSHClient(string password)
+        private static void ConnectSSHClient()
         {
             try
             {
-                var connectionInfo = new ConnectionInfo(ServerAddress, UserName, new PasswordAuthenticationMethod(UserName, password));
-                connectionInfo.Encoding = Encoding.Unicode;
+                if (string.IsNullOrEmpty(UserName))
+                    throw new SshAuthenticationException("Missing Username");
+
+                if (string.IsNullOrEmpty(Password))
+                    throw new SshAuthenticationException("Missing Password");
+
+                var connectionInfo = new ConnectionInfo(ServerAddress, UserName, new PasswordAuthenticationMethod(UserName, Password));
+                connectionInfo.Encoding = Encoding.UTF8;
 
                 client = new SshClient(connectionInfo);
                 client.Connect();
-                
+
                 shellStream = client.CreateShellStream("xterm", Columns, Rows, Width, Height, 1024);
                 shellStream.DataReceived += ShellStream_DataReceived;
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 if (ConsoleOutput)
                     Console.WriteLine(e.Message);
-                //TODO: logging here
+
+                Trace.TraceError("Failed to connect ssh client, remote session {0} ({1})", RemoteSessionID, e);
+                throw;
             }
             finally
             {
-                if(!client.IsConnected)
+                if (client != null && !client.IsConnected)
                 {
-                    pipeMessaging.ClosePipes();
                     client.Dispose();
+                    pipeMessaging.ClosePipes();
                 }
             }
         }
 
         /// <summary>
-        /// Receive data from SSH client and send to update pipe for processing my web client
+        /// Receive data from SSH client and send to updates pipe for processing by web client
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private static void ShellStream_DataReceived(object sender, Renci.SshNet.Common.ShellDataEventArgs e)
+        private static void ShellStream_DataReceived(object sender, ShellDataEventArgs e)
         {
-            pipeMessaging.SendUpdatePipeMessage(e.Data);
+            try
+            {
+                pipeMessaging.SendUpdatesPipeMessage("term|" + Encoding.UTF8.GetString(e.Data));
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to process terminal updates, remote session {0} ({1})", RemoteSessionID, exc);
+                pipeMessaging.ClosePipes();
+            }
         }
 
         /// <summary>
@@ -228,15 +296,28 @@ namespace Myrtille.SSH
         {
             try
             {
-                pipeMessaging.LastFullUpdate = DateTime.Now;
-                if(!client.IsConnected)
+                if (client != null && !client.IsConnected)
                 {
                     pipeMessaging.ClosePipes();
-
                 }
-            }catch(Exception e)
+                else
+                {
+                    try
+                    {
+                        // dummy write to see if the shellstream is still opened (closed after an exit command, for example)
+                        shellStream.Write(null);
+                        shellStream.Flush();
+                    }
+                    catch
+                    {
+                        pipeMessaging.ClosePipes();
+                    }
+                }
+            }
+            catch (Exception e)
             {
-
+                Trace.TraceError("Failed to check ssh client state, remote session {0} ({1})", RemoteSessionID, e);
+                throw;
             }
         }
         #endregion
@@ -246,24 +327,9 @@ namespace Myrtille.SSH
         /// Handle received keyboard input and send to ssh client
         /// </summary>
         /// <param name="keyCode"></param>
-        private static void HandleKeyboardInput(string keyCode, bool isScanCode)
+        private static void HandleKeyboardInput(string keyCode)
         {
-            var keyMapping = keyCode.Split('-');
-            if (keyMapping[1].Equals("0"))
-            {
-                int intKeyCode = int.Parse(keyMapping[0]);
-                if (isScanCode && KeyboardIgnoreKeys.IgnoreKeys.Contains(intKeyCode))
-                    return;
-
-                if (intKeyCode > 1000 && intKeyCode < 2000)
-                {
-                    SendSSHClientData(new byte[] { 27, 91, (byte)(intKeyCode - 1000) });
-                }
-                else
-                {
-                    SendSSHClientData((byte)intKeyCode);
-                }
-            }
+            SendSSHClientData(Encoding.UTF8.GetBytes(keyCode));
         }
 
         /// <summary>
@@ -271,22 +337,25 @@ namespace Myrtille.SSH
         /// </summary>
         /// <param name="command"></param>
         /// <param name="data"></param>
-        private static void WriteOutput(string command, string data)
+        private static void WriteOutput(RemoteSessionCommand command, string data)
         {
-            if (ConsoleOutput) Console.WriteLine("CMD: {0}, DATA: {1}", command, data);
+            var output = string.Format("CMD: {0}, DATA: {1}", (string)RemoteSessionCommandMapping.ToPrefix[command], data);
+            if (ConsoleOutput) Console.WriteLine(output);
+            if (LoggingEnabled) Trace.TraceInformation(output);
         }
         #endregion
 
         #region configuration
         private static string UserName { get; set; } // Username use to create SSH connection
+        private static string Password { get; set; } // Password use to create SSH connection
         private static string ServerAddress { get; set; } //Host to establish SSH connection with
         private static string RemoteSessionID { get; set; } //Myrtille session ID used for pipe messaging
         private static bool LoggingEnabled { get; set; } //Myrtille logging parameter
         private static bool ConsoleOutput { get; set; } //Output comms to console window
-        private static uint Height { get; set; } //Height of ssh termainal
+        private static uint Height { get; set; } //Height of ssh terminal
         private static uint Width { get; set; } //Width of SSH terminal
-        private static uint Columns { get { return (Width / 10); }} //Number of columns within the terminal window
-        private static uint Rows { get{return (Height / 17);}} //Number of rows within the terminal window
+        private static uint Columns { get { return (Width / 10); } } //Number of columns within the terminal window
+        private static uint Rows { get { return (Height / 17); } } //Number of rows within the terminal window
 
         /// <summary>
         /// Indicate all command line parameters for correct operation have been received.
@@ -309,7 +378,7 @@ namespace Myrtille.SSH
         /// <param name="value"></param>
         private static void parseCommandLineArg(string arg, string value)
         {
-            switch(arg)
+            switch (arg)
             {
                 case "/myrtille-sid":
                     RemoteSessionID = value.Trim();

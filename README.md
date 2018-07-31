@@ -14,9 +14,10 @@ More information in the DOCUMENTATION.md file.
 
 ## Features
 - HTTP(S) to RDP gateway
-- HTTP(S) to SSH gateway
+- HTTP(S) to SSH gateway (new in version 2.0.0!)
 - Multifactor Authentication
-- Active Directory integration
+- Active Directory integration (hosts management)
+- Session sharing (collaborative mode)
 - Start remote application from URL
 - File transfer (local and roaming accounts)
 - PDF Virtual Printer
@@ -31,7 +32,7 @@ More information in the DOCUMENTATION.md file.
 ## Requirements
 - Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required.
 - Gateway (myrtille): IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+
-- RDP server: any RDP enabled computer (preferably Windows Server but can also be Windows XP, 7, 8, 10)
+- RDP server: any RDP enabled machine (preferably Windows Server but can also be Windows XP, 7, 8, 10 or Linux XRDP server)
 
 ## Resources
 Myrtille does support multiple connections/tabs in cookieless session mode. From version 1.9.0, this mode is disabled by default (OWASP recommendation) but can still be enabled, if required (into web.config, carefully read comments there).
@@ -51,16 +52,16 @@ All releases here: https://github.com/cedrozor/myrtille/releases
 See DOCUMENTATION.md for more details.
 
 ## Usage
-Once Myrtille is installed on your server, you can use it at http://myserver/myrtille. Set the rdp server address, user domain (if any), name and password then click "Connect!" to log in. "Disconnect" to log out.
+Once Myrtille is installed on your server, you can use it at http://myserver/myrtille. Set the rdp or ssh server address, user domain (if any, for rdp), name and password then click "Connect!" to log in. "Disconnect" to log out.
 
 Multifactor Authentication and Active Directory integration (Enterprise Mode) are disabled by default. Please read documentation for activation of these features.
 
-You can also connect a remote desktop and **start a program automatically from an url** (see DOCUMENTATION.md). From version 1.5.0, Myrtille does support encrypted credentials (aka "password 51" into .rdp files) so the urls can be distributed to third parties without compromising on security.
+You can connect a remote desktop and **start a program automatically from an url** (see DOCUMENTATION.md). From version 1.5.0, Myrtille does support encrypted credentials (aka "password 51" into .rdp files) so the urls can be distributed to third parties without compromising on security.
 
-The installer creates a self-signed certificate for https://myserver/myrtille. Like for all self-signed certificates, you will have to add a security exception into your browser (just ignore the warning message and proceed to the website). **Usage of https is recommended** to secure your remote connection.
+The installer provides the option to create or not a self-signed certificate for https://myserver/myrtille. Like for all self-signed certificates, you will have to add a security exception into your browser (just ignore the warning message and proceed to the website). **Usage of https is recommended** to secure your remote connection.
 Of course, you can avoid that by installing a certificate provided by a trusted Certification Authority (see DOCUMENTATION.md).
 
-If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (logs are saved under the Myrtille "log" folder). *Hidden from version 1.5.0 (can be enabled into default.css)*.
+If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (most traces are disabled (commented) into the .js files but can be enabled (uncommented) as needed). *Hidden from version 1.5.0 (can be enabled into default.css)*.
 
 You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall). *Hidden (autodetected) from version 1.5.0 (can be enabled into default.css)*.
 
@@ -85,8 +86,8 @@ Myrtille uses the following licensed software:
 - Redirection Port Monitor: RedMon 1.9 (http://pages.cs.wisc.edu/~ghost/redmon/index.htm), licensed under GPL v3 license.
 - Postscript Printer Drivers: Microsoft Postscript Printer Driver V3 (https://docs.microsoft.com/en-us/windows-hardware/drivers/print/microsoft-postscript-printer-driver), copyright (c) Microsoft Corporation. All rights reserved.
 - Postscript and PDF interpreter/renderer: Ghostscript 9.23 (https://www.ghostscript.com/download/gsdnld.html), licensed under AGPL v3 license.
-- SSH: SSH.NET 2016.1.0 (https://github.com/sshnet/SSH.NET/), licensed under MIT License (MIT)
-- HTML Terminal Emulator: xtermjs, (https://xtermjs.org/)
+- SSH client: SSH.NET 2016.1.0 (https://github.com/sshnet/SSH.NET/), licensed under MIT License.
+- HTML Terminal Emulator: xtermjs, (https://github.com/xtermjs/xterm.js/), licensed under MIT License.
 
 See DISCLAIMERS.md file.
 

@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Web;
 using System.Web.UI;
 
 namespace Myrtille.Web
@@ -39,17 +38,17 @@ namespace Myrtille.Web
         {
             try
             {
-                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                if (Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
                     throw new NullReferenceException();
 
-                _remoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
+                _remoteSession = (RemoteSession)Session[HttpSessionStateVariables.RemoteSession.ToString()];
 
                 try
                 {
                     Application.Lock();
 
                     // if remote session sharing is enabled, only the remote session owner can share it
-                    if (!_remoteSession.AllowSessionSharing || !HttpContext.Current.Session.SessionID.Equals(_remoteSession.OwnerSessionID))
+                    if (!_remoteSession.AllowSessionSharing || !Session.SessionID.Equals(_remoteSession.OwnerSessionID))
                     {
                         Response.Redirect("~/", true);
                     }

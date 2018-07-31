@@ -24,6 +24,7 @@ using System.IO;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
+using System.Xml;
 using Myrtille.Helpers;
 
 namespace Myrtille.Web
@@ -69,11 +70,53 @@ namespace Myrtille.Web
                     IISHelper.CreateIISApplication("/Myrtille", Path.GetFullPath(Context.Parameters["targetdir"]), "MyrtilleAppPool");
                 }
 
-                // create a self signed certificate
-                var cert = CertificateHelper.CreateSelfSignedCertificate(Environment.MachineName, "Myrtille self-signed certificate");
+                // load config
+                var config = new XmlDocument();
+                var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Web.config");
+                config.Load(configPath);
 
-                // bind it to the default website
-                IISHelper.BindCertificate(cert);
+                var navigator = config.CreateNavigator();
+
+                // services port
+                int servicesPort = 8080;
+                if (!string.IsNullOrEmpty(Context.Parameters["SERVICESPORT"]))
+                {
+                    int.TryParse(Context.Parameters["SERVICESPORT"], out servicesPort);
+                }
+
+                if (servicesPort != 8080)
+                {
+                    // client endpoints
+                    var client = XmlTools.GetNode(navigator, "/configuration/system.serviceModel/client");
+                    if (client != null)
+                    {
+                        client.InnerXml = client.InnerXml.Replace("8080", servicesPort.ToString());
+                    }
+                }
+
+                // ssl certificate
+                if (!string.IsNullOrEmpty(Context.Parameters["SSLCERT"]))
+                {
+                    // create a self signed certificate
+                    var cert = CertificateHelper.CreateSelfSignedCertificate(Environment.MachineName, "Myrtille self-signed certificate");
+
+                    // bind it to the default website
+                    IISHelper.BindCertificate(cert);
+                }
+
+                // pdf printer
+                if (string.IsNullOrEmpty(Context.Parameters["PDFPRINTER"]))
+                {
+                    // app settings
+                    var appSettings = XmlTools.GetNode(navigator, "/configuration/appSettings");
+                    if (appSettings != null)
+                    {
+                        XmlTools.WriteConfigKey(appSettings, "AllowPrintDownload", false.ToString().ToLower());
+                    }
+                }
+
+                // save config
+                config.Save(configPath);
 
                 // add write permission to the targetdir "log" folder for MyrtilleAppPool, so that Myrtille.Web can save logs into it
                 PermissionsHelper.AddDirectorySecurity(
@@ -134,7 +177,7 @@ namespace Myrtille.Web
                     IISHelper.DeleteIISApplicationPool("MyrtilleAppPool");
                 }
 
-                // retrieve the myrtille self signed certificate
+                // retrieve the myrtille self signed certificate, if exists
                 var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 store.Open(OpenFlags.ReadWrite);
                 var certs = store.Certificates.Find(X509FindType.FindByIssuerName, Environment.MachineName, false);

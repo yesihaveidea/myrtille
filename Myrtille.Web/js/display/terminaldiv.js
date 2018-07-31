@@ -20,11 +20,14 @@
 /*** Terminal                                                                                                                                                                                        ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function TerminalDivs(config, dialog, display) {
+function TerminalDiv(config, dialog, display)
+{
     var term = null;
     
-    this.init = function () {
-        try {
+    this.init = function(network, user)
+    {
+        try
+        {
             var div = document.createElement('div');
             div.id = 'terminalDiv';
             div.style.width = config.getScaleDisplay() ? display.getBrowserWidth() - display.getHorizontalOffset() : config.getDisplayWidth() + 'px';
@@ -33,40 +36,44 @@ function TerminalDivs(config, dialog, display) {
             display.getDisplayDiv().appendChild(div);
 
             Terminal.applyAddon(fit);
-            term = new Terminal();
+            term = new Terminal(config, dialog, display, network, user);
             term.open(div);
             term.fit();
-
+            term.focus();
         }
-        catch (exc) {
-            dialog.showDebug('terminal div init error: ' + exc.message + ', falling back to divs');
-            config.setDisplayMode(config.getDisplayModeEnum().DIV);
-            return;
-        }
-
-       
+        catch (exc)
+        {
+            dialog.showDebug('terminal div init error: ' + exc.message);
+            throw exc;
+        }       
     };
 
-    this.writeTerminal = function (data) {
-        try {
+    this.writeTerminal = function(data)
+    {
+        try
+        {
+            //dialog.showDebug('terminal write: ' + data);
             term.write(data);
         }
-        catch (exc) {
-            dialog.showDebug('terminal div  write terminal error: ' + exc.message);
+        catch (exc)
+        {
+            dialog.showDebug('terminal div write error: ' + exc.message);
             throw exc;
         }
     };
 
     this.closeTerminal = function()
     {
-        try{
+        try
+        {
+            //dialog.showDebug('terminal close');
             term.clear();
             term.destroy();
-
         }
-        catch (exc) {
+        catch (exc)
+        {
             dialog.showDebug('terminal div close error: ' + exc.message);
             throw exc;
         }
-    }
+    };
 }

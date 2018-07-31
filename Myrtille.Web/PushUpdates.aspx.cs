@@ -17,6 +17,8 @@
 */
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Web;
 using System.Web.UI;
 
@@ -25,7 +27,7 @@ namespace Myrtille.Web
     public partial class PushUpdates : Page
     {
         /// <summary>
-        /// push image(s) updates(s) (region(s) or fullscreen(s)) from the rdp session to the browser
+        /// push image(s) updates(s) (region(s) or fullscreen(s)) from the remote session to the browser
         /// this is done through a long-polling request (also known as reverse ajax or ajax comet) issued by a zero sized iframe
         /// </summary>
         /// <param name="sender"></param>
@@ -61,34 +63,56 @@ namespace Myrtille.Web
 
                     while (remainingTime > 0)
                     {
-                        // reload page
-                        if (remoteSession.Manager.ReloadPage)
-                        {
-                            Response.Write("<script>parent.location.href = parent.location.href;</script>");
-                            Response.Flush();
-                            remoteSession.Manager.ReloadPage = false;
-                            break;
-                        }
-                        // remote clipboard
-                        else if (remoteSession.Manager.ClipboardAvailable)
-                        {
-                            Response.Write(string.Format("<script>parent.showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', '{0}', true);</script>", remoteSession.Manager.ClipboardText));
-                            Response.Flush();
-                            remoteSession.Manager.ClipboardAvailable = false;
-                        }
-                        // print job
-                        else if (remoteSession.Manager.PrintJobAvailable)
-                        {
-                            Response.Write(string.Format("<script>parent.downloadPdf('{0}');</script>", remoteSession.Manager.PrintJobName));
-                            Response.Flush();
-                            remoteSession.Manager.PrintJobAvailable = false;
-                        }
                         // disconnected session
-                        else if (remoteSession.State == RemoteSessionState.Disconnected)
+                        if (remoteSession.State == RemoteSessionState.Disconnected)
                         {
                             Response.Write("<script>parent.location.href = parent.getConfig().getHttpServerUrl();</script>");
                             Response.Flush();
                             break;
+                        }
+
+                        // message queue
+                        List<RemoteSessionMessage> messageQueue = null;
+                        lock (remoteSession.Manager.MessageQueues.SyncRoot)
+                        {
+                            if (!remoteSession.Manager.MessageQueues.ContainsKey(Session.SessionID))
+                            {
+                                remoteSession.Manager.MessageQueues.Add(Session.SessionID, new List<RemoteSessionMessage>());
+                            }
+                            messageQueue = (List<RemoteSessionMessage>)remoteSession.Manager.MessageQueues[Session.SessionID];
+                        }
+
+                        while (messageQueue.Count > 0)
+                        {
+                            var message = messageQueue[0];
+
+                            switch (message.Type)
+                            {
+                                case MessageType.PageReload:
+                                    Response.Write("<script>parent.location.href = parent.location.href;</script>");
+                                    Response.Flush();
+                                    break;
+
+                                case MessageType.RemoteClipboard:
+                                    Response.Write(string.Format("<script>parent.showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', '{0}', true);</script>", message.Text));
+                                    Response.Flush();
+                                    break;
+
+                                case MessageType.TerminalOutput:
+                                    Response.Write(string.Format("<script>parent.writeTerminal('{0}');</script>", message.Text.Replace(@"\", @"\\").Replace("\n", @"\n").Replace("'", @"\'")));
+                                    Response.Flush();
+                                    break;
+
+                                case MessageType.PrintJob:
+                                    Response.Write(string.Format("<script>parent.downloadPdf('{0}');</script>", message.Text));
+                                    Response.Flush();
+                                    break;
+                            }
+
+                            lock (((ICollection)messageQueue).SyncRoot)
+                            {
+                                messageQueue.RemoveAt(0);
+                            }
                         }
 
                         // retrieve the next update, if available; otherwise, wait it for the remaining time

@@ -151,12 +151,11 @@
       <DependentUpon>SocketHandler.ashx</DependentUpon>
     </Compile>
     <Compile Include="src\EnterpriseServiceClient.cs" />
-    <Compile Include="src\JSKeyCodeToSSHBashShellUniCodeMapping.cs" />
-    <Compile Include="src\JSKeyCodeToSSHBashShellScanCodeMapping.cs" />
     <Compile Include="src\PrinterServiceClient.cs" />
     <Compile Include="src\FileStorageClient.cs" />
     <Compile Include="src\MFAAuthenticationClient.cs" />
     <Compile Include="src\RemoteSession.cs" />
+    <Compile Include="src\RemoteSessionMessage.cs" />
     <Compile Include="src\RemoteSessionImage.cs" />
     <Compile Include="src\RemoteSessionPipes.cs" />
     <Compile Include="src\RemoteSessionProcessClient.cs" />
@@ -210,6 +209,7 @@
   <ItemGroup>
     <Content Include="css\xterm.css" />
     <Content Include="img\bandwidthTest.png" />
+    <Content Include="img\icons8-menu-horizontal-21.png" />
     <Content Include="img\myrtille.png" />
     <Content Include="img\RemoteDesktop.png" />
     <Content Include="img\RemoteSSH.png" />
@@ -217,7 +217,7 @@
     <Content Include="js\config.js" />
     <Content Include="js\display\canvas.js" />
     <Content Include="js\display\divs.js" />
-    <Content Include="js\display\terminaldivs.js" />
+    <Content Include="js\display\terminaldiv.js" />
     <Content Include="js\network\websocket.js" />
     <Content Include="js\user.js" />
     <Content Include="js\network.js" />
@@ -304,7 +304,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>2323</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost/Myrtille</IISUrl>
+          <IISUrl>http://localhost/myrtille</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

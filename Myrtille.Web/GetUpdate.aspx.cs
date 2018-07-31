@@ -18,14 +18,13 @@
 
 using System;
 using System.Web.UI;
-using Myrtille.Helpers;
 
 namespace Myrtille.Web
 {
     public partial class GetUpdate : Page
     {
         /// <summary>
-        /// retrieve an image update (region or fullscreen) from the rdp session and send it to the browser
+        /// retrieve an image update (region or fullscreen) from the remote session and send it to the browser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -53,13 +52,6 @@ namespace Myrtille.Web
 
                     // retrieve image data
                     var img = remoteSession.Manager.GetCachedUpdate(imgIdx);
-
-                    // if the image isn't available (removed from cache?), request a fullscreen update (resync display)
-                    if (img == null)
-                    {
-                        remoteSession.Manager.SendCommand(RemoteSessionCommand.RequestFullscreenUpdate);
-                    }
-
                     var imgData = img != null ? img.Data : null;
                     if (imgData != null && imgData.Length > 0)
                     {

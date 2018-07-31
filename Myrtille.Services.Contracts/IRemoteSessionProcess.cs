@@ -24,11 +24,13 @@ namespace Myrtille.Services.Contracts
     public interface IRemoteSessionProcess
     {
         /// <summary>
-        /// start the rdp client process
+        /// start the host client process
         /// </summary>
         [OperationContract]
         void StartProcess(
             int remoteSessionId,
+            HostTypeEnum HostType,
+            SecurityProtocolEnum securityProtocol,
             string serverAddress,
             string userDomain,
             string userName,
@@ -36,19 +38,18 @@ namespace Myrtille.Services.Contracts
             int clientWidth,
             int clientHeight,
             bool allowRemoteClipboard,
-            SecurityProtocolEnum securityProtocol,
-            HostTypeEnum HostType);
+            bool allowPrintDownload);
 
         /// <summary>
-        /// stop the rdp client process
-        /// CAUTION! in order to close the rdp session, killing the client process is a bit harsh...
-        /// better ask it to exit normally, from the remote session manager, using a close rdp command
+        /// stop the host client process
+        /// CAUTION! in order to close the host session, killing the client process is a bit harsh...
+        /// better ask it to exit normally, from the remote session manager, using a close command
         /// </summary>
         [OperationContract]
         void StopProcess();
 
         /// <summary>
-        /// retrieve the user account the rdp client process is running on
+        /// retrieve the user account the host client process is running on
         /// </summary>
         [OperationContract]
         string GetProcessIdentity();

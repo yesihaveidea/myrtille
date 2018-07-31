@@ -18,7 +18,6 @@
 
 using System;
 using System.Threading;
-using System.Web;
 using System.Web.UI;
 using Myrtille.Services.Contracts;
 
@@ -29,7 +28,7 @@ namespace Myrtille.Web
         private EnterpriseServiceClient _enterpriseClient;
         private EnterpriseSession _enterpriseSession;
         private long? _hostId = null;
-        private string _hostType = null;
+        private HostTypeEnum _hostType;
 
         /// <summary>
         /// page init
@@ -54,10 +53,10 @@ namespace Myrtille.Web
         {
             try
             {
-                if (HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] == null)
+                if (Session[HttpSessionStateVariables.EnterpriseSession.ToString()] == null)
                     throw new NullReferenceException();
 
-                _enterpriseSession = (EnterpriseSession)HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
+                _enterpriseSession = (EnterpriseSession)Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
 
                 try
                 {
@@ -66,13 +65,9 @@ namespace Myrtille.Web
                         Response.Redirect("~/", true);
                     }
 
-                    if (Request["hostType"] != null)
+                    if (Request["hostType"] == null || !Enum.TryParse(Request["hostType"], out _hostType))
                     {
-                        _hostType = Request["hostType"];
-                    }
-                    else
-                    {
-                        _hostType = "RDP";
+                        _hostType = HostTypeEnum.RDP;
                     }
 
                     // retrieve the host, if any (create if empty)
@@ -95,11 +90,12 @@ namespace Myrtille.Web
                                     var host = _enterpriseClient.GetHost(_hostId.Value, _enterpriseSession.SessionID);
                                     if (host != null)
                                     {
+                                        _hostType = host.HostType;
+                                        hostType.Value = _hostType.ToString();
                                         hostName.Value = host.HostName;
                                         hostAddress.Value = host.HostAddress;
                                         groupsAccess.Value = host.DirectoryGroups;
                                         securityProtocol.SelectedIndex = (int)host.Protocol;
-                                        _hostType = host.HostType.ToString();
                                         promptCredentials.Checked = host.PromptForCredentials;
                                         startProgram.Value = host.StartRemoteProgram;
                                     }
@@ -119,8 +115,8 @@ namespace Myrtille.Web
                         deleteHost.Disabled = true;
                     }
 
-                    rdpSecurityInput.Visible = (_hostType == "RDP");
-                    startProgramInput.Visible = (_hostType == "RDP");
+                    rdpSecurityInput.Visible = _hostType == HostTypeEnum.RDP;
+                    startProgramInput.Visible = _hostType == HostTypeEnum.RDP;
                 }
                 catch (ThreadAbortException)
                 {
@@ -150,16 +146,16 @@ namespace Myrtille.Web
                 var enterpriseHost = new EnterpriseHostEdit
                 {
                     HostID = _hostId ?? 0,
+                    HostType = _hostType,
                     HostName = hostName.Value,
                     HostAddress = hostAddress.Value,
                     DirectoryGroups = groupsAccess.Value,
                     Protocol = (SecurityProtocolEnum)securityProtocol.SelectedIndex,
-                    HostType = _hostType,
                     StartRemoteProgram = startProgram.Value,
                     PromptForCredentials = promptCredentials.Checked
                 };
 
-                if(_hostId != null)
+                if (_hostId != null)
                 {
                     _enterpriseClient.UpdateHost(enterpriseHost, _enterpriseSession.SessionID);
                 }
@@ -169,7 +165,7 @@ namespace Myrtille.Web
                 }
 
                 // refresh the hosts list
-                Response.Redirect(Request.RawUrl + (Request.RawUrl.Contains("?") ? "&" : "?") + "edit=success");
+                Response.Redirect(Request.RawUrl + (Request.RawUrl.Contains("?") ? "&" : "?") + "edit=success" + (_hostId != null ? string.Format("&hostType={0}", _hostType) : string.Empty));
             }
             catch (ThreadAbortException)
             {
@@ -198,7 +194,11 @@ namespace Myrtille.Web
                 _enterpriseClient.DeleteHost(_hostId.Value, _enterpriseSession.SessionID);
 
                 // refresh the hosts list
-                Response.Redirect(Request.RawUrl + (Request.RawUrl.Contains("?") ? "&" : "?") + "edit=success");
+                Response.Redirect(Request.RawUrl + (Request.RawUrl.Contains("?") ? "&" : "?") + "edit=success" + string.Format("&hostType={0}", _hostType));
+            }
+            catch (ThreadAbortException)
+            {
+                // occurs because the response is ended after redirect
             }
             catch (Exception exc)
             {

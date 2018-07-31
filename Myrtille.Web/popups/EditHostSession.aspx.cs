@@ -18,7 +18,6 @@
 
 using System;
 using System.Threading;
-using System.Web;
 using System.Web.UI;
 using Myrtille.Services.Contracts;
 
@@ -53,10 +52,10 @@ namespace Myrtille.Web
         {
             try
             {
-                if (HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] == null)
+                if (Session[HttpSessionStateVariables.EnterpriseSession.ToString()] == null)
                     throw new NullReferenceException();
 
-                _enterpriseSession = (EnterpriseSession)HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
+                _enterpriseSession = (EnterpriseSession)Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
 
                 try
                 {

@@ -1,7 +1,19 @@
-﻿2018-05-28 Verions 2.0.0 (beta)
-	SSH terminal support
-	Include prompt for user credentials in enterprise mode
-	fix login failure when passing domain in enterprise mode if IP is used instead of FQDN
+﻿2018-07-31 Version 2.0.0 (stable)
+	Resynced FreeRDP (FQDN hotfix, introduced into myrtille 1.7.0, is still active... wfreerdp need some love :/)
+	the RDP security protocol (NLA, TLS, RDP, etc.) can now be selected from the login screen (RDP for compatibility and interactive logon, or in case of NLA issue; see https://github.com/cedrozor/myrtille/issues/116)
+	SSH terminal support (thanks Paul)
+	removed any RDP references on the gateway to make it fully protocol agnostic (support of any remote access protocol)
+	file transfer and print download can now be disabled from web config (along with remote clipboard and session sharing)
+	when sharing a remote session, guests now can't interact with it (they are just spectators)
+	included prompt for user credentials in enterprise mode
+	fixed login failure when passing domain in enterprise mode if IP is used instead of FQDN
+	fixed some css in enterprise mode (under Firefox)
+	websockets are now buffered for optimal performance on high latency / low bandwidth networks (thanks SieldP)
+	re-enabled stat button, which could help to diagnose connection issues (shows latency, bandwidth usage, etc.)
+	added a small icon on top of the screen to toggle the toolbar while connected (thanks windylea)
+	improved error messages in case of connection failure
+	some refactoring
+
 ﻿2018-06-09 Version 1.9.1 (stable)
 	reinstated the hotfix removed into version 1.9.0, forcing IP connection when using FQDN; fact is, some people still have issues even with openssl 1.1.x (unable to reproduce, may depend on a specific configuration). more details here: https://github.com/FreeRDP/FreeRDP/issues/4525#issuecomment-380635647
 	improved performance mitigation in case of high latency network

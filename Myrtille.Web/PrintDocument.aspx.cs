@@ -18,7 +18,6 @@
 
 using System;
 using System.Threading;
-using System.Web;
 using System.Web.UI;
 using Myrtille.Helpers;
 
@@ -52,10 +51,10 @@ namespace Myrtille.Web
         {
             try
             {
-                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                if (Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
                     throw new NullReferenceException();
 
-                _remoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
+                _remoteSession = (RemoteSession)Session[HttpSessionStateVariables.RemoteSession.ToString()];
 
                 // retrieve the pdf file
                 if (!string.IsNullOrEmpty(Request["name"]))
@@ -75,7 +74,7 @@ namespace Myrtille.Web
                     }
                     catch (ThreadAbortException)
                     {
-                        // occurs because the response is ended after sending the file content
+                        // occurs because the response is ended after sending the pdf
                     }
                     catch (Exception exc)
                     {
@@ -87,6 +86,10 @@ namespace Myrtille.Web
                         _printerServiceClient.DeletePdfFile(_remoteSession.Id, Request["name"]);
                     }
                 }
+            }
+            catch (ThreadAbortException)
+            {
+                // occurs because the response is ended after deleting the pdf
             }
             catch (Exception exc)
             {

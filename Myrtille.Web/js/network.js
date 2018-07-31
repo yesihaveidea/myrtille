@@ -41,6 +41,7 @@ function Network(config, dialog, display)
 
     // average roundtrip duration
     var roundtripDurationAvg = null;
+    this.getRoundtripDurationAvg = function() { return roundtripDurationAvg == null ? 0 : roundtripDurationAvg; };
 
     // roundtrip duration warning
     var roundtripDurationWarning = false;
@@ -56,6 +57,7 @@ function Network(config, dialog, display)
     var bandwidthSizeInterval = null;
 
     // display tweaking
+    var originalImageEncoding = config.getImageEncoding();
     var originalImageQuality = config.getImageQuality();
     var originalImageQuantity = config.getImageQuantity();
 
@@ -72,7 +74,7 @@ function Network(config, dialog, display)
         SEND_USER_NAME: { value: 2, text: 'USR' },
         SEND_USER_PASSWORD: { value: 3, text: 'PWD' },
         SEND_START_PROGRAM: { value: 4, text: 'PRG' },
-        CONNECT_RDP_CLIENT: { value: 5, text: 'CON' },
+        CONNECT_CLIENT: { value: 5, text: 'CON' },
 
         // browser
         SEND_BROWSER_RESIZE: { value: 6, text: 'RSZ' },
@@ -99,7 +101,7 @@ function Network(config, dialog, display)
         SET_IMAGE_QUANTITY: { value: 21, text: 'QNT' },
         REQUEST_FULLSCREEN_UPDATE: { value: 22, text: 'FSU' },
         REQUEST_REMOTE_CLIPBOARD: { value: 23, text: 'CLP' },
-        CLOSE_RDP_CLIENT: { value: 24, text: 'CLO' }
+        CLOSE_CLIENT: { value: 24, text: 'CLO' }
     };
 
     if (Object.freeze)
@@ -113,66 +115,69 @@ function Network(config, dialog, display)
     {
         try
         {
-            /* image mode
-
-            ROUNDTRIP
-            display images from raw data
-            the simplest mode. each image is retrieved using a server call
-            pros: reliable (works in all browsers); cons: slower in case of high latency connection (due to the roundrip time)
-
-            BASE64
-            display images from base64 data
-            pros: avoid server roundtrips to retrieve images (direct injection into the DOM); cons: base64 encoding has an 33% overhead over binary
-            IE6/7: not supported
-            IE8: supported up to 32KB
-            IE9: supported in native mode; not supported in compatibility mode (use IE7 engine)
-            IE10+: supported
-            please note that, even if base64 data is disabled or not supported by the client, the server will always send them in order to display images size and compute bandwidth usage, and thus be able to tweak the images (quality & quantity) if the available bandwidth gets too low
-            it also workaround a weird glitch in IE7 that prevents script execution if code length is too low (when script code is injected into the DOM through long-polling)
-
-            BINARY
-            display images from binary data
-            pros: no bandwidth overhead; cons: requires an HTML5 browser with websocket (and binary type) support
-            
-            AUTO (default)
-            automatic detection of the best available mode (in order: ROUNDTRIP < BASE64 < BINARY)
-
-            */
-
-            var base64Available = display.isBase64Available();
-            var binaryAvailable = (window.WebSocket || window.MozWebSocket) && !config.getCompatibilityMode();
-
-            switch (config.getImageMode())
+            if (config.getHostType() == config.getHostTypeEnum().RDP)
             {
-                case config.getImageModeEnum().ROUNDTRIP:
-                    break;
+                /* image mode
 
-                case config.getImageModeEnum().BASE64:
-                    if (!base64Available)
-                    {
-                        config.setImageMode(config.getImageModeEnum().ROUNDTRIP);
-                    }
-                    break;
-                    
-                case config.getImageModeEnum().BINARY:
-                    if (!binaryAvailable)
-                    {
+                ROUNDTRIP
+                display images from raw data
+                the simplest mode. each image is retrieved using a server call
+                pros: reliable (works in all browsers); cons: slower in case of high latency connection (due to the roundrip time)
+
+                BASE64
+                display images from base64 data
+                pros: avoid server roundtrips to retrieve images (direct injection into the DOM); cons: base64 encoding has an 33% overhead over binary
+                IE6/7: not supported
+                IE8: supported up to 32KB
+                IE9: supported in native mode; not supported in compatibility mode (use IE7 engine)
+                IE10+: supported
+                please note that, even if base64 data is disabled or not supported by the client, the server will always send them in order to display images size and compute bandwidth usage, and thus be able to tweak the images (quality & quantity) if the available bandwidth gets too low
+                it also workaround a weird glitch in IE7 that prevents script execution if code length is too low (when script code is injected into the DOM through long-polling)
+
+                BINARY
+                display images from binary data
+                pros: no bandwidth overhead; cons: requires an HTML5 browser with websocket (and binary type) support
+            
+                AUTO (default)
+                automatic detection of the best available mode (in order: ROUNDTRIP < BASE64 < BINARY)
+
+                */
+
+                var base64Available = display.isBase64Available();
+                var binaryAvailable = (window.WebSocket || window.MozWebSocket) && !config.getCompatibilityMode();
+
+                switch (config.getImageMode())
+                {
+                    case config.getImageModeEnum().ROUNDTRIP:
+                        break;
+
+                    case config.getImageModeEnum().BASE64:
                         if (!base64Available)
                         {
                             config.setImageMode(config.getImageModeEnum().ROUNDTRIP);
                         }
-                        else
-                        {
-                            config.setImageMode(config.getImageModeEnum().BASE64);
-                        }
-                    }
-                    break;
+                        break;
                     
-                default:
-                    config.setImageMode((!binaryAvailable ? (!base64Available ? config.getImageModeEnum().ROUNDTRIP : config.getImageModeEnum().BASE64) : config.getImageModeEnum().BINARY));
-            }
+                    case config.getImageModeEnum().BINARY:
+                        if (!binaryAvailable)
+                        {
+                            if (!base64Available)
+                            {
+                                config.setImageMode(config.getImageModeEnum().ROUNDTRIP);
+                            }
+                            else
+                            {
+                                config.setImageMode(config.getImageModeEnum().BASE64);
+                            }
+                        }
+                        break;
+                    
+                    default:
+                        config.setImageMode((!binaryAvailable ? (!base64Available ? config.getImageModeEnum().ROUNDTRIP : config.getImageModeEnum().BASE64) : config.getImageModeEnum().BINARY));
+                }
 
-            dialog.showStat(dialog.getShowStatEnum().IMAGE_MODE, config.getImageMode());
+                dialog.showStat(dialog.getShowStatEnum().IMAGE_MODE, config.getImageMode());
+            }
 
             /* network mode
 
@@ -257,6 +262,7 @@ function Network(config, dialog, display)
             }
 
             // periodical fullscreen update; to fix potential display issues and clean the browser DOM when divs are used
+            // if the host is SSH, it will be used to detect if the client is still connected and to close the terminal otherwise
             if (periodicalFullscreenInterval != null)
             {
                 window.clearInterval(periodicalFullscreenInterval);
@@ -266,7 +272,7 @@ function Network(config, dialog, display)
             periodicalFullscreenInterval = window.setInterval(function()
             {
                 //dialog.showDebug('periodical fullscreen update');
-                doSend(commandEnum.REQUEST_FULLSCREEN_UPDATE.text);
+                doSend(commandEnum.REQUEST_FULLSCREEN_UPDATE.text + 'periodical');
             },
             config.getPeriodicalFullscreenInterval());
 
@@ -283,7 +289,10 @@ function Network(config, dialog, display)
                 dialog.showStat(dialog.getShowStatEnum().BANDWIDTH_USAGE, Math.ceil(bandwidthUsage / 1024));
 
                 // throttle image quality & quantity depending on the bandwidth usage and average latency
-                tweakDisplay();
+                if (config.getHostType() == config.getHostTypeEnum().RDP)
+                {
+                    tweakDisplay();
+                }
 
                 // reset bandwidth usage
                 bandwidthUsage = 0;
@@ -318,13 +327,16 @@ function Network(config, dialog, display)
         {
             var commands = new Array();
 
-            //dialog.showDebug('sending rendering config');
-            commands.push(commandEnum.SET_IMAGE_ENCODING.text + config.getImageEncoding().value);
-            commands.push(commandEnum.SET_IMAGE_QUALITY.text + config.getImageQuality());
-            commands.push(commandEnum.SET_IMAGE_QUANTITY.text + config.getImageQuantity());
+            if (config.getHostType() == config.getHostTypeEnum().RDP)
+            {
+                //dialog.showDebug('sending rendering config');
+                commands.push(commandEnum.SET_IMAGE_ENCODING.text + config.getImageEncoding().value);
+                commands.push(commandEnum.SET_IMAGE_QUALITY.text + config.getImageQuality());
+                commands.push(commandEnum.SET_IMAGE_QUANTITY.text + config.getImageQuantity());
+            }
 
             //dialog.showDebug('initial fullscreen update');
-            commands.push(commandEnum.REQUEST_FULLSCREEN_UPDATE.text);
+            commands.push(commandEnum.REQUEST_FULLSCREEN_UPDATE.text + 'initial');
 
             doSend(commands.toString());
         }
@@ -449,7 +461,7 @@ function Network(config, dialog, display)
 
             /*
             small bandwidth = lower quality
-            latency shouldn't affect image quality because each update, whatever its size, will be received within the same delay
+            latency shouldn't affect image quality because each update, whatever its size, will be received within the same delay (so better keep the best quality)
             for example, if latency = 100ms, both a 10KB and 100KB image will be received in 100ms (given the bandwidth is good enough)
             */
 
@@ -460,6 +472,7 @@ function Network(config, dialog, display)
             {
                 if (config.getImageQuality() != 10)
                 {
+                    config.setImageEncoding(config.getImageEncodingEnum().JPEG);
                     config.setImageQuality(10);
                     tweak = true;
                 }
@@ -468,19 +481,22 @@ function Network(config, dialog, display)
             {
                 if (config.getImageQuality() != 25)
                 {
+                    config.setImageEncoding(config.getImageEncodingEnum().JPEG);
                     config.setImageQuality(25);
                     tweak = true;
                 }
             }
             else if (config.getImageQuality() != originalImageQuality)
             {
+                config.setImageEncoding(originalImageEncoding);
                 config.setImageQuality(originalImageQuality);
                 tweak = true;
             }
 
             if (tweak)
             {
-                //dialog.showDebug('tweaking image quality: ' + config.getImageQuality());
+                //dialog.showDebug('tweaking image quality: ' + config.getImageEncoding() + ', ' + config.getImageQuality());
+                commands.push(commandEnum.SET_IMAGE_ENCODING.text + config.getImageEncoding());
                 commands.push(commandEnum.SET_IMAGE_QUALITY.text + config.getImageQuality());
             }
 

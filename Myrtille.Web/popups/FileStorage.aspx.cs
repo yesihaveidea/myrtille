@@ -19,7 +19,6 @@
 using System;
 using System.IO;
 using System.Threading;
-using System.Web;
 using System.Web.UI;
 using Myrtille.Helpers;
 using Myrtille.Services.Contracts;
@@ -55,17 +54,17 @@ namespace Myrtille.Web
             // retrieve the active remote session
             try
             {
-                if (HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                if (Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
                     throw new NullReferenceException();
 
-                _remoteSession = (RemoteSession)HttpContext.Current.Session[HttpSessionStateVariables.RemoteSession.ToString()];
+                _remoteSession = (RemoteSession)Session[HttpSessionStateVariables.RemoteSession.ToString()];
 
                 // if a domain is specified, the roaming user profile is loaded from the Active Directory
                 // file storage is synchronized with the user "My documents" folder (will use folder redirection if defined)
                 // user credentials will be checked prior to any file operation
                 // if possible, use SSL to communicate with the service
                 if ((_remoteSession.State == RemoteSessionState.Connecting || _remoteSession.State == RemoteSessionState.Connected) &&
-                    (_remoteSession.ServerAddress.ToLower() == "localhost" || _remoteSession.ServerAddress == "127.0.0.1" || _remoteSession.ServerAddress == "[::1]" || _remoteSession.ServerAddress == HttpContext.Current.Request.Url.Host || !string.IsNullOrEmpty(_remoteSession.UserDomain)) &&
+                    (_remoteSession.ServerAddress.ToLower() == "localhost" || _remoteSession.ServerAddress == "127.0.0.1" || _remoteSession.ServerAddress == "[::1]" || _remoteSession.ServerAddress == Request.Url.Host || !string.IsNullOrEmpty(_remoteSession.UserDomain)) &&
                     !string.IsNullOrEmpty(_remoteSession.UserName) && !string.IsNullOrEmpty(_remoteSession.UserPassword))
                 {
                     try

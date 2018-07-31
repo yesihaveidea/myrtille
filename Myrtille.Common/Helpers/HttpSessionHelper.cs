@@ -65,7 +65,8 @@ namespace Myrtille.Helpers
         public static void SetSessionId(string id)
         {
             var manager = new SessionIDManager();
-            manager.SaveSessionID(HttpContext.Current, id, out bool redirected, out bool cookieAdded);
+            bool redirected, cookieAdded;
+            manager.SaveSessionID(HttpContext.Current, id, out redirected, out cookieAdded);
         }
 
         // adapted from https://stackoverflow.com/a/4420114/6121074
@@ -83,7 +84,8 @@ namespace Myrtille.Helpers
             var manager = new SessionIDManager();
             var oldId = manager.GetSessionID(HttpContext.Current);
             var newId = manager.CreateSessionID(HttpContext.Current);
-            manager.SaveSessionID(HttpContext.Current, newId, out bool redirected, out bool cookieAdded);
+            bool redirected, cookieAdded;
+            manager.SaveSessionID(HttpContext.Current, newId, out redirected, out cookieAdded);
 
             // retrieve the current session
             var application = HttpContext.Current.ApplicationInstance;

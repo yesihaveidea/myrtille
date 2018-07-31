@@ -26,7 +26,9 @@ namespace Myrtille.Web
 
         public int Id;
         public RemoteSessionState State;
-        public string ServerName;
+        public string HostName;
+        public HostTypeEnum HostType;                   // RDP or SSH
+        public SecurityProtocolEnum SecurityProtocol;
         public string ServerAddress;
         public string UserDomain;
         public string UserName;
@@ -41,15 +43,50 @@ namespace Myrtille.Web
         public bool DebugMode;
         public bool CompatibilityMode;
         public string StartProgram;
-        public bool AllowRemoteClipboard;               // set in myrtille web config
-        public SecurityProtocolEnum SecurityProtocol;
-        public int ExitCode;
-        public bool AllowSessionSharing;                // set in myrtille web config
+        public bool AllowRemoteClipboard;               // set in web config
+        public bool AllowFileTransfer;                  // set in web config
+        public bool AllowPrintDownload;                 // set in web config
+        public bool AllowSessionSharing;                // set in web config
         public string OwnerSessionID;                   // the http session on which the remote session is bound to
-        public HostTypeEnum HostType;                   // set remote host type, RDP or SSH
+        public int ExitCode;
 
-        public RemoteSession()
+        public RemoteSession(
+            int id,
+            RemoteSessionState state,
+            string hostName,
+            HostTypeEnum hostType,
+            SecurityProtocolEnum securityProtocol,
+            string serverAddress,
+            string userDomain,
+            string userName,
+            string userPassword,
+            int clientWidth,
+            int clientHeight,
+            string startProgram,
+            bool allowRemoteClipboard,
+            bool allowFileTransfer,
+            bool allowPrintDownload,
+            bool allowSessionSharing,
+            string ownerSessionID)
         {
+            Id = id;
+            State = state;
+            HostName = hostName;
+            HostType = hostType;
+            SecurityProtocol = securityProtocol;
+            ServerAddress = serverAddress;
+            UserDomain = userDomain;
+            UserName = userName;
+            UserPassword = userPassword;
+            ClientWidth = clientWidth;
+            ClientHeight = clientHeight;
+            StartProgram = startProgram;
+            AllowRemoteClipboard = allowRemoteClipboard;
+            AllowFileTransfer = allowFileTransfer;
+            AllowPrintDownload = allowPrintDownload;
+            AllowSessionSharing = allowSessionSharing;
+            OwnerSessionID = ownerSessionID;
+
             Manager = new RemoteSessionManager(this);
         }
     }

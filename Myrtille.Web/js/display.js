@@ -34,7 +34,11 @@ function Display(config, dialog)
 
     // divs (HTML4)
     var divs = null;
-    this.getDivs = function () { return divs; };
+    this.getDivs = function() { return divs; };
+
+    // xterm
+    var terminalDiv = null;
+    this.getTerminalDiv = function() { return terminalDiv; };
 
     this.init = function()
     {
@@ -49,7 +53,11 @@ function Display(config, dialog)
                 return;
             }
 
-            if (config.getHostType() == 'RDP')
+            /* host type */
+
+            dialog.showStat(dialog.getShowStatEnum().HOST_TYPE, config.getHostType());
+
+            if (config.getHostType() == config.getHostTypeEnum().RDP)
             {
                 /* display mode
 
@@ -130,19 +138,16 @@ function Display(config, dialog)
                 },
                 1000);
 
-
                 // reasonable number of images to display when using divs
                 dialog.showStat(dialog.getShowStatEnum().IMAGE_COUNT_OK, (config.getDisplayMode() == config.getDisplayModeEnum().CANVAS ? 'N/A' : config.getImageCountOk()));
 
                 // maximal number of images to display when using divs
                 dialog.showStat(dialog.getShowStatEnum().IMAGE_COUNT_MAX, (config.getDisplayMode() == config.getDisplayModeEnum().CANVAS ? 'N/A' : config.getImageCountMax()));
             }
-            else if (config.getHostType() == 'SSH')
+            else
             {
-                // ssh uses xtermjs within a div, load div regardless of of browser compatibility
-
-                divs = new TerminalDivs(config, dialog, this);
-                divs.init();
+                // ssh uses xtermjs within a div, regardless of browser compatibility
+                terminalDiv = new TerminalDiv(config, dialog, this);
             }
         }
         catch (exc)

@@ -16,6 +16,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
+
 namespace Myrtille.Services.Contracts
 {
     public class EnterpriseHost
@@ -24,20 +25,15 @@ namespace Myrtille.Services.Contracts
         public string HostName { get; set; }
         public string HostAddress { get; set; }
         public SecurityProtocolEnum Protocol { get; set; }
-        public string HostType { get; set; }
+        public HostTypeEnum HostType { get; set; }
         public string StartRemoteProgram { get; set; }
+        public bool PromptForCredentials { get; set; }
         public string HostImage
         {
             get
             {
-                if(HostType == "SSH")
-                {
-                    return "./img/RemoteSSH.png";
-                }
-
-                return "./img/RemoteDesktop.png";
+                return HostType == HostTypeEnum.RDP ? "img/RemoteDesktop.png" : "img/RemoteSSH.png";
             }
         }
-        public bool PromptForCredentials { get; set; }
     }
 }

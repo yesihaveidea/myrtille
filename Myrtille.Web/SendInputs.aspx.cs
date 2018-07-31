@@ -17,6 +17,8 @@
 */
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Web.UI;
 
 namespace Myrtille.Web
@@ -24,7 +26,7 @@ namespace Myrtille.Web
     public partial class SendInputs : Page
     {
         /// <summary>
-        /// send user input(s) (mouse, keyboard) to the rdp session
+        /// send user input(s) (mouse, keyboard) to the remote session
         /// if long-polling is disabled (xhr only), also returns image data within the response
         /// </summary>
         /// <param name="sender"></param>
@@ -62,30 +64,67 @@ namespace Myrtille.Web
                     // xhr only
                     if (imgReturn)
                     {
-                        // reload page
-                        if (remoteSession.Manager.ReloadPage)
-                        {
-                            Response.Write("reload");
-                            remoteSession.Manager.ReloadPage = false;
-                        }
-                        // remote clipboard
-                        else if (remoteSession.Manager.ClipboardAvailable)
-                        {
-                            Response.Write(string.Format("clipboard|{0}", remoteSession.Manager.ClipboardText));
-                            remoteSession.Manager.ClipboardAvailable = false;
-                        }
-                        // print job
-                        else if (remoteSession.Manager.PrintJobAvailable)
-                        {
-                            Response.Write(string.Format("printjob|{0}", remoteSession.Manager.PrintJobName));
-                            remoteSession.Manager.PrintJobAvailable = false;
-                        }
                         // disconnected session
-                        else if (remoteSession.State == RemoteSessionState.Disconnected)
+                        if (remoteSession.State == RemoteSessionState.Disconnected)
                         {
                             Response.Write("disconnected");
+                            return;
                         }
-                        // next image
+
+                        // message queue
+                        List<RemoteSessionMessage> messageQueue = null;
+                        lock (remoteSession.Manager.MessageQueues.SyncRoot)
+                        {
+                            if (!remoteSession.Manager.MessageQueues.ContainsKey(Session.SessionID))
+                            {
+                                remoteSession.Manager.MessageQueues.Add(Session.SessionID, new List<RemoteSessionMessage>());
+                            }
+                            messageQueue = (List<RemoteSessionMessage>)remoteSession.Manager.MessageQueues[Session.SessionID];
+                        }
+
+                        // concatenate text for terminal output to avoid a slow rendering
+                        // if another message type is in the queue, it will be given priority over the terminal
+                        // the terminal is refreshed often, so it shouldn't be an issue...
+                        var msgText = string.Empty;
+                        var msgComplete = false;
+
+                        while (messageQueue.Count > 0 && !msgComplete)
+                        {
+                            var message = messageQueue[0];
+
+                            switch (message.Type)
+                            {
+                                case MessageType.PageReload:
+                                    msgText = "reload";
+                                    msgComplete = true;
+                                    break;
+
+                                case MessageType.RemoteClipboard:
+                                    msgText = string.Format("clipboard|{0}", message.Text);
+                                    msgComplete = true;
+                                    break;
+
+                                case MessageType.TerminalOutput:
+                                    msgText += string.IsNullOrEmpty(msgText) ? string.Format("term|{0}", message.Text) : message.Text;
+                                    break;
+
+                                case MessageType.PrintJob:
+                                    msgText = string.Format("printjob|{0}", message.Text);
+                                    msgComplete = true;
+                                    break;
+                            }
+
+                            lock (((ICollection)messageQueue).SyncRoot)
+                            {
+                                messageQueue.RemoveAt(0);
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(msgText))
+                        {
+                            Response.Write(msgText);
+                        }
+                        // next update
                         else
                         {
                             var image = remoteSession.Manager.GetNextUpdate(imgIdx);

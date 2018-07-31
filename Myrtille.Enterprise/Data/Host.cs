@@ -35,7 +35,7 @@ namespace Myrtille.Enterprise
 
         public SecurityProtocolEnum Protocol { get; set; }
 
-        public string HostType { get; set; }
+        public HostTypeEnum HostType { get; set; }
 
         public string StartRemoteProgram { get; set; }
 

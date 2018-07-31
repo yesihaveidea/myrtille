@@ -25,7 +25,7 @@ namespace Myrtille.Web
     public partial class GetCursor : Page
     {
         /// <summary>
-        /// retrieve the mouse cursor from the rdp session and send it to the browser
+        /// retrieve the mouse cursor from the remote session and send it to the browser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

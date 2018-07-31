@@ -35,6 +35,8 @@ namespace Myrtille.Web
 
         public void StartProcess(
             int remoteSessionId,
+            HostTypeEnum hostType,
+            SecurityProtocolEnum securityProtocol,
             string serverAddress,
             string userDomain,
             string userName,
@@ -42,14 +44,24 @@ namespace Myrtille.Web
             int clientWidth,
             int clientHeight,
             bool allowRemoteClipboard,
-            SecurityProtocolEnum securityProtocol,
-            HostTypeEnum hostType)
+            bool allowPrintDownload)
         {
             Trace.TraceInformation("Calling service start process, remote session {0}, server {1}, domain {2}, user {3}, program {4}", remoteSessionId, serverAddress, string.IsNullOrEmpty(userDomain) ? "(none)" : userDomain, userName, string.IsNullOrEmpty(startProgram) ? "(none)" : startProgram);
 
             try
             {
-                Channel.StartProcess(remoteSessionId, serverAddress, userDomain, userName, startProgram, clientWidth, clientHeight, allowRemoteClipboard, securityProtocol, hostType);
+                Channel.StartProcess(
+                    remoteSessionId,
+                    hostType,
+                    securityProtocol,
+                    serverAddress,
+                    userDomain,
+                    userName,
+                    startProgram,
+                    clientWidth,
+                    clientHeight,
+                    allowRemoteClipboard,
+                    allowPrintDownload);
             }
             catch (Exception exc)
             {
@@ -101,7 +113,7 @@ namespace Myrtille.Web
 
         public void ProcessExited(int exitCode)
         {
-            Trace.TraceInformation("Received rdp client process exit notification, remote session {0}", _remoteSessionManager.RemoteSession.Id);
+            Trace.TraceInformation("Received host client process exit notification, remote session {0}", _remoteSessionManager.RemoteSession.Id);
 
             try
             {
@@ -132,7 +144,7 @@ namespace Myrtille.Web
                     }
                 }
                 // no websocket at this step can mean using xhr (with long-polling or not),
-                // but it can also be because the browser wasn't fast enough to open a websocket before the rdp client was closed (due to a crash, connection or authentication issue, etc.)
+                // but it can also be because the browser wasn't fast enough to open a websocket before the host client was closed (due to a crash, connection or authentication issue, etc.)
                 // a disconnect notification will be sent to the browser by the socket handler if the remote session is disconnected in the context of a newly opened socket
                 else
                 {

@@ -32,6 +32,8 @@
         
         <form method="post" runat="server">
             
+            <input type="hidden" runat="server" id="hostType"/>
+
             <div id="editHostPopupInner">
                 <span id="editHostPopupTitle">
                     <strong>Host Configuration</strong>
@@ -56,11 +58,11 @@
                 <div class="editHostPopupInput" runat="server" id="rdpSecurityInput">
                     <h5><label id="securityProtocolLabel" for="securityProtocol">RDP Security Protocol</label></h5>
                     <select runat="server" id="securityProtocol">
-                        <option value="0">auto</option>
-                        <option value="1">rdp</option>
-                        <option value="2">tls</option>
-                        <option value="3">nla</option>
-                        <option value="4">nla-ext</option>
+                        <option value="0" selected="selected">AUTO</option>
+                        <option value="1">RDP</option>
+                        <option value="2">TLS</option>
+                        <option value="3">NLA</option>
+                        <option value="4">NLA-EXT</option>
                     </select>
                 </div>
                 <div class="editHostPopupInput" runat="server" id="Div1">

@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
     Copyright(c) 2014-2018 Cedric Coste
@@ -22,11 +21,9 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
-using System.Runtime.InteropServices;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Security.Principal;
 using System.Text;
 using Myrtille.Helpers;
 using Myrtille.Services.Contracts;
@@ -35,7 +32,6 @@ namespace Myrtille.Enterprise
 {
     public class ActiveDirectory : IEnterpriseAdapter
     {
-
         public void Initialize()
         {
             using (var db = new MyrtilleEnterpriseDBContext())
@@ -279,7 +275,7 @@ namespace Myrtille.Enterprise
                     HostAddress = host.HostAddress,
                     DirectoryGroups = directoryGroups.ToString(),
                     Protocol = host.Protocol,
-                    HostType = (host.HostType ?? "RDP"),
+                    HostType = host.HostType,
                     StartRemoteProgram = host.StartRemoteProgram,
                     PromptForCredentials = host.PromptForCredentials
                 };
@@ -420,7 +416,7 @@ namespace Myrtille.Enterprise
                                 HostID = h.ID,
                                 HostName = h.HostName,
                                 HostAddress = h.HostAddress,
-                                HostType = (h.HostType ?? "RDP"),
+                                HostType = h.HostType,
                                 StartRemoteProgram = h.StartRemoteProgram,
                                 PromptForCredentials = h.PromptForCredentials
                             })
@@ -441,7 +437,7 @@ namespace Myrtille.Enterprise
                                 HostID = h.ID,
                                 HostName = h.HostName,
                                 HostAddress = h.HostAddress,
-                                HostType = (h.HostType ?? "RDP"),
+                                HostType = h.HostType,
                                 StartRemoteProgram = h.StartRemoteProgram,
                                 PromptForCredentials = h.PromptForCredentials
                             })
@@ -491,7 +487,7 @@ namespace Myrtille.Enterprise
                                       ,
                                       HostAddress = h.HostAddress
                                       ,
-                                      HostType = (h.HostType ?? "RDP")
+                                      HostType = h.HostType
                                       ,
                                       Username = s.Username
                                       ,
@@ -522,7 +518,7 @@ namespace Myrtille.Enterprise
                                       ,
                                       HostAddress = h.HostAddress
                                       ,
-                                      HostType = (h.HostType ?? "RDP")
+                                      HostType = h.HostType
                                       ,
                                       Username = (h.PromptForCredentials ? sc.Username : s.Username)
                                       ,
@@ -650,8 +646,7 @@ namespace Myrtille.Enterprise
                 return true;
             }
         }
-
-
+        
         #region aes encryption
 
         private static string AES_Encrypt(string stringToBeEncrypted, string passwordString)
@@ -722,9 +717,7 @@ namespace Myrtille.Enterprise
 
             return decryptedString;
         }
-
-
-
+        
         #endregion
     }
 }

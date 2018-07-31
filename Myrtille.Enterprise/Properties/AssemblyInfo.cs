@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Myrtille.Enterprise")]
+[assembly: AssemblyProduct("Myrtille")]
 [assembly: AssemblyCopyright("Copyright © Olive Innovations Ltd 2017-2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

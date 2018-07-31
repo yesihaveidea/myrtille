@@ -1,14 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿/*
+    Myrtille: A native HTML4/5 Remote Desktop Protocol client.
+
+    Copyright(c) 2014-2018 Cedric Coste
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+using System;
 using System.Threading;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Myrtille.Services.Contracts;
+
 namespace Myrtille.Web.popups
 {
-    public partial class CredentialsPrompt : System.Web.UI.Page
+    public partial class CredentialsPrompt : Page
     {
         private EnterpriseServiceClient _enterpriseClient;
         private EnterpriseSession _enterpriseSession;
@@ -37,10 +52,10 @@ namespace Myrtille.Web.popups
         {
             try
             {
-                if (HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()] == null)
+                if (Session[HttpSessionStateVariables.EnterpriseSession.ToString()] == null)
                     throw new NullReferenceException();
 
-                _enterpriseSession = (EnterpriseSession)HttpContext.Current.Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
+                _enterpriseSession = (EnterpriseSession)Session[HttpSessionStateVariables.EnterpriseSession.ToString()];
 
                 try
                 {
@@ -95,7 +110,6 @@ namespace Myrtille.Web.popups
                 {
                     throw new Exception("Failed to add session host credentials");
                 }
-
 
                 // connect to remote host
                 Response.Redirect(Request.RawUrl + (Request.RawUrl.Contains("?") ? "&" : "?") + "edit=success",false);

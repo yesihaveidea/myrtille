@@ -165,7 +165,7 @@ function processImage(idx, posX, posY, width, height, format, quality, fullscree
         {
             //dialog.showDebug('reached a reasonable number of divs, requesting a fullscreen update');
             fullscreenPending = true;
-            network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text);
+            network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
         }
     }
     catch (exc)
@@ -270,14 +270,23 @@ this.sendText = function(text)
         var keys = new Array();
         for (var i = 0; i < text.length; i++)
         {
-            var charCode = text.charCodeAt(i);
-            //dialog.showDebug('sending charCode: ' + charCode);
+            if (config.getHostType() == config.getHostTypeEnum().RDP)
+            {
+                var charCode = text.charCodeAt(i);
+                //dialog.showDebug('sending charCode: ' + charCode);
                     
-            if (charCode == 10)     // LF
-                charCode = 13;      // CR
+                if (charCode == 10)     // LF
+                    charCode = 13;      // CR
 
-            keys.push((charCode == 13 ? network.getCommandEnum().SEND_KEY_SCANCODE.text : network.getCommandEnum().SEND_KEY_UNICODE.text) + charCode + '-1');
-            keys.push((charCode == 13 ? network.getCommandEnum().SEND_KEY_SCANCODE.text : network.getCommandEnum().SEND_KEY_UNICODE.text) + charCode + '-0');
+                keys.push((charCode == 13 ? network.getCommandEnum().SEND_KEY_SCANCODE.text : network.getCommandEnum().SEND_KEY_UNICODE.text) + charCode + '-1');
+                keys.push((charCode == 13 ? network.getCommandEnum().SEND_KEY_SCANCODE.text : network.getCommandEnum().SEND_KEY_UNICODE.text) + charCode + '-0');
+            }
+            else
+            {
+                var char = text.charAt(i);
+                //dialog.showDebug('sending char: ' + char);
+                keys.push(network.getCommandEnum().SEND_KEY_UNICODE.text + char);
+            }
         }
 
         if (keys.length > 0)
@@ -347,14 +356,17 @@ function sendCtrlAltDel()
 
 function handleRemoteSessionExit(exitCode)
 {
+    // success
     if (exitCode == 0)
         return;
 
     switch (exitCode)
     {
-        // wfreerdp.exe process killed
+        // host client process killed
+        case -1:
+        // host client process killed from task manager
         case 1:
-            alert('The remote connection was disconnected after the wfreerdp.exe process was killed');
+            alert('The remote connection was disconnected after the host client process was killed');
             break;
 
         // session disconnect from admin console
@@ -387,11 +399,11 @@ function handleRemoteSessionExit(exitCode)
             //alert('The remote connection was logged out from windows menu');
             break;
 
-        // invalid server
+        // invalid server address
         case 131077:
-        // unreachable server
+        // invalid security protocol
         case 131084:
-            alert('The remote connection failed due to invalid or unreachable server address');
+            alert('The remote connection failed due to invalid server address or security protocol');
             break;
 
         // missing username
@@ -428,4 +440,17 @@ this.downloadPdf = function(name)
 	{
         alert('myrtille downloadPdf error: ' + exc.message);
 	}
+}
+
+this.writeTerminal = function(data)
+{
+    try
+    {
+        //alert('writing terminal data: ' + data);
+        display.getTerminalDiv().writeTerminal(data);
+    }
+    catch (exc)
+    {
+        alert('myrtille writeTerminal error: ' + exc.message);
+    }
 }
