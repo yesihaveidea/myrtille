@@ -495,8 +495,8 @@ function Network(config, dialog, display)
 
             if (tweak)
             {
-                //dialog.showDebug('tweaking image quality: ' + config.getImageEncoding() + ', ' + config.getImageQuality());
-                commands.push(commandEnum.SET_IMAGE_ENCODING.text + config.getImageEncoding());
+                //dialog.showDebug('tweaking image quality: ' + config.getImageEncoding().text + ', ' + config.getImageQuality());
+                commands.push(commandEnum.SET_IMAGE_ENCODING.text + config.getImageEncoding().value);
                 commands.push(commandEnum.SET_IMAGE_QUALITY.text + config.getImageQuality());
             }
 
