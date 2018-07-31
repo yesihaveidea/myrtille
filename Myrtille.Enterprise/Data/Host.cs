@@ -2,7 +2,7 @@
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
     Copyright(c) 2014-2018 Cedric Coste
-    Copyright(c) 2014-2018 Paul Oliver
+    Copyright(c) 2014-2018 Paul Oliver (Olive Innovations)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -34,5 +34,11 @@ namespace Myrtille.Enterprise
         public string HostAddress { get; set; }
 
         public SecurityProtocolEnum Protocol { get; set; }
+
+        public string HostType { get; set; }
+
+        public string StartRemoteProgram { get; set; }
+
+        public bool PromptForCredentials { get; set; }
     }
 }

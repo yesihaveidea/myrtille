@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Net;
 using Myrtille.Services.Contracts;
 
 namespace Myrtille.Services
@@ -47,7 +48,14 @@ namespace Myrtille.Services
 
         public void Logout(string sessionID)
         {
-            Program._enterpriseAdapter.Logout(sessionID);
+            try
+            {
+                Program._enterpriseAdapter.Logout(sessionID);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Failed to logout session {0}", sessionID, ex);
+            }
         }
 
         public long? AddHost(EnterpriseHostEdit editHost, string sessionID)
@@ -125,9 +133,19 @@ namespace Myrtille.Services
             {
                 Trace.TraceInformation("Requesting session details");
                 var result = Program._enterpriseAdapter.GetSessionConnectionDetails(sessionID, hostID, sessionKey);
-                if (result != null && ConfigurationManager.AppSettings["EnterpriseDomain"] != null)
+
+                var domain = ConfigurationManager.AppSettings["EnterpriseDomain"];
+                var netbiosDomain = ConfigurationManager.AppSettings["EnterpriseNetbiosDomain"];
+
+                if (!string.IsNullOrEmpty(netbiosDomain) && !result.PromptForCredentials)
                 {
-                    result.Domain = ConfigurationManager.AppSettings["EnterpriseDomain"];
+                    result.Domain = netbiosDomain;
+                }
+                else if (result != null && domain != null 
+                    && !IPAddress.TryParse(domain, out IPAddress address) //check if domain is IP, prevent login failure if FQDN not used
+                    && !result.PromptForCredentials) //no need to set this automatically if the user is prompted for credentials
+                {
+                    result.Domain = domain;
                 }
                 return result;
             }
@@ -162,6 +180,20 @@ namespace Myrtille.Services
             catch (Exception ex)
             {
                 Trace.TraceError("Failed to change password for user {0}, ({1})", username, ex);
+                return false;
+            }
+        }
+
+        public bool AddSessionHostCredentials(EnterpriseHostSessionCredentials credentials)
+        {
+            try
+            {
+                Trace.TraceInformation("creating session credentials for {0}", credentials.Username);
+                return Program._enterpriseAdapter.AddSessionHostCredentials(credentials);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Failed to set session credentials for user {0}, ({1})", credentials.Username, ex);
                 return false;
             }
         }

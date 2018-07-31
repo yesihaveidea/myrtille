@@ -142,6 +142,13 @@ namespace Myrtille.Services
                     enterpriseDomain = Context.Parameters["ENTERPRISEDOMAIN"];
                 }
 
+                string enterpriseNetbiosDomain = null;
+                if (!string.IsNullOrEmpty(Context.Parameters["ENTERPRISENETBIOSDOMAIN"]))
+                {
+                    enterpriseNetbiosDomain = Context.Parameters["ENTERPRISENETBIOSDOMAIN"];
+                }
+                
+
                 // load config
                 var config = new XmlDocument();
                 var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Services.exe.config");
@@ -167,6 +174,7 @@ namespace Myrtille.Services
                         XmlTools.UncommentConfigKey(config, appSettings, "EnterpriseAdapter");
                         XmlTools.WriteConfigKey(appSettings, "EnterpriseAdminGroup", enterpriseAdminGroup);
                         XmlTools.WriteConfigKey(appSettings, "EnterpriseDomain", enterpriseDomain);
+                        XmlTools.WriteConfigKey(appSettings, "EnterpriseNetbiosDomain", enterpriseNetbiosDomain);
                     }
                 }
 
