@@ -502,6 +502,12 @@ canvas
 
 /* remote session helpers */
 
+#cacheDiv
+{
+    visibility: hidden;
+	display: none;
+}
+
 #statDiv
 {
     position: absolute;

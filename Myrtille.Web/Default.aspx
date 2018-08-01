@@ -260,6 +260,7 @@
             <div id="displayDiv"></div>
 
             <!-- remote session helpers -->
+            <div id="cacheDiv"></div>
             <div id="statDiv"></div>
 		    <div id="debugDiv"></div>
             <div id="msgDiv"></div>

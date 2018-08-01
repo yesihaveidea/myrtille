@@ -255,6 +255,10 @@ If you wish to create your own enterprise adapter (with a different authenticati
 
 - Safari 5.1.7 doesn't support the IIS 8+ websocket implementation because it's based on an older version of the websocket standard (hybi instead of RFC6455) (http://stackoverflow.com/questions/32628211/connecting-to-iis-8-from-safari-5-1-7-by-websocket). Myrtille does fallback to long-polling if websockets aren't supported or fail.
 
+- Safari 5.1.7 doesn't support xtermjs (SSH terminal); this version of Safari for Windows is not officially supported anymore, so you should use something else anyway.
+
+- xtermjs (SSH terminal) rendering is not blazing fast; it's functional but don't expect a native putty client, neither in speed and features. Also, remember to refresh (or "cls") the terminal often because it gets slower as the DOM fills with data.
+
 - In order to keep the installation simple, both the myrtille gateway and services are installed on the same machine. They do however conform to a distributed architecture; if needed, given some additionnal code, myrtille services could acts as a proxy, so the gateway could be installed and operate separately (this could be handy if the gateway should go into a DMZ).
 
 - Keyboard is mapped to english/US (latin QWERTY) layout by default. If you have troubles with some characters/keys not working as expected, try to add that keyboard layout to your server (and select it when connected).
@@ -307,5 +311,6 @@ First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (prefe
 	- Switch from HTML4 to HTML5 rendering, or inversely (should be faster with HTML5).
 	- Check your network configuration (is something filtering the traffic?) and capabilities (high latency or small bandwidth?).
 	- Ensure buffering is enabled on both client and gateway (see configuration / performance tweaks / Debug (https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#configuration--performance-tweaks--debug))
+	- the SSH terminal (xtermjs) becomes laggy after some time; try to refresh or clear ("cls") the screen from time to time
 	- Maybe the default settings are not adapted to your configuration. You can tweak the "js/config.js" file as you wish (see extensive comments there).
 	- Despite my best efforts to produce quality and efficient code, I may have missed/messed something... Please don't hesitate to tell me or add your contribution! Thanks! :)

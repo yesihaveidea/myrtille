@@ -272,6 +272,29 @@ function Websocket(config, dialog, display, network)
                     // receive terminal data, send to xtermjs
                     else if (text.length >= 5 && text.substr(0, 5) == 'term|')
                     {
+                        /* IE hack!
+
+                        for some reason, IE (all versions) is very slow to render the terminal, whatever the connection speed
+                        while I was debugging, I found the rendering was way faster after displaying the received data into the debug div (?!)
+                        
+                        I don't really understand why... perhaps it's due to the fact the data is already into the DOM when the terminal handles it...
+                        so I made up an hidden "cache div" and put the data on it before writing to the terminal
+                        I didn't found any other solution but it's pretty harmless anyway as the cache div is hidden
+
+                        other browsers don't seem to have the same issue, neither benefit from that hack, so IE only for now...
+                        also interesting to note, this issue occurs only when using websockets (long-polling and xhr only: ok)
+
+                        */
+
+                        if (display.isIEBrowser())
+                        {
+                            var cacheDiv = document.getElementById('cacheDiv');
+                            if (cacheDiv != null)
+                            {
+                                cacheDiv.innerHTML = text.substr(5, text.length - 5);
+                            }
+                        }
+
                         display.getTerminalDiv().writeTerminal(text.substr(5, text.length - 5));
                     }
                     // remote clipboard

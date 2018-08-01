@@ -23,15 +23,15 @@
 function TerminalDiv(config, dialog, display)
 {
     var term = null;
-    
+
     this.init = function(network, user)
     {
         try
         {
             var div = document.createElement('div');
             div.id = 'terminalDiv';
-            div.style.width = config.getScaleDisplay() ? display.getBrowserWidth() - display.getHorizontalOffset() : config.getDisplayWidth() + 'px';
-            div.style.height = config.getScaleDisplay() ? display.getBrowserHeight() - display.getVerticalOffset() : config.getDisplayHeight() + 'px';
+            div.style.width = config.getDisplayWidth() + 'px';
+            div.style.height = config.getDisplayHeight() + 'px';
 
             display.getDisplayDiv().appendChild(div);
 
