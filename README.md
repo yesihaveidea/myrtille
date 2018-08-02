@@ -1,7 +1,7 @@
 ﻿# Myrtille
 Myrtille provides a simple and fast access to remote desktops, SSH and remote applications through a web browser, without any plugin, extension or configuration.
 
-Technically, Myrtille is an HTTP(S) to RDP gateway.
+Technically, Myrtille is an HTTP(S) to RDP and SSH gateway.
 
 ## How does it work?
 It works by forwarding the user inputs (keyboard, mouse, touchscreen) from a web browser to an HTTP(S) gateway, then up to an RDP client which maintains a session with an RDP server.
@@ -33,6 +33,7 @@ More information in the DOCUMENTATION.md file.
 - Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required.
 - Gateway (myrtille): IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+
 - RDP server: any RDP enabled machine (preferably Windows Server but can also be Windows XP, 7, 8, 10 or Linux XRDP server)
+- SSH server: any SSH server (tests were made using the built-in Windows 10 OpenSSH server)
 
 ## Resources
 Myrtille does support multiple connections/tabs in cookieless session mode. From version 1.9.0, this mode is disabled by default (OWASP recommendation) but can still be enabled, if required (into web.config, carefully read comments there).
