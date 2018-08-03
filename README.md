@@ -4,17 +4,16 @@ Myrtille provides a simple and fast access to remote desktops, SSH and remote ap
 Technically, Myrtille is an HTTP(S) to RDP and SSH gateway.
 
 ## How does it work?
-It works by forwarding the user inputs (keyboard, mouse, touchscreen) from a web browser to an HTTP(S) gateway, then up to an RDP client which maintains a session with an RDP server.
+It works by forwarding the user inputs (keyboard, mouse, touchscreen) from a web browser to an HTTP(S) gateway, then up to an RDP (or SSH) client which maintains a session with an RDP (or SSH) server.
 
-The display resulting, or not, of such actions is streamed back to the browser, from the rdp client and through the gateway.
+The display resulting, or not, of such actions is streamed back to the browser, from the rdp (or ssh) client and through the gateway.
 
 The implementation is quite straightforward in order to maintain the best speed and stability as possible. Some optimizations, such as inputs buffering and display quality tweaking, help to mitigate with latency and bandwidth issues.
 
 More information in the DOCUMENTATION.md file.
 
 ## Features
-- HTTP(S) to RDP gateway
-- HTTP(S) to SSH gateway (new in version 2.0.0!)
+- HTTP(S) to RDP and SSH gateway (new in version 2.0.0!)
 - Multifactor Authentication
 - Active Directory integration (hosts management)
 - Session sharing (collaborative mode)
@@ -38,9 +37,9 @@ More information in the DOCUMENTATION.md file.
 ## Resources
 Myrtille does support multiple connections/tabs in cookieless session mode. From version 1.9.0, this mode is disabled by default (OWASP recommendation) but can still be enabled, if required (into web.config, carefully read comments there).
 
-There is no limitation about the maximal number of concurrent users beside what the rdp server(s) can handle (number of CALs, CPU, RAM?).
+There is no limitation about the maximal number of concurrent users beside what the rdp (or ssh) server(s) can handle (number of CALs, CPU, RAM?).
 
-Regarding the gateway, a simple dual core CPU with 4GB RAM can handle up to 50 simultaneous sessions (about 50MB RAM by rdp client process).
+Regarding the gateway, a simple dual core CPU with 4GB RAM can handle up to 50 simultaneous sessions (about 50MB RAM by rdp client process, even less for ssh).
 
 Each session uses about 20KB/sec bandwidth with the browser.
 
@@ -53,7 +52,7 @@ All releases here: https://github.com/cedrozor/myrtille/releases
 See DOCUMENTATION.md for more details.
 
 ## Usage
-Once Myrtille is installed on your server, you can use it at http://myserver/myrtille. Set the rdp or ssh server address, user domain (if any, for rdp), name and password then click "Connect!" to log in. "Disconnect" to log out.
+Once Myrtille is installed on your server, you can use it at http://myserver/myrtille. Set the rdp (or ssh) server address, user domain (if any, for rdp), name and password then click "Connect!" to log in. "Disconnect" to log out.
 
 Multifactor Authentication and Active Directory integration (Enterprise Mode) are disabled by default. Please read documentation for activation of these features.
 
@@ -71,7 +70,7 @@ Alternatively, you can run **osk.exe** (the Windows on screen keyboard, located 
 
 The remote clipboard content can also be retrieved locally with the "Clipboard" button (text format only).
 
-You can upload/download file(s) to/from the user documents folder with the "Files" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified.
+You can upload/download file(s) to/from the user documents folder with the "Files" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified. Not available for SSH.
 
 You can print any document on a local or network printer by using the "Myrtille PDF" (redirected) virtual printer. Simply use the print feature of your application, then open/print the downloaded pdf.
 

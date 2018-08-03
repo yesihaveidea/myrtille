@@ -38,7 +38,7 @@ I hope you will enjoy Myrtille! :)
 Special thanks to Catalin Trifanescu for its support.
 
 ## Installation
-You need at least IIS 7 before installing myrtille (the HTTP(S) to RDP gateway). It installs as a role on Windows Servers and as a feature on others Windows versions.
+You need at least IIS 7 before installing myrtille (the HTTP(S) to RDP/SSH gateway). It installs as a role on Windows Servers and as a feature on others Windows versions.
 
 **CAUTION! If you want to use websockets**, you need IIS 8 or greater with the websocket protocol enabled (disabled by default; see https://www.iis.net/configreference/system.webserver/websocket).
 
@@ -132,11 +132,11 @@ Into the PDF virtual printer settings (bin/Myrtille.Printer.exe.config):
 - **Myrtille.RDP**: link to the myrtille FreeRDP fork. C++ code. RDP client, modified to forward the user input(s) and encode the session display into the configured image format(s). The modified code in FreeRDP is identified by region tags "#pragma region Myrtille" and "#pragma endregion".
 - **Myrtille.SSH**: SSH.NET client. Same logic as for FreeRDP, use named pipes to communicate with the gateway.
 - **Myrtille.Common**: C# code. Common helpers. These are static libs which could be used for any project (not only myrtille).
-- **Myrtille.Services**: C# code. WCF services, hosted by a Windows Service (or a console application in debug build). start/stop the rdp client and upload/download file(s) to/from the connected user documents folder.
+- **Myrtille.Services**: C# code. WCF services, hosted by a Windows Service (or a console application in debug build). start/stop the rdp/ssh client and upload/download file(s) to/from the connected user documents folder.
 - **Myrtille.Services.Contracts**: C# code. WCF contracts (interfaces).
 - **Myrtille.MFAProviders**: C# code. Multifactor Authentication providers. Currently used with the OASIS adapter but could be any other.
 - **Myrtille.Enterprise**: C# code. Integration with Active Directory. Provides a dashboard to administrate the RDP and SSH hosts on a domain.
-- **Myrtille.Web**: C# code. IIS Web application; gateway between the browser and the rdp client; maintain correlation between http and rdp sessions.
+- **Myrtille.Web**: C# code. IIS Web application; gateway between the browser and the rdp/ssh client; maintain correlation between http(s) and rdp/ssh sessions.
 - **Myrtille.Setup**: MSI installer.
 
 ## Build
@@ -171,7 +171,7 @@ You can choose the browser you want to use by right-clicking an ASPX page into t
 
 The FreeRDP executable is intended to be run from the "Myrtille.RDP" folder.
 
-You can debug FreeRDP, while an rdp session is active, by attaching the debugger to the process "wfreerdp.exe" (native code).
+You can debug FreeRDP, while an rdp session is active, by attaching the debugger to the process "wfreerdp.exe" (native code). Same for SSH with "Myrtille.SSH.exe" (managed code).
 
 Before first run, retrieve (git clone) the myrtille FreeRDP fork (https://github.com/cedrozor/FreeRDP) into the "Myrtille.RDP" folder and build it there in order to generate "wfreerdp.exe".
 
@@ -182,8 +182,7 @@ Hit F5 to start debugging.
 web browser <-> web gateway <-> wcf services <-> client <-> host
 
 ### Protocols
-web browser <-HTTP(S),XMLHTTP,WS(S)-> web gateway <-WCF-> wcf services <-SYSTEM-> rdp client <-RDP-> rdp server
-web browser <-HTTP(S),XMLHTTP,WS(S)-> web gateway <-WCF-> wcf services <-SYSTEM-> ssh client <-SSH-> ssh server
+web browser <-HTTP(S),XMLHTTP,WS(S)-> web gateway <-WCF-> wcf services <-SYSTEM-> rdp/ssh client <-RDP/SSH-> rdp/ssh server
 
 "SYSTEM" is simply starting the client as a local process, and capture the event of it being stopped.
 
@@ -193,7 +192,7 @@ It has 2 advantages: first, it's a bit faster than using TCP and, second, it gua
 
 After weighing pros and cons, I decided to kept it as is because it also has 2 additional benefits: setting up a named pipe in C++ is a bit simpler than a TCP socket (named pipes are handled as simple files) and having a single setup is easier for the end user.
 		
-web gateway <-IPC-> rdp client
+web gateway <-IPC-> rdp/ssh client
 	
 However, I'm fully aware that it breaks the distributed architecture pattern. Thus, if you want, feel free to move the named pipes management up to the wcf services layer and proxy the data from/to the web gateway.
 
@@ -283,11 +282,11 @@ First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (prefe
 	- Ensure you entered valid connection information (server address, user credentials, etc.).
 	- Ensure the network traffic (websockets and xmlhttp in particular) is not blocked by a firewall, proxy, reverse proxy, VPN or whatever.
 	- Ensure the "Myrtille.Services" Windows service (or console application if running under Visual Studio) is started.
-	- Ensure the RDP client ("wfreerdp.exe") does exists (into the "Myrtille.RDP" output folder, if running under Visual Studio, or into the "bin" folder otherwise); if not, you need to retrieve (git clone) the myrtille FreeRDP fork into the "Myrtille.RDP" folder and build it there.
+	- Ensure the RDP (or SSH) client ("wfreerdp.exe" or "Myrtille.SSH.exe") does exists (into the "Myrtille.RDP" or "Myrtille.SSH" output folder, if running under Visual Studio, or into the "bin" folder otherwise); if not, you need to retrieve (git clone) the myrtille FreeRDP fork into the "Myrtille.RDP" folder and build it there.
 	- Ensure the Microsoft Visual C++ 2015 redistributables (x86) are installed (control panel > programs > programs and features); they are required by the RDP client (myrtille\bin\wfreerdp.exe).
 	- Try to run wfreerdp.exe (just double-click it, no params), into the myrtille binaries folder. if there is a missing dll, or another issue, Windows should popup an error message (i.e.: MSVCR120.dll = MSVC 12 = Microsoft Visual C++ 2013 redistributables, MSVCP140.dll = MSVC 14 = Microsoft Visual C++ 2015 redistributables, etc.). Depending on your build environment and options, you will need the appropriate redistributables.
-	- Check the RDP server configuration (does the user exists, is it a member of the "Remote Desktop Users" group, are Remote Desktop CALs valid?, etc.). You can setup it automatically by importing the "myrtille\bin\RDPSetup.reg" file into registry.
-	- Check the RDP server windows event logs.
+	- Check the RDP (or SSH) server configuration (does the user exists, is it a member of the "Remote Desktop Users" group, are Remote Desktop CALs valid?, etc.). You can setup it automatically by importing the "myrtille\bin\RDPSetup.reg" file into registry.
+	- Check the RDP (or SSH) server windows event logs.
 	- Check the gateway windows event logs, particulary regarding .NET.
 	- Retry with debug enabled and check logs (into the "log" folder). You can change their verbosity level in config (but be warned it will affect peformance and flood the disk if set too verbose).
 
@@ -301,13 +300,13 @@ First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (prefe
 - Nothing happens when I print with the "Myrtille PDF" redirected printer
 	- Although myrtille dialogs should work (same domain origin policy), ensure you don't have a popup blocker (Chrome have one by default), or disable it or add an exception for the myrtille domain
 
-- The RDP session continues to run after clicking "Disconnect"
-	- Check the RDP server configuration (session disconnect timeout in particular). You can setup it automatically by importing the Myrtille "myrtille\bin\RDPSetup.reg" file into registry.
+- The RDP (or SSH) session continues to run after clicking "Disconnect"
+	- Check the RDP (or SSH) server configuration (session disconnect timeout in particular). You can setup it automatically by importing the Myrtille "myrtille\bin\RDPSetup.reg" file into registry.
 
 - Myrtille is slow or buggy
 	- Enable the stats bar to have detailed information about the current connection. Check latency and bandwidth, among other things. **Stats, debug and HTML4 buttons can be enabled into css/Default.css (hidden by default)**
 	- Ensure debug is disabled or otherwise logs are not set to "Information" level (Myrtille "Web.Config" file, "system.diagnostics" section, default is "Warning"). Check logs, if debug is enabled. **FreeRDP logs can be enabled into bin/Myrtille.Services.exe.config ("RemoteSessionLog" key, at the bottom of the file)**. Logs are located into the log folder.
-	- If debug is enabled and you are running Myrtille in debug mode under Visual Studio, you will have the FreeRDP window (session display) and console (rdp events) shown to you. It may help to debug.
+	- If debug is enabled and you are running Myrtille in debug mode under Visual Studio, you will have the FreeRDP window (session display) and console (rdp events) shown to you. Same for SSH. It may help to debug.
 	- Switch from HTML4 to HTML5 rendering, or inversely (should be faster with HTML5).
 	- Check your network configuration (is something filtering the traffic?) and capabilities (high latency or small bandwidth?).
 	- Ensure buffering is enabled on both client and gateway (see configuration / performance tweaks / Debug (https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#configuration--performance-tweaks--debug))
