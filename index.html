@@ -20,7 +20,7 @@
           <a id="forkme_banner" href="https://github.com/cedrozor/myrtille">View on GitHub</a>
 
           <h1 id="project_title">Myrtille</h1>
-          <h2 id="project_tagline">A native HTML4/5 Remote Desktop Protocol client</h2>
+          <h2 id="project_tagline">A native HTML4/5 Remote Desktop Protocol and SSH client</h2>
 		  
 			<a href="https://fr.linkedin.com/in/cedric-coste-a1b9194b"><img src="images/linkedin.png"></a>&nbsp;
 			<a href="https://twitter.com/cedrozor"><img src="images/twitter.png"></a>&nbsp;
@@ -40,12 +40,12 @@
       <section id="main_content" class="inner">
         
         <h3><a id="welcome" class="anchor" href="#welcome" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Welcome to Myrtille!</h3>
-        <p>Myrtille is a straightforward way to connect remote desktops, hosted on Windows Servers and using the RDP protocol, from a web browser.</p>
+        <p>Myrtille is a straightforward way to connect remote desktops and applications, hosted on Windows Servers and using the RDP protocol, from a web browser. New in version 2.0! SSH support</p>
         <p>It just needs a browser (no plugin, extension, application or configuration whatsoever) and thus works on any operating system or device (including touchpads and mobiles).</p>
         <p>This project started back as a PoC in 2007, then became commercial in 2011 before going open source in march 2016.</p>
 
         <h3><a id="overview" class="anchor" href="#overview" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How does it works?</h3>
-        <p>Myrtille is basically a web interface to a standard RDP client running through an HTTP(S) gateway. It sends the user actions up to the RDP server then receives the resulting display.</p>
+        <p>Myrtille is basically a web interface to a standard RDP (or SSH) client running through an HTTP(S) gateway. It sends the user actions up to the RDP (or SSH) server then receives the resulting display.</p>
         <p>By doing so, it works like comparable solutions (<a href="https://github.com/glyptodon/guacamole-client">Guacamole</a> or <a href="https://github.com/FreeRDP/FreeRDP-WebConnect">FreeRDP-WebConnect</a>, to name a few), but is more specifically intended for Windows as it uses IIS and the .NET (C#) framework.</p>
 		<p>It features HTML4 (starting from IE6!) and HTML5 support, file transfer and WebP compression. Many optimizations and a minimalist design makes it an efficient solution.</p>
 
