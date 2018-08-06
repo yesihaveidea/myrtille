@@ -262,8 +262,16 @@ If you wish to create your own enterprise adapter (with a different authenticati
 
 - Keyboard is mapped to english/US (latin QWERTY) layout by default. If you have troubles with some characters/keys not working as expected, try to add that keyboard layout to your server (and select it when connected).
 
+- To connect an Hyper-V VM directly, you have to enter the Hyper-V host as server (hostname or address), the guest VM GUID (https://www.petri.com/get-hyper-v-virtual-machine-process-id-and-guid) and a valid user/password on that host (no domain user). The user must be member of the **"Hyper-V Administrators"** group on the host.
+
+- When connecting an Hyper-V VM directly, the display is limited to the VM resolution (default 1024 x 768) whatever the client (browser) resolution. You can change that resolution into the advanced display settings of the VM (even directly within the session).
+
+- The remote clipboard and the "Myrtille PDF" virtual printer are disabled into an Hyper-V VM direct connection because the RDP virtual channels aren't available in that mode.
+
 ## Troubleshoot
 First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+). Note that IIS must be installed separately, before running the installer (see "Installation").
+
+Also please read notes and limitations above.
 
 - The installation fails
 	- Prerequisites are not downloaded: the installer was run directly using the MSI file; this exclude the bootstrapper (Setup.exe), whose purpose is to check and download/install the prerequisites if necessary

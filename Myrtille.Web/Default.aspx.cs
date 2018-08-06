@@ -259,7 +259,7 @@ namespace Myrtille.Web
                 scale.Value = RemoteSession.ScaleDisplay ? "Unscale" : "Scale";
                 scale.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH;
                 keyboard.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
-                clipboard.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowRemoteClipboard;
+                clipboard.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowRemoteClipboard || !string.IsNullOrEmpty(RemoteSession.VMGuid);
                 files.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowFileTransfer || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain));
                 cad.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH;
                 mrc.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH;
@@ -406,6 +406,7 @@ namespace Myrtille.Web
             var loginHostType = (HostTypeEnum)hostType.SelectedIndex;
             var loginProtocol = (SecurityProtocolEnum)securityProtocol.SelectedIndex;
             var loginServer = string.IsNullOrEmpty(server.Value) ? "localhost" : server.Value;
+            var loginVMGuid = vmGuid.Value;
             var loginDomain = domain.Value;
             var loginUser = user.Value;
             var loginPassword = string.IsNullOrEmpty(passwordHash.Value) ? password.Value : RDPCryptoHelper.DecryptPassword(passwordHash.Value);
@@ -414,11 +415,10 @@ namespace Myrtille.Web
             // connect an host from the hosts list or from a one time session url
             if (_enterpriseSession != null && Request["SD"] != null)
             {
-                long hostId = 0;
-                long lResult = 0;
-                if (long.TryParse(Request["SD"], out lResult))
+                long hostId;
+                if (!long.TryParse(Request["SD"], out hostId))
                 {
-                    hostId = lResult;
+                    hostId = 0;
                 }
 
                 try
@@ -434,6 +434,7 @@ namespace Myrtille.Web
                     loginHostType = connection.HostType;
                     loginProtocol = connection.Protocol;
                     loginServer = !string.IsNullOrEmpty(connection.HostAddress) ? connection.HostAddress : connection.HostName;
+                    loginVMGuid = connection.VMGuid;
                     loginDomain = connection.Domain;
                     loginUser = connection.Username;
                     loginPassword = RDPCryptoHelper.DecryptPassword(connection.Password);
@@ -472,6 +473,7 @@ namespace Myrtille.Web
                     loginHostType,
                     loginProtocol,
                     loginServer,
+                    loginVMGuid,
                     loginDomain,
                     loginUser,
                     loginPassword,
@@ -520,6 +522,7 @@ namespace Myrtille.Web
                         RemoteSession.HostType,
                         RemoteSession.SecurityProtocol,
                         RemoteSession.ServerAddress,
+                        RemoteSession.VMGuid,
                         RemoteSession.UserDomain,
                         RemoteSession.UserName,
                         RemoteSession.StartProgram,
@@ -703,10 +706,11 @@ namespace Myrtille.Web
                 }
 
                 var hostName = e.Item.FindControl("hostName") as HtmlGenericControl;
-                hostName.InnerText = (_enterpriseSession.IsAdmin ? "Edit " : "") + host.HostName;
+                hostName.InnerText = (_enterpriseSession.IsAdmin ? "Edit " : string.Empty) + host.HostName;
                 if (_enterpriseSession.IsAdmin)
                 {
                     hostName.Attributes["class"] = "hostName";
+                    hostName.Attributes["title"] = "edit";
                     hostName.Attributes["onclick"] = string.Format("openPopup('editHostPopup', 'EditHost.aspx?hostId={0}');", host.HostID);
                 }
             }

@@ -29,7 +29,8 @@ namespace Myrtille.Web
         public string HostName;
         public HostTypeEnum HostType;                   // RDP or SSH
         public SecurityProtocolEnum SecurityProtocol;
-        public string ServerAddress;
+        public string ServerAddress;                    // :port, if specified
+        public string VMGuid;
         public string UserDomain;
         public string UserName;
         public string UserPassword;
@@ -57,6 +58,7 @@ namespace Myrtille.Web
             HostTypeEnum hostType,
             SecurityProtocolEnum securityProtocol,
             string serverAddress,
+            string vmGuid,
             string userDomain,
             string userName,
             string userPassword,
@@ -75,6 +77,7 @@ namespace Myrtille.Web
             HostType = hostType;
             SecurityProtocol = securityProtocol;
             ServerAddress = serverAddress;
+            VMGuid = vmGuid;
             UserDomain = userDomain;
             UserName = userName;
             UserPassword = userPassword;

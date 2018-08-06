@@ -1,4 +1,10 @@
-﻿2018-07-31 Version 2.0.0 (stable)
+﻿2018-08-06 Version 2.1.0 (stable)
+	support of Hyper-V VM direct connection (extension of the RDP protocol; doesn't require remote desktop access to be enabled on the guest VM) (thanks jol64)
+	updated documentation for usage and limitations of the Hyper-V connection
+	fixed a potential inversion of arrows and numbers keys (whatever the numlock status)
+	fixed a path issue for the myrtille PDF virtual printer (in debug build or if the printer service runs under a custom account)
+
+2018-07-31 Version 2.0.0 (stable)
 	Resynced FreeRDP (FQDN hotfix, introduced into myrtille 1.7.0, is still active... wfreerdp need some love :/)
 	the RDP security protocol (NLA, TLS, RDP, etc.) can now be selected from the login screen (RDP for compatibility and interactive logon, or in case of NLA issue; see https://github.com/cedrozor/myrtille/issues/116)
 	SSH terminal support (thanks Paul)

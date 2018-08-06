@@ -44,16 +44,16 @@
                     <input type="text" runat="server" id="hostName" title="host name" />
                 </div>
                 <div class="editHostPopupInput">
-                    <h5><label id="hostAddressLabel" for="hostAddress">Host address (optional, uses hostname if not specified)</label></h5>
+                    <h5><label id="hostAddressLabel" for="hostAddress">Host address (:port) (optional, uses hostname if not specified)</label></h5>
                     <input type="text" runat="server" id="hostAddress" title="host address" />
+                </div>
+                <div class="editHostPopupInput" runat="server" id="vmGuidInput">
+                    <h5><label id="vmLabel" for="vmGuid">VM GUID (optional, if the guest is an Hyper-V VM)</label></h5>
+                    <input type="text" runat="server" id="vmGuid" title="VM GUID, for direct connection" />
                 </div>
                 <div class="editHostPopupInput">
                     <h5><label id="groupsAccessLabel" for="groupsAccess">Domain Groups Allowed (comma separated)</label></h5>
                     <input type="text" runat="server" id="groupsAccess" title="groups access"/>
-                </div>
-                <div class="editHostPopupInput" runat="server" id="startProgramInput">
-                    <h5><label id="startProgramLabel" for="startProgram">Start Remote App Program</label></h5>
-                    <input type="text" runat="server" id="startProgram" title="remote program"/>
                 </div>
                 <div class="editHostPopupInput" runat="server" id="rdpSecurityInput">
                     <h5><label id="securityProtocolLabel" for="securityProtocol">RDP Security Protocol</label></h5>
@@ -65,7 +65,11 @@
                         <option value="4">NLA-EXT</option>
                     </select>
                 </div>
-                <div class="editHostPopupInput" runat="server" id="Div1">
+                <div class="editHostPopupInput" runat="server" id="startProgramInput">
+                    <h5><label id="startProgramLabel" for="startProgram">Start Remote App Program</label></h5>
+                    <input type="text" runat="server" id="startProgram" title="remote program to run on session start"/>
+                </div>
+                <div class="editHostPopupInput">
                     <h5><label id="promptCredentialsLabel" for="promptCredentials">Prompt for Credentials</label></h5>
                     <input type="checkbox" runat="server" id="promptCredentials" title="prompt for credentials"/>
                 </div>

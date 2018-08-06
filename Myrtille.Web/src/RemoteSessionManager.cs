@@ -186,6 +186,7 @@ namespace Myrtille.Web
                 // as the process command line can be displayed into the task manager / process explorer, the connection settings (including user credentials) are now passed to the host client through the inputs pipe
                 // their values are set from the login page (using http(s) post), they shouldn't be modified at this step
                 case RemoteSessionCommand.SendServerAddress:
+                case RemoteSessionCommand.SendVMGuid:
                 case RemoteSessionCommand.SendUserDomain:
                 case RemoteSessionCommand.SendUserName:
                 case RemoteSessionCommand.SendUserPassword:

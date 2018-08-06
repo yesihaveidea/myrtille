@@ -70,38 +70,39 @@ function Network(config, dialog, display)
     {
         // connection
         SEND_SERVER_ADDRESS: { value: 0, text: 'SRV' },
-        SEND_USER_DOMAIN: { value: 1, text: 'DOM' },
-        SEND_USER_NAME: { value: 2, text: 'USR' },
-        SEND_USER_PASSWORD: { value: 3, text: 'PWD' },
-        SEND_START_PROGRAM: { value: 4, text: 'PRG' },
-        CONNECT_CLIENT: { value: 5, text: 'CON' },
+        SEND_VM_GUID: { value: 1, text: 'VMG' },
+        SEND_USER_DOMAIN: { value: 2, text: 'DOM' },
+        SEND_USER_NAME: { value: 3, text: 'USR' },
+        SEND_USER_PASSWORD: { value: 4, text: 'PWD' },
+        SEND_START_PROGRAM: { value: 5, text: 'PRG' },
+        CONNECT_CLIENT: { value: 6, text: 'CON' },
 
         // browser
-        SEND_BROWSER_RESIZE: { value: 6, text: 'RSZ' },
+        SEND_BROWSER_RESIZE: { value: 7, text: 'RSZ' },
 
         // keyboard
-        SEND_KEY_UNICODE: { value: 7, text: 'KUC' },
-        SEND_KEY_SCANCODE: { value: 8, text: 'KSC' },
+        SEND_KEY_UNICODE: { value: 8, text: 'KUC' },
+        SEND_KEY_SCANCODE: { value: 9, text: 'KSC' },
 
         // mouse
-        SEND_MOUSE_MOVE: { value: 9, text: 'MMO' },
-        SEND_MOUSE_LEFT_BUTTON: { value: 10, text: 'MLB' },
-        SEND_MOUSE_MIDDLE_BUTTON: { value: 11, text: 'MMB' },
-        SEND_MOUSE_RIGHT_BUTTON: { value: 12, text: 'MRB' },
-        SEND_MOUSE_WHEEL_UP: { value: 13, text: 'MWU' },
-        SEND_MOUSE_WHEEL_DOWN: { value: 14, text: 'MWD' },
+        SEND_MOUSE_MOVE: { value: 10, text: 'MMO' },
+        SEND_MOUSE_LEFT_BUTTON: { value: 11, text: 'MLB' },
+        SEND_MOUSE_MIDDLE_BUTTON: { value: 12, text: 'MMB' },
+        SEND_MOUSE_RIGHT_BUTTON: { value: 13, text: 'MRB' },
+        SEND_MOUSE_WHEEL_UP: { value: 14, text: 'MWU' },
+        SEND_MOUSE_WHEEL_DOWN: { value: 15, text: 'MWD' },
 
         // control
-        SET_STAT_MODE: { value: 15, text: 'STA' },
-        SET_DEBUG_MODE: { value: 16, text: 'DBG' },
-        SET_COMPATIBILITY_MODE: { value: 17, text: 'CMP' },
-        SET_SCALE_DISPLAY: { value: 18, text: 'SCA' },
-        SET_IMAGE_ENCODING: { value: 19, text: 'ECD' },
-        SET_IMAGE_QUALITY: { value: 20, text: 'QLT' },
-        SET_IMAGE_QUANTITY: { value: 21, text: 'QNT' },
-        REQUEST_FULLSCREEN_UPDATE: { value: 22, text: 'FSU' },
-        REQUEST_REMOTE_CLIPBOARD: { value: 23, text: 'CLP' },
-        CLOSE_CLIENT: { value: 24, text: 'CLO' }
+        SET_STAT_MODE: { value: 16, text: 'STA' },
+        SET_DEBUG_MODE: { value: 17, text: 'DBG' },
+        SET_COMPATIBILITY_MODE: { value: 18, text: 'CMP' },
+        SET_SCALE_DISPLAY: { value: 19, text: 'SCA' },
+        SET_IMAGE_ENCODING: { value: 20, text: 'ECD' },
+        SET_IMAGE_QUALITY: { value: 21, text: 'QLT' },
+        SET_IMAGE_QUANTITY: { value: 22, text: 'QNT' },
+        REQUEST_FULLSCREEN_UPDATE: { value: 23, text: 'FSU' },
+        REQUEST_REMOTE_CLIPBOARD: { value: 24, text: 'CLP' },
+        CLOSE_CLIENT: { value: 25, text: 'CLO' }
     };
 
     if (Object.freeze)

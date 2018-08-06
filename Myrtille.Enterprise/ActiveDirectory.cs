@@ -217,6 +217,7 @@ namespace Myrtille.Enterprise
                 {
                     HostName = editHost.HostName,
                     HostAddress = editHost.HostAddress,
+                    VMGuid = editHost.VMGuid,
                     Protocol = editHost.Protocol,
                     HostType = editHost.HostType,
                     StartRemoteProgram = editHost.StartRemoteProgram,
@@ -273,6 +274,7 @@ namespace Myrtille.Enterprise
                     HostID = host.ID,
                     HostName = host.HostName,
                     HostAddress = host.HostAddress,
+                    VMGuid = host.VMGuid,
                     DirectoryGroups = directoryGroups.ToString(),
                     Protocol = host.Protocol,
                     HostType = host.HostType,
@@ -298,6 +300,7 @@ namespace Myrtille.Enterprise
 
                 host.HostName = editHost.HostName;
                 host.HostAddress = editHost.HostAddress;
+                host.VMGuid = editHost.VMGuid;
                 host.Protocol = editHost.Protocol;
                 host.StartRemoteProgram = editHost.StartRemoteProgram;
                 host.PromptForCredentials = editHost.PromptForCredentials;
@@ -416,6 +419,7 @@ namespace Myrtille.Enterprise
                                 HostID = h.ID,
                                 HostName = h.HostName,
                                 HostAddress = h.HostAddress,
+                                VMGuid = h.VMGuid,
                                 HostType = h.HostType,
                                 StartRemoteProgram = h.StartRemoteProgram,
                                 PromptForCredentials = h.PromptForCredentials
@@ -437,6 +441,7 @@ namespace Myrtille.Enterprise
                                 HostID = h.ID,
                                 HostName = h.HostName,
                                 HostAddress = h.HostAddress,
+                                VMGuid = h.VMGuid,
                                 HostType = h.HostType,
                                 StartRemoteProgram = h.StartRemoteProgram,
                                 PromptForCredentials = h.PromptForCredentials
@@ -487,6 +492,8 @@ namespace Myrtille.Enterprise
                                       ,
                                       HostAddress = h.HostAddress
                                       ,
+                                      VMGuid = h.VMGuid
+                                      ,
                                       HostType = h.HostType
                                       ,
                                       Username = s.Username
@@ -517,6 +524,8 @@ namespace Myrtille.Enterprise
                                       HostName = h.HostName
                                       ,
                                       HostAddress = h.HostAddress
+                                      ,
+                                      VMGuid = h.VMGuid
                                       ,
                                       HostType = h.HostType
                                       ,

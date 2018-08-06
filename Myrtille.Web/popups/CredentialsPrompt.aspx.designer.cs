@@ -46,6 +46,6 @@ namespace Myrtille.Web.popups {
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputButton ConnectHost;
+        protected global::System.Web.UI.HtmlControls.HtmlInputSubmit ConnectHost;
     }
 }

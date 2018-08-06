@@ -94,6 +94,7 @@ namespace Myrtille.Web
                                         hostType.Value = _hostType.ToString();
                                         hostName.Value = host.HostName;
                                         hostAddress.Value = host.HostAddress;
+                                        vmGuid.Value = host.VMGuid;
                                         groupsAccess.Value = host.DirectoryGroups;
                                         securityProtocol.SelectedIndex = (int)host.Protocol;
                                         promptCredentials.Checked = host.PromptForCredentials;
@@ -115,6 +116,7 @@ namespace Myrtille.Web
                         deleteHost.Disabled = true;
                     }
 
+                    vmGuidInput.Visible = _hostType == HostTypeEnum.RDP;
                     rdpSecurityInput.Visible = _hostType == HostTypeEnum.RDP;
                     startProgramInput.Visible = _hostType == HostTypeEnum.RDP;
                 }
@@ -149,6 +151,7 @@ namespace Myrtille.Web
                     HostType = _hostType,
                     HostName = hostName.Value,
                     HostAddress = hostAddress.Value,
+                    VMGuid = vmGuid.Value,
                     DirectoryGroups = groupsAccess.Value,
                     Protocol = (SecurityProtocolEnum)securityProtocol.SelectedIndex,
                     StartRemoteProgram = startProgram.Value,

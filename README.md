@@ -14,6 +14,7 @@ More information in the DOCUMENTATION.md file.
 
 ## Features
 - HTTP(S) to RDP and SSH gateway (new in version 2.0.0!)
+- Hyper-V VM direct connection
 - Multifactor Authentication
 - Active Directory integration (hosts management)
 - Session sharing (collaborative mode)
@@ -31,7 +32,7 @@ More information in the DOCUMENTATION.md file.
 ## Requirements
 - Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required.
 - Gateway (myrtille): IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+
-- RDP server: any RDP enabled machine (preferably Windows Server but can also be Windows XP, 7, 8, 10 or Linux XRDP server)
+- RDP server: any RDP enabled machine (preferably Windows Server but can also be Windows XP, 7, 8, 10 or Linux xRDP server)
 - SSH server: any SSH server (tests were made using the built-in Windows 10 OpenSSH server)
 
 ## Resources
@@ -73,6 +74,9 @@ The remote clipboard content can also be retrieved locally with the "Clipboard" 
 You can upload/download file(s) to/from the user documents folder with the "Files" button. Note that it requires the rdp server to be localhost (same machine as the http server) or a domain to be specified. Not available for SSH.
 
 You can print any document on a local or network printer by using the "Myrtille PDF" (redirected) virtual printer. Simply use the print feature of your application, then open/print the downloaded pdf.
+
+From version 2.1.0, you can connect an Hyper-V VM directly (console session). It can be useful if remote desktop access is not enabled on the VM (i.e: Linux VMs), if the VM doesn't have a network connection (or is on a different network for security reasons, or use DHCP) or simply to be able to connect the VM during system startup.
+See [notes and limitations](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#notes-and-limitations) for information to connect an Hyper-V VM and the differences with a standard RDP connection.
 
 ## Third-party
 Myrtille uses the following licensed software:

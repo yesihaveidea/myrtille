@@ -13,11 +13,9 @@ namespace Myrtille.Services
 
             try
             {
-                if (File.Exists(Path.Combine(Path.GetTempPath(), fileName)))
-                {
-                    fileStream = File.Open(Path.Combine(Path.GetTempPath(), fileName), FileMode.Open, FileAccess.Read, FileShare.Read);
-                    Trace.TraceInformation("Downloaded pdf file {0}, remote session {1}", fileName, remoteSessionId);
-                }
+                var systemTempPath = Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine);
+                fileStream = File.Open(Path.Combine(systemTempPath, fileName), FileMode.Open, FileAccess.Read, FileShare.Read);
+                Trace.TraceInformation("Downloaded pdf file {0}, remote session {1}", fileName, remoteSessionId);
             }
             catch (Exception exc)
             {
@@ -32,11 +30,9 @@ namespace Myrtille.Services
         {
             try
             {
-                if (File.Exists(Path.Combine(Path.GetTempPath(), fileName)))
-                {
-                    File.Delete(Path.Combine(Path.GetTempPath(), fileName));
-                    Trace.TraceInformation("Deleted pdf file {0}, remote session {1}", fileName, remoteSessionId);
-                }
+                var systemTempPath = Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine);
+                File.Delete(Path.Combine(systemTempPath, fileName));
+                Trace.TraceInformation("Deleted pdf file {0}, remote session {1}", fileName, remoteSessionId);
             }
             catch (Exception exc)
             {

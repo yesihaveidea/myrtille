@@ -24,38 +24,39 @@ namespace Myrtille.Services.Contracts
     {
         // connection
         SendServerAddress = 0,
-        SendUserDomain = 1,
-        SendUserName = 2,
-        SendUserPassword = 3,
-        SendStartProgram = 4,
-        ConnectClient = 5,
+        SendVMGuid = 1,
+        SendUserDomain = 2,
+        SendUserName = 3,
+        SendUserPassword = 4,
+        SendStartProgram = 5,
+        ConnectClient = 6,
 
         // browser
-        SendBrowserResize = 6,
+        SendBrowserResize = 7,
 
         // keyboard
-        SendKeyUnicode = 7,
-        SendKeyScancode = 8,
+        SendKeyUnicode = 8,
+        SendKeyScancode = 9,
 
         // mouse
-        SendMouseMove = 9,
-        SendMouseLeftButton = 10,
-        SendMouseMiddleButton = 11,
-        SendMouseRightButton = 12,
-        SendMouseWheelUp = 13,
-        SendMouseWheelDown = 14,
+        SendMouseMove = 10,
+        SendMouseLeftButton = 11,
+        SendMouseMiddleButton = 12,
+        SendMouseRightButton = 13,
+        SendMouseWheelUp = 14,
+        SendMouseWheelDown = 15,
 
         // control
-        SetStatMode = 15,
-        SetDebugMode = 16,
-        SetCompatibilityMode = 17,
-        SetScaleDisplay = 18,
-        SetImageEncoding = 19,
-        SetImageQuality = 20,
-        SetImageQuantity = 21,
-        RequestFullscreenUpdate = 22,
-        RequestRemoteClipboard = 23,
-        CloseClient = 24
+        SetStatMode = 16,
+        SetDebugMode = 17,
+        SetCompatibilityMode = 18,
+        SetScaleDisplay = 19,
+        SetImageEncoding = 20,
+        SetImageQuality = 21,
+        SetImageQuantity = 22,
+        RequestFullscreenUpdate = 23,
+        RequestRemoteClipboard = 24,
+        CloseClient = 25
     }
 
     /*
@@ -72,6 +73,7 @@ namespace Myrtille.Services.Contracts
         {
             FromPrefix = new Hashtable();
             FromPrefix["SRV"] = RemoteSessionCommand.SendServerAddress;
+            FromPrefix["VMG"] = RemoteSessionCommand.SendVMGuid;
             FromPrefix["DOM"] = RemoteSessionCommand.SendUserDomain;
             FromPrefix["USR"] = RemoteSessionCommand.SendUserName;
             FromPrefix["PWD"] = RemoteSessionCommand.SendUserPassword;
@@ -99,6 +101,7 @@ namespace Myrtille.Services.Contracts
 
             ToPrefix = new Hashtable();
             ToPrefix[RemoteSessionCommand.SendServerAddress] = "SRV";
+            ToPrefix[RemoteSessionCommand.SendVMGuid] = "VMG";
             ToPrefix[RemoteSessionCommand.SendUserDomain] = "DOM";
             ToPrefix[RemoteSessionCommand.SendUserName] = "USR";
             ToPrefix[RemoteSessionCommand.SendUserPassword] = "PWD";

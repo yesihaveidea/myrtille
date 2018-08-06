@@ -40,6 +40,7 @@ namespace Myrtille.Services
             HostTypeEnum hostType,
             SecurityProtocolEnum securityProtocol,
             string serverAddress,
+            string vmGuid,
             string userDomain,
             string userName,
             string startProgram,
@@ -48,11 +49,12 @@ namespace Myrtille.Services
             bool allowRemoteClipboard,
             bool allowPrintDownload)
         {
-            Trace.TraceInformation("Connecting remote session {0}, type {1}, security {2}, server {3}, domain {4}, user {5}, program {6}",
+            Trace.TraceInformation("Connecting remote session {0}, type {1}, security {2}, server (:port) {3}, vm {4}, domain {5}, user {6}, program {7}",
                 remoteSessionId,
                 hostType,
                 hostType == HostTypeEnum.RDP ? securityProtocol.ToString().ToUpper() : "N/A",
                 serverAddress,
+                hostType == HostTypeEnum.RDP ? (string.IsNullOrEmpty(vmGuid) ? "(none)" : vmGuid) : "N/A",
                 hostType == HostTypeEnum.RDP ? (string.IsNullOrEmpty(userDomain) ? "(none)" : userDomain) : "N/A",
                 userName,
                 hostType == HostTypeEnum.RDP ? (string.IsNullOrEmpty(startProgram) ? "(none)" : startProgram) : "N/A");

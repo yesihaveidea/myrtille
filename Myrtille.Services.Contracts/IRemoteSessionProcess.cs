@@ -32,6 +32,7 @@ namespace Myrtille.Services.Contracts
             HostTypeEnum HostType,
             SecurityProtocolEnum securityProtocol,
             string serverAddress,
+            string vmGuid,
             string userDomain,
             string userName,
             string startProgram,

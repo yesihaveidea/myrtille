@@ -115,7 +115,13 @@
                     <!-- server -->
                     <div class="inputDiv">
                         <label id="serverLabel" for="server">Server (:port)</label>
-                        <input type="text" runat="server" id="server" title="host name or address (:port, if other than the standard 3389 (rdp) or 22 (ssh)). use [] for ipv6. CAUTION! if using a hostname or if you have a connection broker, make sure the DNS is reachable by myrtille (or myrtille has joined the domain)"/>
+                        <input type="text" runat="server" id="server" title="host name or address (:port, if other than the standard 3389 (rdp), 2179 (vm) or 22 (ssh)). use [] for ipv6. CAUTION! if using a hostname or if you have a connection broker, make sure the DNS is reachable by myrtille (or myrtille has joined the domain)"/>
+                    </div>
+
+                    <!-- hyper-v vm guid -->
+                    <div class="inputDiv" id="vmDiv">
+                        <label id="vmLabel" for="vmGuid">VM GUID (optional)</label>
+                        <input type="text" runat="server" id="vmGuid" title="guid of the Hyper-V VM to connect (leave empty for standard RDP connection)"/>
                     </div>
 
                     <!-- domain -->
@@ -200,7 +206,7 @@
                                 <img src="<%# Eval("HostImage").ToString() %>" alt="host" width="128px" height="128px"/>
                             </a>
                             <br/>
-                            <span runat="server" id="hostName" title="edit"></span>
+                            <span runat="server" id="hostName"></span>
                         </div>
                     </ItemTemplate>
                 </asp:Repeater>
@@ -304,6 +310,13 @@
                 {
                     securityProtocolDiv.style.visibility = (hostType.value == 0 ? 'visible' : 'hidden');
                     securityProtocolDiv.style.display = (hostType.value == 0 ? 'block' : 'none');
+                }
+
+                var vmDiv = document.getElementById('vmDiv');
+                if (vmDiv != null)
+                {
+                    vmDiv.style.visibility = (hostType.value == 0 ? 'visible' : 'hidden');
+                    vmDiv.style.display = (hostType.value == 0 ? 'block' : 'none');
                 }
 
                 var domainDiv = document.getElementById('domainDiv');

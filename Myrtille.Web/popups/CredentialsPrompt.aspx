@@ -27,12 +27,12 @@
         <link rel="stylesheet" type="text/css" href="../css/Default.css"/>
 	</head>    
 
-    <body onload="onCredentialSuccess();">
+    <body onload="onCredentialsSuccess();">
         
         <form method="post" runat="server">
             
             <div id="editCredentialPopupInner">
-                <input type="hidden" id="hostID" runat="server" />
+                <input type="hidden" runat="server" id="hostID"/>
                 <span id="editCredentialsPopupTitle">
                     <strong>Login Credentials</strong>
                 </span>
@@ -47,7 +47,7 @@
                 </div>
                 <br/>
                 <div class="editCredentialPopupInput">
-                    <input type="button" runat="server" id="ConnectHost" value="Connect" onserverclick="ConnectButtonClick"/>
+                    <input type="submit" runat="server" id="ConnectHost" value="Connect" onserverclick="ConnectButtonClick"/>
                     <input type="button" id="closePopupButton" value="Close" onclick="parent.closePopup();"/>
                 </div>
             </div>
@@ -55,8 +55,8 @@
 
 		<script type="text/javascript" language="javascript" defer="defer">
 
-            // edit host success
-            function onCredentialSuccess()
+            // enter credentials success
+            function onCredentialsSuccess()
             {
                 var idx = window.location.search.indexOf('edit=success');
                 if (idx != -1)
@@ -83,7 +83,7 @@
     
                     var connectUrl = '/' + pathname + '/?SD=' + hostID.value + '&__EVENTTARGET=&__EVENTARGUMENT=&connect=Connect%21';
 
-                    parent.location.href = connectUrl ;
+                    parent.location.href = connectUrl;
                 }
             }
 

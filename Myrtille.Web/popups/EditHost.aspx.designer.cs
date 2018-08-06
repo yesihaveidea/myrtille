@@ -40,6 +40,24 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlInputText hostAddress;
         
         /// <summary>
+        /// vmGuidInput control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl vmGuidInput;
+        
+        /// <summary>
+        /// vmGuid control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputText vmGuid;
+        
+        /// <summary>
         /// groupsAccess control.
         /// </summary>
         /// <remarks>
@@ -47,24 +65,6 @@ namespace Myrtille.Web {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputText groupsAccess;
-        
-        /// <summary>
-        /// startProgramInput control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl startProgramInput;
-        
-        /// <summary>
-        /// startProgram control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText startProgram;
         
         /// <summary>
         /// rdpSecurityInput control.
@@ -85,13 +85,22 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlSelect securityProtocol;
         
         /// <summary>
-        /// Div1 control.
+        /// startProgramInput control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl Div1;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl startProgramInput;
+        
+        /// <summary>
+        /// startProgram control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputText startProgram;
         
         /// <summary>
         /// promptCredentials control.

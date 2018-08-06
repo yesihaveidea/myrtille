@@ -110,6 +110,9 @@ namespace Myrtille.Web
                     // send connection settings
                     RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendServerAddress, string.IsNullOrEmpty(RemoteSession.ServerAddress) ? "localhost" : RemoteSession.ServerAddress);
 
+                    if (!string.IsNullOrEmpty(RemoteSession.VMGuid))
+                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendVMGuid, RemoteSession.VMGuid);
+
                     if (!string.IsNullOrEmpty(RemoteSession.UserDomain))
                         RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendUserDomain, RemoteSession.UserDomain);
 

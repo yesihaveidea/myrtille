@@ -103,6 +103,7 @@ label,
 }
 
 #server,
+#vmGuid,
 #domain,
 #user,
 #password,
@@ -329,8 +330,8 @@ label,
 #editHostPopup,
 #editHostPopupInner
 {
-    width: 400px;
-    height: 360px;
+    width: 420px;
+    height: 420px;
 }
 
 #editHostPopupInner

@@ -24,6 +24,7 @@ namespace Myrtille.Services.Contracts
         public long HostID { get; set; }
         public string HostName { get; set; }
         public string HostAddress { get; set; }
+        public string VMGuid { get; set; }
         public SecurityProtocolEnum Protocol { get; set; }
         public HostTypeEnum HostType { get; set; }
         public string StartRemoteProgram { get; set; }

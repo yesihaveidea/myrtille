@@ -300,8 +300,9 @@ namespace Myrtille.Printer
                 !string.IsNullOrEmpty(spooler.StartInfo.EnvironmentVariables["REDMON_DOCNAME"]) &&
                 spooler.StartInfo.EnvironmentVariables["REDMON_DOCNAME"].StartsWith("FREERDPjob"))
             {
+                var systemTempPath = Environment.GetEnvironmentVariable("TEMP", EnvironmentVariableTarget.Machine);
                 var pdfFile = string.Concat(spooler.StartInfo.EnvironmentVariables["REDMON_DOCNAME"], ".pdf");
-                filename = Path.Combine(Path.GetTempPath(), pdfFile);
+                filename = Path.Combine(systemTempPath, pdfFile);
             }
 
             return filename;
