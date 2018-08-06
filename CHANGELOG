@@ -3,6 +3,7 @@
 	updated documentation for usage and limitations of the Hyper-V connection
 	fixed a potential inversion of arrows and numbers keys (whatever the numlock status)
 	fixed a path issue for the myrtille PDF virtual printer (in debug build or if the printer service runs under a custom account)
+	fixed the files popup which always downloaded the first document, regardless of the selected one (regression from version 1.9.0)
 
 2018-07-31 Version 2.0.0 (stable)
 	Resynced FreeRDP (FQDN hotfix, introduced into myrtille 1.7.0, is still active... wfreerdp need some love :/)

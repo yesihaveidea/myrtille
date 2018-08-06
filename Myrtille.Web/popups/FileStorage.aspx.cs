@@ -40,17 +40,7 @@ namespace Myrtille.Web
             EventArgs e)
         {
             _fileStorageClient = new FileStorageClient();
-        }
 
-        /// <summary>
-        /// page load (postback data is now available)
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void Page_Load(
-            object sender,
-            EventArgs e)
-        {
             // retrieve the active remote session
             try
             {
