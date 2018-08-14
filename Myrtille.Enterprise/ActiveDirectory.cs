@@ -218,6 +218,7 @@ namespace Myrtille.Enterprise
                     HostName = editHost.HostName,
                     HostAddress = editHost.HostAddress,
                     VMGuid = editHost.VMGuid,
+                    VMEnhancedMode = editHost.VMEnhancedMode,
                     Protocol = editHost.Protocol,
                     HostType = editHost.HostType,
                     StartRemoteProgram = editHost.StartRemoteProgram,
@@ -275,6 +276,7 @@ namespace Myrtille.Enterprise
                     HostName = host.HostName,
                     HostAddress = host.HostAddress,
                     VMGuid = host.VMGuid,
+                    VMEnhancedMode = host.VMEnhancedMode,
                     DirectoryGroups = directoryGroups.ToString(),
                     Protocol = host.Protocol,
                     HostType = host.HostType,
@@ -301,6 +303,7 @@ namespace Myrtille.Enterprise
                 host.HostName = editHost.HostName;
                 host.HostAddress = editHost.HostAddress;
                 host.VMGuid = editHost.VMGuid;
+                host.VMEnhancedMode = editHost.VMEnhancedMode;
                 host.Protocol = editHost.Protocol;
                 host.StartRemoteProgram = editHost.StartRemoteProgram;
                 host.PromptForCredentials = editHost.PromptForCredentials;
@@ -420,6 +423,7 @@ namespace Myrtille.Enterprise
                                 HostName = h.HostName,
                                 HostAddress = h.HostAddress,
                                 VMGuid = h.VMGuid,
+                                VMEnhancedMode = h.VMEnhancedMode,
                                 HostType = h.HostType,
                                 StartRemoteProgram = h.StartRemoteProgram,
                                 PromptForCredentials = h.PromptForCredentials
@@ -442,6 +446,7 @@ namespace Myrtille.Enterprise
                                 HostName = h.HostName,
                                 HostAddress = h.HostAddress,
                                 VMGuid = h.VMGuid,
+                                VMEnhancedMode = h.VMEnhancedMode,
                                 HostType = h.HostType,
                                 StartRemoteProgram = h.StartRemoteProgram,
                                 PromptForCredentials = h.PromptForCredentials
@@ -494,6 +499,8 @@ namespace Myrtille.Enterprise
                                       ,
                                       VMGuid = h.VMGuid
                                       ,
+                                      VMEnhancedMode = h.VMEnhancedMode
+                                      ,
                                       HostType = h.HostType
                                       ,
                                       Username = s.Username
@@ -526,6 +533,8 @@ namespace Myrtille.Enterprise
                                       HostAddress = h.HostAddress
                                       ,
                                       VMGuid = h.VMGuid
+                                      ,
+                                      VMEnhancedMode = h.VMEnhancedMode
                                       ,
                                       HostType = h.HostType
                                       ,

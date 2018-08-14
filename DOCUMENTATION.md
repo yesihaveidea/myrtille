@@ -262,11 +262,11 @@ If you wish to create your own enterprise adapter (with a different authenticati
 
 - Keyboard is mapped to english/US (latin QWERTY) layout by default. If you have troubles with some characters/keys not working as expected, try to add that keyboard layout to your server (and select it when connected).
 
-- To connect an Hyper-V VM, you have to enter the Hyper-V host as server (hostname or address), the guest VM GUID (https://www.petri.com/get-hyper-v-virtual-machine-process-id-and-guid) and a valid user/password on that host (no domain user). The user must be member of the **"Hyper-V Administrators"** group on the host.
+- To connect an Hyper-V VM, you have to enter the Hyper-V host as server (hostname or address), the guest VM GUID (https://www.petri.com/get-hyper-v-virtual-machine-process-id-and-guid) and a valid user/password on the Hyper-V host (authentication is done locally). The user must be member of the **"Hyper-V Administrators"** group or granted access to the VM with the **Grant-VMConnectAccess** cmdlet (https://docs.microsoft.com/en-us/powershell/module/hyper-v/grant-vmconnectaccess?view=win10-ps). The VM will then request authentication on its own (and you will be able to use a domain user, if needed).
 
-- When connecting an Hyper-V VM, the display is limited to the VM resolution (default 1024 x 768) whatever the client (browser) resolution. You can change that resolution into the advanced display settings of the VM (even directly within the session).
+- When connecting an Hyper-V VM, the display is limited to the VM resolution (default 1024 x 768) whatever the client (browser) resolution. You can change that resolution into the advanced display settings of the VM (even directly within the session, if the connected user have enough privileges).
 
-- The remote clipboard and the "Myrtille PDF" virtual printer are disabled into an Hyper-V VM connection because the RDP virtual channels aren't available in that mode.
+- If enhanced mode is not supported by the VM, or disabled, the remote clipboard and the "Myrtille PDF" virtual printer are not available into the session. See https://www.tenforums.com/tutorials/57136-turn-off-hyper-v-enhanced-session-mode-windows-10-a.html for Windows 10 and http://www.systemcentercentral.com/what-is-enhanced-session-mode-in-windows-server-2012-r2-hyper-v-and-when-should-i-use-it/ for others versions.
 
 - The "Start program from url" feature doesn't work with an Hyper-V VM connection.
 

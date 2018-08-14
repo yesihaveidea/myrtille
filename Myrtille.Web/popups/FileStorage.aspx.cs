@@ -54,8 +54,12 @@ namespace Myrtille.Web
                 // user credentials will be checked prior to any file operation
                 // if possible, use SSL to communicate with the service
                 if ((_remoteSession.State == RemoteSessionState.Connecting || _remoteSession.State == RemoteSessionState.Connected) &&
+                    Session.SessionID.Equals(_remoteSession.OwnerSessionID) &&
+                    _remoteSession.HostType != HostTypeEnum.SSH &&
+                    _remoteSession.AllowFileTransfer &&
                     (_remoteSession.ServerAddress.ToLower() == "localhost" || _remoteSession.ServerAddress == "127.0.0.1" || _remoteSession.ServerAddress == "[::1]" || _remoteSession.ServerAddress == Request.Url.Host || !string.IsNullOrEmpty(_remoteSession.UserDomain)) &&
-                    !string.IsNullOrEmpty(_remoteSession.UserName) && !string.IsNullOrEmpty(_remoteSession.UserPassword))
+                    !string.IsNullOrEmpty(_remoteSession.UserName) && !string.IsNullOrEmpty(_remoteSession.UserPassword) &&
+                    string.IsNullOrEmpty(_remoteSession.VMGuid))
                 {
                     try
                     {

@@ -25,6 +25,7 @@ namespace Myrtille.Services.Contracts
         public string HostName { get; set; }
         public string HostAddress { get; set; }
         public string VMGuid { get; set; }
+        public bool VMEnhancedMode { get; set; }
         public string DirectoryGroups { get; set; }
         public SecurityProtocolEnum Protocol { get; set; }
         public HostTypeEnum HostType { get; set; }

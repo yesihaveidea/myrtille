@@ -95,6 +95,7 @@ namespace Myrtille.Web
                                         hostName.Value = host.HostName;
                                         hostAddress.Value = host.HostAddress;
                                         vmGuid.Value = host.VMGuid;
+                                        vmEnhancedMode.Checked = host.VMEnhancedMode;
                                         groupsAccess.Value = host.DirectoryGroups;
                                         securityProtocol.SelectedIndex = (int)host.Protocol;
                                         promptCredentials.Checked = host.PromptForCredentials;
@@ -117,6 +118,7 @@ namespace Myrtille.Web
                     }
 
                     vmGuidInput.Visible = _hostType == HostTypeEnum.RDP;
+                    vmEnhancedModeInput.Visible = _hostType == HostTypeEnum.RDP;
                     rdpSecurityInput.Visible = _hostType == HostTypeEnum.RDP;
                     startProgramInput.Visible = _hostType == HostTypeEnum.RDP;
                 }
@@ -152,6 +154,7 @@ namespace Myrtille.Web
                     HostName = hostName.Value,
                     HostAddress = hostAddress.Value,
                     VMGuid = vmGuid.Value,
+                    VMEnhancedMode = vmEnhancedMode.Checked,
                     DirectoryGroups = groupsAccess.Value,
                     Protocol = (SecurityProtocolEnum)securityProtocol.SelectedIndex,
                     StartRemoteProgram = startProgram.Value,

@@ -111,7 +111,7 @@ namespace Myrtille.Web
                     RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendServerAddress, string.IsNullOrEmpty(RemoteSession.ServerAddress) ? "localhost" : RemoteSession.ServerAddress);
 
                     if (!string.IsNullOrEmpty(RemoteSession.VMGuid))
-                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendVMGuid, RemoteSession.VMGuid);
+                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendVMGuid, string.Concat(RemoteSession.VMGuid, string.Format(";EnhancedMode={0}", RemoteSession.VMEnhancedMode ? "1" : "0")));
 
                     if (!string.IsNullOrEmpty(RemoteSession.UserDomain))
                         RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendUserDomain, RemoteSession.UserDomain);

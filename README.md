@@ -75,7 +75,7 @@ You can upload/download file(s) to/from the user documents folder with the "File
 
 You can print any document on a local or network printer by using the "Myrtille PDF" (redirected) virtual printer. Simply use the print feature of your application, then open/print the downloaded pdf.
 
-From version 2.1.0, you can connect an Hyper-V VM directly (console session). It can be useful if remote desktop access is not enabled on the VM (i.e: Linux VMs), if the VM doesn't have a network connection (or is on a different network for security reasons, or use DHCP) or simply to be able to connect the VM during system startup.
+From version 2.1.0, you can connect an Hyper-V VM directly (console session). It can be useful if remote desktop access is not enabled on the VM (i.e: Linux VMs), if the VM doesn't have a network connection (or is on a different network for security reasons, or use DHCP) or simply to be able to connect the VM during system startup or shutdown.
 See [notes and limitations](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#notes-and-limitations) for information to connect an Hyper-V VM and the differences with a standard RDP connection.
 
 ## Third-party

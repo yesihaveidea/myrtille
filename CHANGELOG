@@ -1,4 +1,12 @@
-﻿2018-08-06 Version 2.1.0 (stable)
+﻿2018-08-14 Version 2.1.1 (stable)
+	Resynced FreeRDP (2.0.0-dev4)
+	Hyper-V VM direct connection is now labelled "RDP over VM bus" into the login screen as a distinct host type
+	login form inputs are shown/hidden depending of the selected host type
+	added support of enhanced mode for Hyper-V VM direct connection (faster rendering and remote clipboard/printer are available) (thanks jol64)
+	added the name of the connected user into the toolbar (in addition to the connected server) when it's possible to retrieve it (standard rdp connection and non interactive logon)
+	updated documentation
+
+2018-08-06 Version 2.1.0 (stable)
 	support of Hyper-V VM direct connection (extension of the RDP protocol; doesn't require remote desktop access to be enabled on the guest VM) (thanks jol64)
 	updated documentation for usage and limitations of the Hyper-V connection
 	fixed a potential inversion of arrows and numbers keys (whatever the numlock status)

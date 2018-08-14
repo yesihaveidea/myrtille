@@ -114,6 +114,12 @@ label,
     margin-top: 2px;
 }
 
+#vmEnhancedMode
+{
+    margin-top: 6px;
+    margin-left: 0px;
+}
+
 /* program to run is better defined into an URL, but can be enabled into the login screen */
 #programLabel,
 #program
@@ -160,6 +166,23 @@ label,
     /* if needed */
 }
 
+#enterpriseUserInfo
+{
+    width: 250px;
+}
+
+#newRDPHost,
+#newSSHHost,
+#logout
+{
+    width: 150px;
+}
+
+#hostsList
+{
+    /* if needed */
+}
+
 .hostDiv
 {
     display: inline-block;
@@ -202,12 +225,17 @@ label,
     display: inline-block;
 }
 
-/* server info */
+/* connection */
+#serverInfo,
+#userInfo
+{
+    float: left;
+    width: 250px;
+}
+
 #serverInfo
 {
     margin-left: 23px;
-    float: left;
-    width: 12%;
 }
 
 /* controls */
@@ -224,7 +252,7 @@ label,
 #disconnect
 {
     float: left;
-    width: 9%;
+    width: 150px;
 }
 
 /* debug and browser mode are disabled by default (to enable for test or diagnostic, just comment out the css below and tweak the controls width above) */
@@ -331,7 +359,7 @@ label,
 #editHostPopupInner
 {
     width: 420px;
-    height: 420px;
+    height: 450px;
 }
 
 #editHostPopupInner

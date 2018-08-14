@@ -96,6 +96,7 @@
                         <label id="hostTypeLabel" for="hostType">Protocol</label>
                         <select runat="server" id="hostType" onchange="onHostTypeChange(this);" title="host type">
                             <option value="0" selected="selected">RDP</option>
+                            <option value="0">RDP over VM bus (Hyper-V)</option>
                             <option value="1">SSH</option>
                         </select>
                     </div>
@@ -103,7 +104,7 @@
                     <!-- security -->
                     <div class="inputDiv" id="securityProtocolDiv">
                         <label id="securityProtocolLabel" for="securityProtocol">Security</label>
-                        <select runat="server" id="securityProtocol" title="RDP security. NLA = safest, RDP = backward compatibility (if the server doesn't enforce NLA) and interactive logon (leave user and password empty below); AUTO if not sure">
+                        <select runat="server" id="securityProtocol" title="NLA = safest, RDP = backward compatibility (if the server doesn't enforce NLA) and interactive logon (leave user and password empty); AUTO for Hyper-V VM or if not sure">
                             <option value="0" selected="selected">AUTO</option>
                             <option value="1">RDP</option>
                             <option value="2">TLS</option>
@@ -115,13 +116,24 @@
                     <!-- server -->
                     <div class="inputDiv">
                         <label id="serverLabel" for="server">Server (:port)</label>
-                        <input type="text" runat="server" id="server" title="host name or address (:port, if other than the standard 3389 (rdp), 2179 (vm) or 22 (ssh)). use [] for ipv6. CAUTION! if using a hostname or if you have a connection broker, make sure the DNS is reachable by myrtille (or myrtille has joined the domain)"/>
+                        <input type="text" runat="server" id="server" title="host name or address (:port, if other than the standard 3389 (rdp), 2179 (rdp over vm bus) or 22 (ssh)). use [] for ipv6. CAUTION! if using a hostname or if you have a connection broker, make sure the DNS is reachable by myrtille (or myrtille has joined the domain)"/>
                     </div>
 
-                    <!-- hyper-v vm guid -->
-                    <div class="inputDiv" id="vmDiv">
-                        <label id="vmLabel" for="vmGuid">VM GUID (optional)</label>
-                        <input type="text" runat="server" id="vmGuid" title="guid of the Hyper-V VM to connect (leave empty for standard RDP connection)"/>
+                    <!-- hyper-v -->
+                    <div id="vmDiv" style="visibility:hidden;display:none;">
+
+                        <!-- vm guid -->
+                        <div class="inputDiv" id="vmGuidDiv">
+                            <label id="vmGuidLabel" for="vmGuid">VM GUID</label>
+                            <input type="text" runat="server" id="vmGuid" title="guid of the Hyper-V VM to connect"/>
+                        </div>
+
+                        <!-- enhanced mode -->
+                        <div class="inputDiv" id="vmEnhancedModeDiv">
+                            <label id="vmEnhancedModeLabel" for="vmEnhancedMode">VM Enhanced Mode</label>
+                            <input type="checkbox" runat="server" id="vmEnhancedMode" title="faster display and clipboard/printer redirection, if supported by the guest VM"/>
+                        </div>
+
                     </div>
 
                     <!-- domain -->
@@ -187,8 +199,11 @@
                 
                 <div id="hostsControl">
 
+                    <!-- enterprise user info -->
+                    <input type="text" runat="server" id="enterpriseUserInfo" title="logged in user" disabled="disabled"/>
+
                     <!-- new rdp host -->
-                    <input type="button" runat="server" id="newRDPHost" value="New RDP Host" onclick="openPopup('editHostPopup', 'EditHost.aspx?hostType=RDP');" title="New RDP Host"/>
+                    <input type="button" runat="server" id="newRDPHost" value="New RDP Host" onclick="openPopup('editHostPopup', 'EditHost.aspx?hostType=RDP');" title="New RDP Host (standard or over VM bus)"/>
 
                     <!-- new ssh host -->
                     <input type="button" runat="server" id="newSSHHost" value="New SSH Host" onclick="openPopup('editHostPopup', 'EditHost.aspx?hostType=SSH');" title="New SSH Host"/>
@@ -226,6 +241,9 @@
 
                 <!-- server info -->
                 <input type="text" runat="server" id="serverInfo" title="connected server" disabled="disabled"/>
+
+                <!-- user info -->
+                <input type="text" runat="server" id="userInfo" title="connected user" disabled="disabled"/>
 
                 <!-- stat bar -->
                 <input type="button" runat="server" id="stat" value="Show Stat" onclick="toggleStatMode();" title="display network and rendering info" disabled="disabled"/>
@@ -308,22 +326,22 @@
                 var securityProtocolDiv = document.getElementById('securityProtocolDiv');
                 if (securityProtocolDiv != null)
                 {
-                    securityProtocolDiv.style.visibility = (hostType.value == 0 ? 'visible' : 'hidden');
-                    securityProtocolDiv.style.display = (hostType.value == 0 ? 'block' : 'none');
+                    securityProtocolDiv.style.visibility = (hostType.selectedIndex == 0 ? 'visible' : 'hidden');
+                    securityProtocolDiv.style.display = (hostType.selectedIndex == 0 ? 'block' : 'none');
                 }
 
                 var vmDiv = document.getElementById('vmDiv');
                 if (vmDiv != null)
                 {
-                    vmDiv.style.visibility = (hostType.value == 0 ? 'visible' : 'hidden');
-                    vmDiv.style.display = (hostType.value == 0 ? 'block' : 'none');
+                    vmDiv.style.visibility = (hostType.selectedIndex == 1 ? 'visible' : 'hidden');
+                    vmDiv.style.display = (hostType.selectedIndex == 1 ? 'block' : 'none');
                 }
 
                 var domainDiv = document.getElementById('domainDiv');
                 if (domainDiv != null)
                 {
-                    domainDiv.style.visibility = (hostType.value == 0 ? 'visible' : 'hidden');
-                    domainDiv.style.display = (hostType.value == 0 ? 'block' : 'none');
+                    domainDiv.style.visibility = (hostType.selectedIndex == 0 ? 'visible' : 'hidden');
+                    domainDiv.style.display = (hostType.selectedIndex == 0 ? 'block' : 'none');
                 }
             }
 

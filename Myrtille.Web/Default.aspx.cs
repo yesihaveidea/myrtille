@@ -249,7 +249,9 @@ namespace Myrtille.Web
             {
                 toolbarToggle.Style["visibility"] = "visible";
                 toolbarToggle.Style["display"] = "block";
-                serverInfo.Value = !string.IsNullOrEmpty(RemoteSession.HostName) ? RemoteSession.HostName : RemoteSession.ServerAddress;
+                serverInfo.Value = !string.IsNullOrEmpty(RemoteSession.VMGuid) ? RemoteSession.VMGuid : (!string.IsNullOrEmpty(RemoteSession.HostName) ? RemoteSession.HostName : RemoteSession.ServerAddress);
+                userInfo.Value = !string.IsNullOrEmpty(RemoteSession.VMGuid) || RemoteSession.SecurityProtocol == SecurityProtocolEnum.rdp ? string.Empty : RemoteSession.UserName;
+                userInfo.Visible = !string.IsNullOrEmpty(userInfo.Value);
                 stat.Value = RemoteSession.StatMode ? "Hide Stat" : "Show Stat";
                 stat.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
                 debug.Value = RemoteSession.DebugMode ? "Hide Debug" : "Show Debug";
@@ -259,8 +261,8 @@ namespace Myrtille.Web
                 scale.Value = RemoteSession.ScaleDisplay ? "Unscale" : "Scale";
                 scale.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH;
                 keyboard.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
-                clipboard.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowRemoteClipboard || !string.IsNullOrEmpty(RemoteSession.VMGuid);
-                files.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowFileTransfer || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain));
+                clipboard.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowRemoteClipboard || (!string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode);
+                files.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowFileTransfer || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain)) || !string.IsNullOrEmpty(RemoteSession.VMGuid);
                 cad.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH;
                 mrc.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH;
                 share.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || !RemoteSession.AllowSessionSharing;
@@ -270,6 +272,8 @@ namespace Myrtille.Web
             else if (_enterpriseSession != null && _enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.NONE)
             {
                 hosts.Visible = true;
+                enterpriseUserInfo.Value = _enterpriseSession.UserName;
+                enterpriseUserInfo.Visible = !string.IsNullOrEmpty(enterpriseUserInfo.Value);
                 newRDPHost.Visible = _enterpriseSession.IsAdmin;
                 newSSHHost.Visible = _enterpriseSession.IsAdmin;
                 hostsList.DataSource = _enterpriseClient.GetSessionHosts(_enterpriseSession.SessionID);
@@ -317,7 +321,7 @@ namespace Myrtille.Web
                 return;
 
             // one time usage enterprise session url
-            if (Request["SI"] != null && Request["SD"] != null && Request["SK"] != null)
+            if (_enterpriseSession == null && Request["SI"] != null && Request["SD"] != null && Request["SK"] != null)
             {
                 CreateEnterpriseSessionFromUrl();
             }
@@ -403,10 +407,11 @@ namespace Myrtille.Web
         {
             // connection parameters
             string loginHostName = null;
-            var loginHostType = (HostTypeEnum)hostType.SelectedIndex;
+            var loginHostType = (HostTypeEnum)Convert.ToInt32(hostType.Value);
             var loginProtocol = (SecurityProtocolEnum)securityProtocol.SelectedIndex;
             var loginServer = string.IsNullOrEmpty(server.Value) ? "localhost" : server.Value;
             var loginVMGuid = vmGuid.Value;
+            var loginVMEnhancedMode = vmEnhancedMode.Checked;
             var loginDomain = domain.Value;
             var loginUser = user.Value;
             var loginPassword = string.IsNullOrEmpty(passwordHash.Value) ? password.Value : RDPCryptoHelper.DecryptPassword(passwordHash.Value);
@@ -435,6 +440,7 @@ namespace Myrtille.Web
                     loginProtocol = connection.Protocol;
                     loginServer = !string.IsNullOrEmpty(connection.HostAddress) ? connection.HostAddress : connection.HostName;
                     loginVMGuid = connection.VMGuid;
+                    loginVMEnhancedMode = connection.VMEnhancedMode;
                     loginDomain = connection.Domain;
                     loginUser = connection.Username;
                     loginPassword = RDPCryptoHelper.DecryptPassword(connection.Password);
@@ -474,6 +480,7 @@ namespace Myrtille.Web
                     loginProtocol,
                     loginServer,
                     loginVMGuid,
+                    loginVMEnhancedMode,
                     loginDomain,
                     loginUser,
                     loginPassword,

@@ -21,6 +21,7 @@ namespace Myrtille.Services.Contracts
 {
     public class EnterpriseSession
     {
+        public string UserName { get; set; }
         public bool IsAdmin { get; set; }
         public string SessionID { get; set; }
         public string SessionKey { get; set; }

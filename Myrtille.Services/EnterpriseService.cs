@@ -37,7 +37,12 @@ namespace Myrtille.Services
             try
             {
                 Trace.TraceInformation("Requesting authentication of user {0}", username);
-                return Program._enterpriseAdapter.Authenticate(username, password, Program._adminGroup, Program._enterpriseDomain);
+                var result = Program._enterpriseAdapter.Authenticate(username, password, Program._adminGroup, Program._enterpriseDomain);
+                if (result != null)
+                {
+                    result.UserName = username;
+                }
+                return result;
             }
             catch (Exception ex)
             {

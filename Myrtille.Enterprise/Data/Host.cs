@@ -35,6 +35,8 @@ namespace Myrtille.Enterprise
 
         public string VMGuid { get; set; }
 
+        public bool VMEnhancedMode { get; set; }
+
         public SecurityProtocolEnum Protocol { get; set; }
 
         public HostTypeEnum HostType { get; set; }

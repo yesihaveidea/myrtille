@@ -103,6 +103,15 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlInputText vmGuid;
         
         /// <summary>
+        /// vmEnhancedMode control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox vmEnhancedMode;
+        
+        /// <summary>
         /// domain control.
         /// </summary>
         /// <remarks>
@@ -202,6 +211,15 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl hosts;
         
         /// <summary>
+        /// enterpriseUserInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputText enterpriseUserInfo;
+        
+        /// <summary>
         /// newRDPHost control.
         /// </summary>
         /// <remarks>
@@ -263,6 +281,15 @@ namespace Myrtille.Web {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputText serverInfo;
+        
+        /// <summary>
+        /// userInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputText userInfo;
         
         /// <summary>
         /// stat control.

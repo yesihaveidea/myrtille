@@ -58,6 +58,24 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlInputText vmGuid;
         
         /// <summary>
+        /// vmEnhancedModeInput control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl vmEnhancedModeInput;
+        
+        /// <summary>
+        /// vmEnhancedMode control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox vmEnhancedMode;
+        
+        /// <summary>
         /// groupsAccess control.
         /// </summary>
         /// <remarks>
