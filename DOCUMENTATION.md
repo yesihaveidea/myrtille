@@ -66,6 +66,10 @@ The pre version 1.5.0 syntax ("&password=*password*") is still supported, but it
 
 The parameters values **must be URL encoded**. You can use a tool like http://www.url-encode-decode.com/ (just copy & paste the encoded parameters into the URL).
 
+If you want to connect an Hyper-V VM automatically, add the **"&vmGuid="** parameter (and remove "&domain=" and "&program="). For enhanced mode, also add **"&vmEnhancedMode=checked"**.
+
+For SSH auto-connection, add **"&hostType=1"** (and remove "&domain=" and "&program=").
+
 ### Password Hash
 To generate a password hash, you can use the powershell script "password51.ps1" on the myrtille gateway (requires access to the machine). The script is located into the myrtille bin folder at runtime or into the "Myrtille.Services" project under Visual Studio.
 - Run the script (from its location folder): ". .\password51.ps1" (if needed, see powershell script execution policy: https://technet.microsoft.com/en-us/library/ee176961.aspx)
