@@ -1,4 +1,7 @@
-﻿2018-08-14 Version 2.1.1 (stable)
+﻿2018-08-19 Version 2.1.2 (stable)
+	fixed an ipv6 connection issue (that may occurred when checking the link-local ipv6 address)
+
+2018-08-14 Version 2.1.1 (stable)
 	Resynced FreeRDP (2.0.0-dev4)
 	Hyper-V VM direct connection is now labelled "RDP over VM bus" into the login screen as a distinct host type
 	login form inputs are shown/hidden depending of the selected host type
