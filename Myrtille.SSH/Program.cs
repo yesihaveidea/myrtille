@@ -244,7 +244,13 @@ namespace Myrtille.SSH
                 if (string.IsNullOrEmpty(Password))
                     throw new SshAuthenticationException("Missing Password");
 
-                var connectionInfo = new ConnectionInfo(ServerAddress, UserName, new PasswordAuthenticationMethod(UserName, Password));
+                var addrParts = ServerAddress.Split(':');
+                var addrHost = addrParts[0];
+                int addrPort;
+                if (addrParts.Length < 2 || !int.TryParse(addrParts[1], out addrPort))
+                    addrPort = 22;
+
+                var connectionInfo = new ConnectionInfo(addrHost, addrPort, UserName, new PasswordAuthenticationMethod(UserName, Password));
                 connectionInfo.Encoding = Encoding.UTF8;
 
                 client = new SshClient(connectionInfo);
