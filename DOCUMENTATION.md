@@ -209,10 +209,10 @@ In addition to 2fa, an access control could be enforced to allow connections onl
 
 The adapter has been written to use a platform provided by Olive Innovations and named OASIS. It's free to use up to 10 users; to use this service follow these instructions:
 
-- Visit https://oasis.oliveinnovations.com and register for free
+- Visit https://www.oliveinnovations.com and register for free
 - Once logged in, create a User Group (into the menu select User Groups), then click New, input a Name (i.e. Myrtille) and save
 - Create a user (choose Users from the menu), then click New, input user details and tick the box to send register by email (**IMPORTANT** the username must be the same as the username you will login with myrtille; when registering via email, the user will have a link to complete the registration) and save. Into the user details page, select the user group created in Step 2
-NOTE: If you have enabled Enterprise Mode and wish to sync your Active Directory with OASIS, visit http://www.oliveinnovations.com, go to download area and download the Gateway application; instructions for configuration can be found into the docs on the same website
+NOTE: If you have enabled Enterprise Mode and wish to sync your Active Directory with OASIS, visit https://www.oliveinnovations.com, go to download area and download the Gateway application; instructions for configuration can be found into the docs on the same website
 - Create an application (choose Applications from the menu), then click New, enter a Name and save. You will be directed to the application details page, grant access to the user group created in Step 2
 - Within the application page, click the button Application Key, this will display the information to configure myrtille
 
