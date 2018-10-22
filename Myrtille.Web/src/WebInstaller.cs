@@ -105,14 +105,10 @@ namespace Myrtille.Web
                 }
 
                 // pdf printer
-                if (string.IsNullOrEmpty(Context.Parameters["PDFPRINTER"]))
+                var appSettings = XmlTools.GetNode(navigator, "/configuration/appSettings");
+                if (appSettings != null)
                 {
-                    // app settings
-                    var appSettings = XmlTools.GetNode(navigator, "/configuration/appSettings");
-                    if (appSettings != null)
-                    {
-                        XmlTools.WriteConfigKey(appSettings, "AllowPrintDownload", false.ToString().ToLower());
-                    }
+                    XmlTools.WriteConfigKey(appSettings, "AllowPrintDownload", (!string.IsNullOrEmpty(Context.Parameters["PDFPRINTER"])).ToString().ToLower());
                 }
 
                 // save config

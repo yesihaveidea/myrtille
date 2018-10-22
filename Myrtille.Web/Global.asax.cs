@@ -27,7 +27,6 @@ namespace Myrtille.Web
     public enum HttpApplicationStateVariables
     {
         Cache,
-        RemoteSessionsCounter,
         SharedRemoteSessions
     }
 
@@ -52,9 +51,6 @@ namespace Myrtille.Web
 
                 // application cache
                 Application[HttpApplicationStateVariables.Cache.ToString()] = Context.Cache;
-
-                // remote sessions auto-incremented counter
-                Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()] = 0;
 
                 // shared remote sessions
                 Application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()] = new Dictionary<string, RemoteSession>();

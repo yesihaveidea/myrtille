@@ -35,6 +35,7 @@ namespace Myrtille.Web
 {
     public partial class Default : Page
     {
+        private RemoteSessionCounterClient _remoteSessionCounterClient;
         private MFAAuthenticationClient _mfaAuthClient;
         private EnterpriseServiceClient _enterpriseClient;
 
@@ -59,6 +60,7 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
+            _remoteSessionCounterClient = new RemoteSessionCounterClient();
             _mfaAuthClient = new MFAAuthenticationClient();
             _enterpriseClient = new EnterpriseServiceClient();
 
@@ -464,16 +466,9 @@ namespace Myrtille.Web
             // create a new remote session
             try
             {
-                Application.Lock();
-
-                // auto-increment the remote sessions counter
-                // note that it doesn't really count the active remote sessions... it's just an auto-increment for the remote session id, ensuring it's unique...
-                var remoteSessionsCounter = (int)Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()];
-                remoteSessionsCounter++;
-
                 // create the remote session
                 RemoteSession = new RemoteSession(
-                    remoteSessionsCounter,
+                    _remoteSessionCounterClient.GetRemoteSessionId(),
                     RemoteSessionState.NotConnected,
                     loginHostName,
                     loginHostType,
@@ -496,18 +491,11 @@ namespace Myrtille.Web
 
                 // bind the remote session to the current http session
                 Session[HttpSessionStateVariables.RemoteSession.ToString()] = RemoteSession;
-
-                // update the remote sessions auto-increment counter
-                Application[HttpApplicationStateVariables.RemoteSessionsCounter.ToString()] = remoteSessionsCounter;
             }
             catch (Exception exc)
             {
                 System.Diagnostics.Trace.TraceError("Failed to create remote session ({0})", exc);
                 RemoteSession = null;
-            }
-            finally
-            {
-                Application.UnLock();
             }
 
             // connect it

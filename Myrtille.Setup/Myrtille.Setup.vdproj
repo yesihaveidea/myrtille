@@ -954,7 +954,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Myrtille.Enterprise, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Myrtille.Enterprise, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_51E1684E0AC9A2E6C91C688F2C9DD4B1"
@@ -1633,7 +1633,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Myrtille.Common, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Myrtille.Common, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_DF64623992E0504E6E44F78E0DACDA36"
@@ -1664,7 +1664,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Myrtille.Services.Contracts, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Myrtille.Services.Contracts, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_E385E6F4F7BC7295F537EC6B3C8250D3"
@@ -1715,7 +1715,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Myrtille.MFAProviders, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Myrtille.MFAProviders, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_E76FFE893BD37BAA153E3EFB44999C4E"
@@ -1936,14 +1936,14 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Myrtille"
         "ProductCode" = "8:{B00BCC6F-3958-4726-9D99-DBAC78513C26}"
-        "PackageCode" = "8:{9CE84769-AB32-4A10-881B-E65D133C9675}"
+        "PackageCode" = "8:{39BB370F-3D90-4207-A665-65EE1C27A1B4}"
         "UpgradeCode" = "8:{86A6145E-11DB-4EE7-9CE0-53F997050716}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:2.1.2"
+        "ProductVersion" = "8:2.2.0"
         "Manufacturer" = "8:Cedric Coste"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://cedrozor.github.io/myrtille"

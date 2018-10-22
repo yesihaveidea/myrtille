@@ -53,6 +53,7 @@
     <Compile Include="IEnterpriseService.cs" />
     <Compile Include="IFileStorage.cs" />
     <Compile Include="IMFAAuthentication.cs" />
+    <Compile Include="IRemoteSessionCounter.cs" />
     <Compile Include="IPrinterService.cs" />
     <Compile Include="IRemoteSessionProcess.cs" />
     <Compile Include="Models\EnterpriseAuthenticationErrorHelper.cs" />

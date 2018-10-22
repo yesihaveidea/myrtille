@@ -1,4 +1,10 @@
-﻿2018-08-19 Version 2.1.2 (stable)
+﻿2018-10-21 Version 2.2.0 (stable)
+	disabled the myrtille application pool recycling
+	moved the remote session counter (auto-increment) to the service layer
+	myrtille pdf printer is now disabled by default in web.config
+	fixed SSH on non-default port (thanks pk910)
+
+2018-08-19 Version 2.1.2 (stable)
 	fixed an ipv6 connection issue (that may occurred when checking the link-local ipv6 address)
 
 2018-08-14 Version 2.1.1 (stable)
