@@ -110,6 +110,8 @@ Cedric Coste (cedrozor@gmail.com).
 - Google+:	https://plus.google.com/111659262235573941837
 - Facebook:	https://www.facebook.com/profile.php?id=100011710352840
 
+**New 2018-10-18!** I'm offering my services as freelance, for Myrtille or Web Development, Digital Learning LMS / LRS Consulting and Security Audits. You can find my portfolio and contact form at https://www.cedric-coste.com/
+
 ## Contributors
 - Catalin Trifanescu (AppliKr developer: application server. Steemind cofounder)
 - Fabien Janvier (AppliKr developer: website css, clipping algorithm, websocket server)
