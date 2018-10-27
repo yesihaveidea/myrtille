@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Web.UI;
+using Myrtille.Helpers;
 
 namespace Myrtille.Web
 {
@@ -41,9 +42,8 @@ namespace Myrtille.Web
                 using (StreamWriter sw = new StreamWriter(Response.OutputStream))
                 {
                     String password = Request.QueryString["Password"];
-                    byte [] ea = ProtectedData.Protect(System.Text.Encoding.Unicode.GetBytes(password), null, DataProtectionScope.LocalMachine);
-                    foreach (byte b in ea) sw.Write(b.ToString("X2"));
-                    sw.WriteLine();
+                    String encrypted = RDPCryptoHelper.EncryptPassword(password);
+                    sw.WriteLine(encrypted);
                 }
             }
             catch (Exception exc)
