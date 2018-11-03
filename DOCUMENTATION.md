@@ -76,6 +76,8 @@ To generate a password hash, you can use the powershell script "password51.ps1" 
 - Call the encrypt function: "Encrypt-RDP-Password -Password *password*"
 - Copy & Paste the result into your URL
 
+From version 2.3.0, you can also generate a password hash from url (thanks jol64). syntax: https://server/myrtille/GetHash.aspx?password=password
+
 The password hash is only valid on the machine which generated it (the myrtille gateway); it won't work on another machine. Its length is 492 chars.
 
 For further information, see https://docs.microsoft.com/en-us/dotnet/standard/security/how-to-use-data-protection

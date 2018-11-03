@@ -5,6 +5,7 @@
 	the Myrtille.PDF virtual printer now opens the browser print dialog, removing the need to install a PDF viewer on the end user machine and providing direct access to local (or network) printers (not working with the built-in Firefox PDF.js, option to open/download the pdf instead)
 	added swipe up/down gesture management for touchscreen devices (useful to scroll the display in applications that need it; can be disabled into the toolbar) * experimental feature! * not working on IE/Edge (see below)
 	emulating mouse events for IE/Edge on touchscreen devices (touchscreen is disabled by default into IE/Edge and use pointer events instead of touch when enabled into about:flags)
+	for easier auto-connect / start program from url management, you can generate a password hash from url (thanks jol64). syntax: https://server/myrtille/GetHash.aspx?password=password
 	resynced FreeRDP (2.0.0 RC3)
 
 2018-10-21 Version 2.2.0 (stable)
