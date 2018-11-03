@@ -31,12 +31,12 @@ namespace Myrtille.Services
     {
         #region process
 
-        private int _remoteSessionId;
+        private Guid _remoteSessionId;
         private Process _process;
         private IRemoteSessionProcessCallback _callback;
 
         public void StartProcess(
-            int remoteSessionId,
+            Guid remoteSessionId,
             HostTypeEnum hostType,
             SecurityProtocolEnum securityProtocol,
             string serverAddress,
@@ -216,7 +216,6 @@ namespace Myrtille.Services
                         " -async-input" +                                                                                           // async input
                         " -async-update" +                                                                                          // async update
                         " -async-channels" +                                                                                        // async channels
-                        " -async-transport" +                                                                                       // async transport
                         (allowRemoteClipboard ? " +" : " -") + "clipboard" +                                                        // clipboard support
                         (securityProtocol != SecurityProtocolEnum.auto ? " /sec:" + securityProtocol.ToString() : string.Empty) +   // security protocol
                         " /audio-mode:2";                                                                                           // audio mode (not supported for now, 2: do not play)

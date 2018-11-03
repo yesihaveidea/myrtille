@@ -34,7 +34,7 @@ namespace Myrtille.Web
         }
 
         public void StartProcess(
-            int remoteSessionId,
+            Guid remoteSessionId,
             HostTypeEnum hostType,
             SecurityProtocolEnum securityProtocol,
             string serverAddress,

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.ServiceModel;
 
 namespace Myrtille.Services.Contracts
@@ -7,9 +8,9 @@ namespace Myrtille.Services.Contracts
     public interface IPrinterService
     {
         [OperationContract]
-        Stream GetPdfFile(int remoteSessionId, string fileName);
+        Stream GetPdfFile(Guid remoteSessionId, string fileName);
 
         [OperationContract]
-        void DeletePdfFile(int remoteSessionId, string fileName);
+        void DeletePdfFile(Guid remoteSessionId, string fileName);
     }
 }

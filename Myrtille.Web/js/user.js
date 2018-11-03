@@ -44,6 +44,10 @@ function User(config, dialog, display, network)
     var rightClickButton = null;
     this.getRightClickButton = function() { return rightClickButton; };
 
+    // swipe up/down gesture management for touchscreen devices
+    var verticalSwipeEnabled = true;
+    this.getVerticalSwipeEnabled = function() { return verticalSwipeEnabled; };
+
     this.init = function()
     {
         try
@@ -113,6 +117,26 @@ function User(config, dialog, display, network)
         catch (exc)
         {
             dialog.showDebug('user toggleRightClick error: ' + exc.message);
+        }
+    };
+
+    this.toggleVerticalSwipe = function(button)
+    {
+        try
+        {
+            if (display.isIEBrowser())
+            {
+                alert('this experimental feature is disabled on IE/Edge');
+                return;
+            }
+
+            verticalSwipeEnabled = !verticalSwipeEnabled;
+            button.value = verticalSwipeEnabled ? 'Swipe up/down ON' : 'Swipe up/down OFF';
+            //dialog.showDebug('toggling ' + button.value);
+        }
+        catch (exc)
+        {
+            dialog.showDebug('user toggleVerticalSwipe error: ' + exc.message);
         }
     };
 

@@ -156,12 +156,6 @@ function Mouse(config, dialog, display, network, user)
 	/*** Click                                                                                                                                                                                     ***/
 	/*************************************************************************************************************************************************************************************************/
 
-    // last mouse click position
-    var lastMouseClickX = null;
-    var lastMouseClickY = null;
-    this.getLastMouseClickX = function () { return lastMouseClickX; };
-    this.getLastMouseClickY = function () { return lastMouseClickY; };
-
     function mouseClick(e, down)
     {
         try
@@ -235,10 +229,6 @@ function Mouse(config, dialog, display, network, user)
                         break;
                 }
             }
-
-            // update the last mouse click position
-            lastMouseClickX = mouseX;
-            lastMouseClickY = mouseY;
         }
         catch (exc)
         {

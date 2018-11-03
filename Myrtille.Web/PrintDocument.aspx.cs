@@ -62,15 +62,7 @@ namespace Myrtille.Web
                     try
                     {
                         var fileStream = _printerServiceClient.GetPdfFile(_remoteSession.Id, Request["name"]);
-
-                        // CAUTION! IE/Edge appears to have issues with inline documents
-                        // for instance, it loads twice "application/pdf" documents (https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/6734131/),
-                        // which is a problem because the document is deleted on retrieval to enforce security (the second request will thus fail)
-                        // the idea behind inline content was to open the pdf in a new tab; it works on every browser but IE/Edge :/
-                        // using attachment instead
-
-                        //FileHelper.DownloadFile(Response, fileStream, Request["name"], true, "application/pdf", "inline");
-                        FileHelper.DownloadFile(Response, fileStream, Request["name"], true, "application/pdf");
+                        FileHelper.DownloadFile(Response, fileStream, Request["name"], true, "application/pdf", Request["disposition"]);
                     }
                     catch (ThreadAbortException)
                     {

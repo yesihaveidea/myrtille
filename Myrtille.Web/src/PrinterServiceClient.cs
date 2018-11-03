@@ -26,7 +26,7 @@ namespace Myrtille.Web
 {
     public class PrinterServiceClient : ClientBase<IPrinterService>, IPrinterService
     {
-        public Stream GetPdfFile(int remoteSessionId, string fileName)
+        public Stream GetPdfFile(Guid remoteSessionId, string fileName)
         {
             try
             {
@@ -39,7 +39,7 @@ namespace Myrtille.Web
             }
         }
 
-        public void DeletePdfFile(int remoteSessionId, string fileName)
+        public void DeletePdfFile(Guid remoteSessionId, string fileName)
         {
             try
             {

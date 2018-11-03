@@ -272,6 +272,9 @@
                 <!-- send a right-click on the next touch or left-click action. may be useful on touchpads or iOS devices -->
                 <input type="button" runat="server" id="mrc" value="Right-Click OFF" onclick="toggleRightClick(this);" title="if toggled on, send a Right-Click on the next touch or left-click action" disabled="disabled"/>
 
+                <!-- swipe up/down gesture management for touchscreen devices. emulate vertical scroll in applications -->
+                <input type="button" runat="server" id="vswipe" value="Swipe up/down ON" onclick="toggleVerticalSwipe(this);" title="if toggled on, allow vertical scroll on swipe (experimental feature, disabled on IE/Edge)" disabled="disabled"/>
+
                 <!-- share session -->
                 <input type="button" runat="server" id="share" value="Share" onclick="openPopup('shareSessionPopup', 'ShareSession.aspx');" title="share session" disabled="disabled"/>
 
@@ -295,12 +298,12 @@
 
         <script type="text/javascript" language="javascript" defer="defer">
 
+            initDisplay();
+
             // auto-connect / start program from url
             // if the display resolution isn't set, the remote session isn't able to start; redirect with the client resolution
             if (window.location.href.indexOf('&connect=') != -1 && (window.location.href.indexOf('&width=') == -1 || window.location.href.indexOf('&height=') == -1))
             {
-                setClientResolution();
-
                 var width = document.getElementById('<%=width.ClientID%>').value;
                 var height = document.getElementById('<%=height.ClientID%>').value;
 
@@ -319,6 +322,24 @@
                 //alert('reloading page with url:' + redirectUrl);
 
                 window.location.href = redirectUrl;
+            }
+
+            function initDisplay()
+            {
+                try
+                {
+                    var display = new Display();
+
+                    // detect the browser width & height
+                    setClientResolution(display);
+
+                    // swipe is disabled on IE/Edge because it emulates mouse events by default (experimental)
+                    document.getElementById('<%=vswipe.ClientID%>').disabled = display.isIEBrowser();
+                }
+                catch (exc)
+                {
+                    alert('myrtille initDisplay error: ' + exc.message);
+                }
             }
 
             function onHostTypeChange(hostType)
@@ -345,11 +366,9 @@
                 }
             }
 
-            function setClientResolution()
+            function setClientResolution(display)
             {
                 // browser size. default 1024x768
-                var display = new Display();
-
                 var width = display.getBrowserWidth() - display.getHorizontalOffset();
                 var height = display.getBrowserHeight() - display.getVerticalOffset();
 

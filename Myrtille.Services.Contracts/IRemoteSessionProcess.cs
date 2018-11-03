@@ -16,6 +16,7 @@
     limitations under the License.
 */
 
+using System;
 using System.ServiceModel;
 
 namespace Myrtille.Services.Contracts
@@ -28,7 +29,7 @@ namespace Myrtille.Services.Contracts
         /// </summary>
         [OperationContract]
         void StartProcess(
-            int remoteSessionId,
+            Guid remoteSessionId,
             HostTypeEnum HostType,
             SecurityProtocolEnum securityProtocol,
             string serverAddress,

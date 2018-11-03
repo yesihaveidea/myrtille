@@ -16,6 +16,7 @@
     limitations under the License.
 */
 
+using System;
 using Myrtille.Services.Contracts;
 
 namespace Myrtille.Web
@@ -24,7 +25,7 @@ namespace Myrtille.Web
     {
         public RemoteSessionManager Manager { get; private set; }
 
-        public int Id;
+        public Guid Id;
         public RemoteSessionState State;
         public string HostName;
         public HostTypeEnum HostType;                   // RDP or SSH
@@ -53,7 +54,7 @@ namespace Myrtille.Web
         public int ExitCode;
 
         public RemoteSession(
-            int id,
+            Guid id,
             RemoteSessionState state,
             string hostName,
             HostTypeEnum hostType,

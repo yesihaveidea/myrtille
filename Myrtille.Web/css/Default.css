@@ -248,11 +248,12 @@ label,
 #files,
 #cad,
 #mrc,
+#vswipe,
 #share,
 #disconnect
 {
     float: left;
-    width: 150px;
+    width: 135px;
 }
 
 /* debug and browser mode are disabled by default (to enable for test or diagnostic, just comment out the css below and tweak the controls width above) */
@@ -502,16 +503,17 @@ label,
     width:380px;
 }
 
-
 /* remote session display */
 
 #displayDiv
 {
     position: absolute;
     z-index: 100;
+    /* fix touchscreen on Edge (disabled by default and using pointer events instead of touch) by emulating mouse events */
+    touch-action: none;
 }
 
-/* remote session display: canvas */
+/* remote session display: canvas (HTML5) */
 
 canvas
 {
@@ -519,7 +521,7 @@ canvas
     z-index: 100;
 }
 
-/* remote session display: divs */
+/* remote session display: divs (HTML4) */
 
 .imageDiv
 {

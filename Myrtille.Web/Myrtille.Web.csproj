@@ -151,7 +151,6 @@
       <DependentUpon>SocketHandler.ashx</DependentUpon>
     </Compile>
     <Compile Include="src\EnterpriseServiceClient.cs" />
-    <Compile Include="src\RemoteSessionCounterClient.cs" />
     <Compile Include="src\PrinterServiceClient.cs" />
     <Compile Include="src\FileStorageClient.cs" />
     <Compile Include="src\MFAAuthenticationClient.cs" />

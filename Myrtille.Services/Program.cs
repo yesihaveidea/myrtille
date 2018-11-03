@@ -30,15 +30,11 @@ namespace Myrtille.Services
 {
     public class Program : ServiceBase
     {
-        private static ServiceHost _remoteSessionCounter;
         private static ServiceHost _remoteSessionProcess;
         private static ServiceHost _localFileStorage;
         private static ServiceHost _printerService;
         private static ServiceHost _mfaAuthentication;
         private static ServiceHost _enterpriseServices;
-
-        public static int _remoteSessionsCounter = 0;
-        public static object _remoteSessionsCounterLock = new object();
 
         public static IMultifactorAuthenticationAdapter _multifactorAdapter = null;
         public static IEnterpriseAdapter _enterpriseAdapter = null;
@@ -108,7 +104,6 @@ namespace Myrtille.Services
                 LoadMFAAdapter();
                 LoadEnterpriseAdapter();
 
-                _remoteSessionCounter = OpenService(typeof(RemoteSessionCounter));
                 _remoteSessionProcess = OpenService(typeof(RemoteSessionProcess));
                 _localFileStorage = OpenService(typeof(FileStorage));
                 _printerService = OpenService(typeof(PrinterService));
@@ -118,7 +113,6 @@ namespace Myrtille.Services
                 Console.WriteLine("press any key to exit...");
                 Console.ReadKey();
 
-                CloseService(ref _remoteSessionCounter);
                 CloseService(ref _remoteSessionProcess);
                 CloseService(ref _localFileStorage);
                 CloseService(ref _printerService);
@@ -132,7 +126,6 @@ namespace Myrtille.Services
             LoadMFAAdapter();
             LoadEnterpriseAdapter();
 
-            _remoteSessionCounter = OpenService(typeof(RemoteSessionCounter));
             _remoteSessionProcess = OpenService(typeof(RemoteSessionProcess));
             _localFileStorage = OpenService(typeof(FileStorage));
             _printerService = OpenService(typeof(PrinterService));
@@ -142,7 +135,6 @@ namespace Myrtille.Services
  
 		protected override void OnStop()
 		{
-            CloseService(ref _remoteSessionCounter);
             CloseService(ref _remoteSessionProcess);
             CloseService(ref _localFileStorage);
             CloseService(ref _printerService);

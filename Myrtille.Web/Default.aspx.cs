@@ -35,7 +35,6 @@ namespace Myrtille.Web
 {
     public partial class Default : Page
     {
-        private RemoteSessionCounterClient _remoteSessionCounterClient;
         private MFAAuthenticationClient _mfaAuthClient;
         private EnterpriseServiceClient _enterpriseClient;
 
@@ -60,7 +59,6 @@ namespace Myrtille.Web
             object sender,
             EventArgs e)
         {
-            _remoteSessionCounterClient = new RemoteSessionCounterClient();
             _mfaAuthClient = new MFAAuthenticationClient();
             _enterpriseClient = new EnterpriseServiceClient();
 
@@ -246,7 +244,7 @@ namespace Myrtille.Web
         /// </summary>
         private void UpdateControls()
         {
-            // remote session
+            // remote session toolbar
             if (RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected))
             {
                 toolbarToggle.Style["visibility"] = "visible";
@@ -267,6 +265,7 @@ namespace Myrtille.Web
                 files.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowFileTransfer || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain)) || !string.IsNullOrEmpty(RemoteSession.VMGuid);
                 cad.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH;
                 mrc.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH;
+                vswipe.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH;
                 share.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || !RemoteSession.AllowSessionSharing;
                 disconnect.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
             }
@@ -302,7 +301,7 @@ namespace Myrtille.Web
                 // standard mode
                 else
                 {
-                    connect.Attributes["onclick"] = "setClientResolution();";
+                    connect.Attributes["onclick"] = "initDisplay();";
                 }
             }
         }
@@ -468,7 +467,7 @@ namespace Myrtille.Web
             {
                 // create the remote session
                 RemoteSession = new RemoteSession(
-                    _remoteSessionCounterClient.GetRemoteSessionId(),
+                    Guid.NewGuid(),
                     RemoteSessionState.NotConnected,
                     loginHostName,
                     loginHostType,

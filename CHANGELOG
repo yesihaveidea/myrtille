@@ -1,4 +1,13 @@
-﻿2018-10-21 Version 2.2.0 (stable)
+﻿2018-11-03 Version 2.3.0 (stable)
+	HOTFIX! increased the WCF channels limits; this fixes an issue where some connections failed under the load
+	added WCF traces (disabled by default; see comments in configs)
+	replaced the remote session auto-incremented counter (as identifier) by a guid; this ensures an unique identifier even if Myrtille.Services (or MyrtilleAppPool before version 2.2.0) is restarted
+	the Myrtille.PDF virtual printer now opens the browser print dialog, removing the need to install a PDF viewer on the end user machine and providing direct access to local (or network) printers (not working with the built-in Firefox PDF.js, option to open/download the pdf instead)
+	added swipe up/down gesture management for touchscreen devices (useful to scroll the display in applications that need it; can be disabled into the toolbar) * experimental feature! * not working on IE/Edge (see below)
+	emulating mouse events for IE/Edge on touchscreen devices (touchscreen is disabled by default into IE/Edge and use pointer events instead of touch when enabled into about:flags)
+	resynced FreeRDP (2.0.0 RC3)
+
+2018-10-21 Version 2.2.0 (stable)
 	disabled the myrtille application pool recycling
 	moved the remote session counter (auto-increment) to the service layer
 	myrtille pdf printer is now disabled by default in web.config

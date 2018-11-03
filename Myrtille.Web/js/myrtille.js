@@ -244,6 +244,19 @@ function toggleRightClick(button)
     }
 }
 
+function toggleVerticalSwipe(button)
+{
+    try
+    {
+        // client side only; no need to persist the button state over the session (page reload = reset the toggle button)
+        user.toggleVerticalSwipe(button);
+    }
+    catch (exc)
+    {
+        dialog.showDebug('myrtille toggleVerticalSwipe error: ' + exc.message);
+    }
+}
+
 function requestRemoteClipboard()
 {
     try
@@ -420,25 +433,54 @@ function handleRemoteSessionExit(exitCode)
     }
 }
 
+var pdf = null;
+var pdfName = null;
+var pdfLoad = false;
+
 this.downloadPdf = function(name)
 {
     try
     {
         //alert('creating iframe to download pdf: ' + name);
 
-        var pdf = document.createElement('iframe');
+        pdfName = name;
+        pdfLoad = false;
+
+        pdf = document.createElement('iframe');
+
+        pdf.onload = this.printPdf;
 
         pdf.style.width = '0px';
         pdf.style.height = '0px';
         pdf.frameBorder = 0;
 
-        pdf.src = config.getHttpServerUrl() + 'PrintDocument.aspx?name=' + name;
-            
         document.body.appendChild(pdf);
     }
 	catch (exc)
 	{
         alert('myrtille downloadPdf error: ' + exc.message);
+	}
+}
+
+this.printPdf = function()
+{
+    try
+    {
+        if (!pdfLoad)
+        {
+            pdfLoad = true;
+            // issue with firefox when using inline content disposition (erroneous cross-origin security message when using pdf.js internal resource?!); using attachment instead
+            pdf.src = config.getHttpServerUrl() + 'PrintDocument.aspx?name=' + pdfName + '&disposition=' + (display.isFirefoxBrowser() ? 'attachment' : 'inline');
+        }
+        else
+        {
+            pdf.focus();
+            pdf.contentWindow.print();
+        }
+    }
+	catch (exc)
+	{
+        alert('myrtille printPdf error: ' + exc.message);
 	}
 }
 
