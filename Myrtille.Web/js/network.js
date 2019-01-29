@@ -336,6 +336,14 @@ function Network(config, dialog, display)
                 commands.push(commandEnum.SET_IMAGE_QUANTITY.text + config.getImageQuantity());
             }
 
+            // autoscale display on remote session start
+            if (config.getScaleDisplay() == null)
+            {
+                var width = display.getBrowserWidth() - display.getHorizontalOffset();
+                var height = display.getBrowserHeight() - display.getVerticalOffset();
+                commands.push(commandEnum.SET_SCALE_DISPLAY.text + width + 'x' + height);
+            }
+
             //dialog.showDebug('initial fullscreen update');
             commands.push(commandEnum.REQUEST_FULLSCREEN_UPDATE.text + 'initial');
 

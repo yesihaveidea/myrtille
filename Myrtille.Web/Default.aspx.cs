@@ -43,6 +43,7 @@ namespace Myrtille.Web
         private bool _allowPrintDownload;
         private bool _allowSessionSharing;
         private bool _clientIPTracking;
+        private bool _scaleOnResize;
         private bool _cookielessSession;
 
         private bool _authorizedRequest = true;
@@ -90,6 +91,12 @@ namespace Myrtille.Web
             if (!bool.TryParse(ConfigurationManager.AppSettings["ClientIPTracking"], out _clientIPTracking))
             {
                 _clientIPTracking = false;
+            }
+
+            // scale display on browser resize
+            if (!bool.TryParse(ConfigurationManager.AppSettings["ScaleOnResize"], out _scaleOnResize))
+            {
+                _scaleOnResize = true;
             }
 
             // cookieless session
@@ -258,8 +265,8 @@ namespace Myrtille.Web
                 debug.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
                 browser.Value = RemoteSession.CompatibilityMode ? "HTML5" : "HTML4";
                 browser.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
-                scale.Value = RemoteSession.ScaleDisplay ? "Unscale" : "Scale";
-                scale.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH;
+                scale.Value = (!RemoteSession.ScaleDisplay.HasValue || RemoteSession.ScaleDisplay.Value) && _scaleOnResize ? "Unscale" : "Scale";
+                scale.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !_scaleOnResize;
                 keyboard.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
                 clipboard.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowRemoteClipboard || (!string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode);
                 files.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostTypeEnum.SSH || !RemoteSession.AllowFileTransfer || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain)) || !string.IsNullOrEmpty(RemoteSession.VMGuid);
@@ -500,37 +507,7 @@ namespace Myrtille.Web
             // connect it
             if (RemoteSession != null)
             {
-                try
-                {
-                    // update the remote session state
-                    RemoteSession.State = RemoteSessionState.Connecting;
-
-                    // create pipes for the web gateway and the host client to talk
-                    RemoteSession.Manager.Pipes.CreatePipes();
-
-                    // the host client does connect the pipes when it starts; when it stops (either because it was closed, crashed or because the remote session had ended), pipes are released
-                    // as the process command line can be displayed into the task manager / process explorer, the connection settings (including user credentials) are now passed to the host client through the inputs pipe
-                    // use http://technet.microsoft.com/en-us/sysinternals/dd581625 to track the existing pipes
-                    RemoteSession.Manager.HostClient.StartProcess(
-                        RemoteSession.Id,
-                        RemoteSession.HostType,
-                        RemoteSession.SecurityProtocol,
-                        RemoteSession.ServerAddress,
-                        RemoteSession.VMGuid,
-                        RemoteSession.UserDomain,
-                        RemoteSession.UserName,
-                        RemoteSession.StartProgram,
-                        RemoteSession.ClientWidth,
-                        RemoteSession.ClientHeight,
-                        RemoteSession.AllowRemoteClipboard,
-                        RemoteSession.AllowPrintDownload);
-                }
-                catch (Exception exc)
-                {
-                    System.Diagnostics.Trace.TraceError("Failed to connect the remote session {0} ({1})", RemoteSession.Id, exc);
-                    connectError.InnerText = "Failed to connect! ensure myrtille services are running";
-                    return false;
-                }
+                RemoteSession.State = RemoteSessionState.Connecting;
             }
             else
             {

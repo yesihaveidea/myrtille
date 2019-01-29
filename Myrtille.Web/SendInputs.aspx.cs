@@ -48,6 +48,38 @@ namespace Myrtille.Web
                 // retrieve the remote session for the current http session
                 remoteSession = (RemoteSession)Session[HttpSessionStateVariables.RemoteSession.ToString()];
 
+                // connect the remote server
+                if (remoteSession.State == RemoteSessionState.Connecting && !remoteSession.Manager.HostClient.ProcessStarted)
+                {
+                    try
+                    {
+                        // create pipes for the web gateway and the host client to talk
+                        remoteSession.Manager.Pipes.CreatePipes();
+
+                        // the host client does connect the pipes when it starts; when it stops (either because it was closed, crashed or because the remote session had ended), pipes are released
+                        // as the process command line can be displayed into the task manager / process explorer, the connection settings (including user credentials) are now passed to the host client through the inputs pipe
+                        // use http://technet.microsoft.com/en-us/sysinternals/dd581625 to track the existing pipes
+                        remoteSession.Manager.HostClient.StartProcess(
+                            remoteSession.Id,
+                            remoteSession.HostType,
+                            remoteSession.SecurityProtocol,
+                            remoteSession.ServerAddress,
+                            remoteSession.VMGuid,
+                            remoteSession.UserDomain,
+                            remoteSession.UserName,
+                            remoteSession.StartProgram,
+                            remoteSession.ClientWidth,
+                            remoteSession.ClientHeight,
+                            remoteSession.AllowRemoteClipboard,
+                            remoteSession.AllowPrintDownload);
+                    }
+                    catch (Exception exc)
+                    {
+                        System.Diagnostics.Trace.TraceError("Failed to connect the remote session {0} ({1})", remoteSession.Id, exc);
+                        throw;
+                    }
+                }
+
                 try
                 {
                     // retrieve params
@@ -94,6 +126,16 @@ namespace Myrtille.Web
 
                             switch (message.Type)
                             {
+                                case MessageType.Connected:
+                                    msgText = "connected";
+                                    msgComplete = true;
+                                    break;
+
+                                case MessageType.Disconnected:
+                                    msgText = "disconnected";
+                                    msgComplete = true;
+                                    break;
+
                                 case MessageType.PageReload:
                                     msgText = "reload";
                                     msgComplete = true;

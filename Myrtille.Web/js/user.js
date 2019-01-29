@@ -29,6 +29,10 @@ function User(config, dialog, display, network)
     var eventListener = function() {};
     this.addListener = function(eventType, listener, useCapture) { return eventListener(eventType, listener, useCapture); };
 
+    // passive event listeners
+    var passiveEventListeners = false;
+    this.getPassiveEventListeners = function() { return passiveEventListeners; };
+
     // keyboard
     var keyboard = null;
 
@@ -57,6 +61,7 @@ function User(config, dialog, display, network)
             {
                 //dialog.showDebug('event handling: using window.addEventListener');
                 eventListener = window.addEventListener;
+                checkPassiveEventListenersSupport();
             }
             // IE < 9
             else if (window.attachEvent && document.attachEvent)
@@ -106,6 +111,25 @@ function User(config, dialog, display, network)
         }
     };
 
+    // check support of passive event listeners for better scroll performance
+    // https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md
+    function checkPassiveEventListenersSupport()
+    {
+        try
+        {
+            // test via a getter in the options object to see if the passive property is accessed
+            var opts = Object.defineProperty({}, 'passive', { get: function() { passiveEventListeners = true; }});
+            window.addEventListener('testPassive', null, opts);
+            window.removeEventListener('testPassive', null, opts);
+        }
+        catch (exc)
+        {
+            dialog.showDebug('user checkPassiveEventListenersSupport error: ' + exc.message);
+        }
+
+        //dialog.showDebug('passive event listeners: ' + passiveEventListeners);
+    }
+
     this.toggleRightClick = function(button)
     {
         try
@@ -149,6 +173,17 @@ function User(config, dialog, display, network)
 
             var width = display.getBrowserWidth() - display.getHorizontalOffset();
             var height = display.getBrowserHeight() - display.getVerticalOffset();
+
+            // ensure a minimal resolution (the reconnection, if enabled, will fail otherwise)
+            if (width < 100)
+            {
+                width = 100;
+            }
+
+            if (height < 100)
+            {
+                height = 100;
+            }
 
             // if scaling display and using a canvas, resize it
             if (config.getScaleDisplay() && config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
@@ -223,6 +258,16 @@ function User(config, dialog, display, network)
 
     this.cancelEvent = function(e)
     {
+        //dialog.showDebug('event type: ' + e.type);
+
+        // don't call prevent default when using passive event listeners
+        // event capture and propagation are also superseded by such a configuration
+        if (passiveEventListeners && (e.type == 'mousewheel' || e.type == 'touchmove' || e.type == 'touchstart' || e.type == 'touchend'))
+        {
+            //dialog.showDebug('prevent default not applicable');
+            return;
+        }
+
         // prevent default action
         if (e.preventDefault) e.preventDefault();   // DOM Level 2
         else e.returnValue = false;                 // IE

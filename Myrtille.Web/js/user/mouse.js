@@ -29,7 +29,7 @@ function Mouse(config, dialog, display, network, user)
             user.addListener('mousemove', function(e) { mouseMove(e); });
             user.addListener('mousedown', function(e) { mouseClick(e, 1); });
             user.addListener('mouseup', function(e) { mouseClick(e, 0); });
-            user.addListener(display.isFirefoxBrowser() ? 'DOMMouseScroll' : 'mousewheel', function(e) { mouseScroll(e); });
+            user.addListener(display.isFirefoxBrowser() ? 'DOMMouseScroll' : 'mousewheel', function(e) { mouseScroll(e); }, user.getPassiveEventListeners() ? { passive: true } : false);
             user.addListener('selectstart', function() { return false; });
             user.addListener('contextmenu', function(e) { user.cancelEvent(e); return false; });
         }

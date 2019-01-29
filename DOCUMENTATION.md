@@ -57,6 +57,8 @@ From version 1.5.0, Myrtille does support hashed passwords (so that the password
 
 The start remote application from url feature only works on Windows Servers editions (starting from Server 2012) and only if the program is allowed to run (remoteApp policy). See notes and limitations.
 
+On Windows Home Editions, there are several workarounds to start an application automatically on start. You can for example set a Group Policy or define a startup program in registry (HKey_Current_User\Software\Microsoft\Windows\CurrentVersion\Run).
+
 ### Syntax
 https://myserver/Myrtille/?__EVENTTARGET=&__EVENTARGUMENT=&server=server&domain=domain[optional]&user=user&passwordHash=passwordHash&program=program[optional]&width=width(px)[optional]&height=height(px)[optional]&connect=Connect%21
 
@@ -247,12 +249,14 @@ To enable enterprise mode, edit the app.config file of Myrtille.Services and unc
 - `EnterpriseDomain`, this is the name of your domain (i.e. MYDOMAIN or mydomain.local) if myrtille is part of it or the domain controller FQDN or IP otherwise
 - Restart Myrtille.Services windows service to use the new settings
 
-To specify a customer path for the MyrtilleEnterprise database or use another SQL server, amend Myrtille.Services app.config connectionString
+To specify a custom path for the MyrtilleEnterprise database or use another SQL server, amend Myrtille.Services app.config connectionString
 
 If you wish to create your own enterprise adapter (with a different authentication, database or behavior), `Myrtille.Services.Contracts` contains the interfaces you need.
 
 ## Notes and limitations
 - Starting from myrtille version 1.2.0, the packaged FreeRDP and OpenSSL binaries use a statically-linked runtime; that means there is no longer need for the Microsoft Visual C++ redistributables (x86). It's still a good idea to install them however as they will be required if the build options are changed.
+
+- On Windows Server 2003, there are reported display issues with FreeRDP when using Chinese language. Disabling the glyph cache fixes the issue (myrtille\bin\Myrtille.Services.exe.config).
 
 - On Windows Server 2008 and Windows Workstations (XP/Vista/7/8/10), the FreeRDP remoteApp and shell features don't work. It's not possible to start a remote application from URL. https://github.com/FreeRDP/FreeRDP/issues/1669
 

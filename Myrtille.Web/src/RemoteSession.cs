@@ -38,7 +38,7 @@ namespace Myrtille.Web
         public string UserPassword;
         public int ClientWidth;
         public int ClientHeight;
-        public bool ScaleDisplay;
+        public bool? ScaleDisplay;                      // provided by the client
         public ImageEncoding? ImageEncoding;            // provided by the client
         public int? ImageQuality;                       // provided by the client
         public int? ImageQuantity;                      // provided by the client
@@ -52,6 +52,7 @@ namespace Myrtille.Web
         public bool AllowSessionSharing;                // set in web config
         public string OwnerSessionID;                   // the http session on which the remote session is bound to
         public int ExitCode;
+        public bool Reconnect;
 
         public RemoteSession(
             Guid id,

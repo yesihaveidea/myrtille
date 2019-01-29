@@ -257,12 +257,14 @@ label,
 }
 
 /* debug and browser mode are disabled by default (to enable for test or diagnostic, just comment out the css below and tweak the controls width above) */
+/*
 #debug,
 #browser
 {
     visibility: hidden;
     display: none;
 }
+*/
 
 /* background fader */
 

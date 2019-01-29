@@ -26,11 +26,29 @@ namespace Myrtille.Web
     public class RemoteSessionProcessClient : DuplexClientBase<IRemoteSessionProcess>, IRemoteSessionProcess
     {
         private readonly RemoteSessionManager _remoteSessionManager;
+        private object _processStartLock;
+        private bool _processStarted = false;
 
         public RemoteSessionProcessClient(RemoteSessionManager remoteSessionManager, InstanceContext callbackContext)
             : base(callbackContext)
         {
             _remoteSessionManager = remoteSessionManager;
+            _processStartLock = new object();
+        }
+
+        public bool ProcessStarted
+        {
+            get
+            {
+                lock (_processStartLock)
+                {
+                    return _processStarted;
+                }
+            }
+            set
+            {
+                _processStarted = value;
+            }
         }
 
         public void StartProcess(
@@ -49,26 +67,31 @@ namespace Myrtille.Web
         {
             Trace.TraceInformation("Calling service start process, remote session {0}, server {1}, domain {2}, user {3}, program {4}", remoteSessionId, serverAddress, string.IsNullOrEmpty(userDomain) ? "(none)" : userDomain, userName, string.IsNullOrEmpty(startProgram) ? "(none)" : startProgram);
 
-            try
+            lock (_processStartLock)
             {
-                Channel.StartProcess(
-                    remoteSessionId,
-                    hostType,
-                    securityProtocol,
-                    serverAddress,
-                    vmGuid,
-                    userDomain,
-                    userName,
-                    startProgram,
-                    clientWidth,
-                    clientHeight,
-                    allowRemoteClipboard,
-                    allowPrintDownload);
-            }
-            catch (Exception exc)
-            {
-                Trace.TraceError("Failed to call service start process, remote session {0} ({1})", _remoteSessionManager.RemoteSession.Id, exc);
-                throw;
+                try
+                {
+                    Channel.StartProcess(
+                        remoteSessionId,
+                        hostType,
+                        securityProtocol,
+                        serverAddress,
+                        vmGuid,
+                        userDomain,
+                        userName,
+                        startProgram,
+                        clientWidth,
+                        clientHeight,
+                        allowRemoteClipboard,
+                        allowPrintDownload);
+
+                    _processStarted = true;
+                }
+                catch (Exception exc)
+                {
+                    Trace.TraceError("Failed to call service start process, remote session {0} ({1})", _remoteSessionManager.RemoteSession.Id, exc);
+                    throw;
+                }
             }
         }
 
@@ -137,22 +160,14 @@ namespace Myrtille.Web
                     _remoteSessionManager.Pipes.DeletePipes();
                 }
 
-                // if using websocket(s), send a disconnect notification
-                if (_remoteSessionManager.WebSockets.Count > 0)
+                if (_remoteSessionManager.RemoteSession.Reconnect)
                 {
-                    foreach (var webSocket in _remoteSessionManager.WebSockets)
-                    {
-                        webSocket.Send("disconnected");
-                    }
+                    _remoteSessionManager.RemoteSession.Reconnect = false;
+                    _remoteSessionManager.HostClient.ProcessStarted = false;
+                    _remoteSessionManager.RemoteSession.State = RemoteSessionState.Connecting;
                 }
-                // no websocket at this step can mean using xhr (with long-polling or not),
-                // but it can also be because the browser wasn't fast enough to open a websocket before the host client was closed (due to a crash, connection or authentication issue, etc.)
-                // a disconnect notification will be sent to the browser by the socket handler if the remote session is disconnected in the context of a newly opened socket
-                else
-                {
-                    // if waiting for a new image, leave
-                    _remoteSessionManager.StopWaitForImageEvent();
-                }
+
+                _remoteSessionManager.SendMessage(new RemoteSessionMessage { Type = MessageType.Disconnected, Prefix = "disconnected" });
             }
             catch (Exception exc)
             {

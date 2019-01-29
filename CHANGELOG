@@ -1,4 +1,12 @@
-﻿2018-11-03 Version 2.3.0 (stable)
+﻿2019-01-28 Version 2.3.1 (stable)
+	the remote session display is now automatically scaled to the browser size on session start
+	NEW! as an alternative to scaling, the remote session can be reconnected on browser resize to preserve the aspect ratio (web.config, disable "ScaleOnResize")
+	fixed a race condition in which the browser sent certain configuration parameters before the connection was effective
+	improved the up/down swipe gesture management (should be smoother now)
+	more FreeRDP params are now configurable (bin/Myrtille.Services.exe.config)
+	resynced FreeRDP (2.0.0-RC4)
+
+2018-11-03 Version 2.3.0 (stable)
 	HOTFIX! increased the WCF channels limits; this fixes an issue where some connections failed under the load
 	added WCF traces (disabled by default; see comments in configs)
 	replaced the remote session auto-incremented counter (as identifier) by a guid; this ensures an unique identifier even if Myrtille.Services (or MyrtilleAppPool before version 2.2.0) is restarted

@@ -20,10 +20,12 @@ namespace Myrtille.Web
 {
     public enum MessageType
     {
-        PageReload = 0,
-        RemoteClipboard = 1,
-        TerminalOutput = 2,
-        PrintJob = 3
+        Connected = 0,
+        Disconnected = 1,
+        PageReload = 2,
+        RemoteClipboard = 3,
+        TerminalOutput = 4,
+        PrintJob = 5
     }
 
     public class RemoteSessionMessage

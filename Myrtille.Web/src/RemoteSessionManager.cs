@@ -66,6 +66,17 @@ namespace Myrtille.Web
                 // images cache
                 _imageCache = (Cache)HttpContext.Current.Application[HttpApplicationStateVariables.Cache.ToString()];
 
+                // browser resize
+                if (!bool.TryParse(ConfigurationManager.AppSettings["ScaleOnResize"], out _scaleOnResize))
+                {
+                    _scaleOnResize = true;
+                }
+
+                if (!_scaleOnResize)
+                {
+                    _reconnectTimeout = new CancellationTokenSource();
+                }
+
                 // browser timeout
                 if (!int.TryParse(ConfigurationManager.AppSettings["ClientIdleTimeout"], out _clientIdleTimeoutDelay))
                 {
@@ -152,6 +163,7 @@ namespace Myrtille.Web
                     if (RemoteSession.State == RemoteSessionState.Connecting)
                     {
                         RemoteSession.State = RemoteSessionState.Connected;
+                        SendMessage(new RemoteSessionMessage { Type = MessageType.Connected, Prefix = "connected" });
                     }
 
                     ProcessUpdate(msg);
@@ -197,8 +209,38 @@ namespace Myrtille.Web
 
                     break;
 
-                // browser, keyboard, mouse, etc.
+                // browser
                 case RemoteSessionCommand.SendBrowserResize:
+
+                    if (RemoteSession.State != RemoteSessionState.Connected)
+                        return;
+
+                    if (!_scaleOnResize)
+                    {
+                        if (_reconnectTimeout != null)
+                        {
+                            _reconnectTimeout.Cancel();
+                            _reconnectTimeout = new CancellationTokenSource();
+                            Task.Delay(250, _reconnectTimeout.Token).ContinueWith(task =>
+                            {
+                                RemoteSession.Reconnect = true;
+
+                                var resolution = args.Split(new[] { "x" }, StringSplitOptions.None);
+                                var width = int.Parse(resolution[0]);
+                                var height = int.Parse(resolution[1]);
+
+                                RemoteSession.ClientWidth = width;
+                                RemoteSession.ClientHeight = height;
+
+                                RemoteSession.State = RemoteSessionState.Disconnecting;
+                                SendCommand(RemoteSessionCommand.CloseClient);
+                            }, TaskContinuationOptions.NotOnCanceled);
+                        }
+                        return;
+                    }
+                    break;
+
+                // keyboard, mouse
                 case RemoteSessionCommand.SendKeyUnicode:
                 case RemoteSessionCommand.SendMouseMove:
                 case RemoteSessionCommand.SendMouseLeftButton:
@@ -263,13 +305,19 @@ namespace Myrtille.Web
                         return;
 
                     Trace.TraceInformation("Display scaling {0}, remote session {1}", args != "0" ? args : "OFF", RemoteSession.Id);
-                    RemoteSession.ScaleDisplay = args != "0";
+                    if (_scaleOnResize || !RemoteSession.ScaleDisplay.HasValue)
+                    {
+                        RemoteSession.ScaleDisplay = args != "0";
+                    }
+                    else
+                    {
+                        return;
+                    }
                     break;
 
                 case RemoteSessionCommand.SetImageEncoding:
 
-                    if (RemoteSession.State != RemoteSessionState.Connecting &&
-                        RemoteSession.State != RemoteSessionState.Connected)
+                    if (RemoteSession.State != RemoteSessionState.Connected)
                         return;
 
                     Trace.TraceInformation("Image encoding {0}, remote session {1}", int.Parse(args), RemoteSession.Id);
@@ -278,8 +326,7 @@ namespace Myrtille.Web
 
                 case RemoteSessionCommand.SetImageQuality:
 
-                    if (RemoteSession.State != RemoteSessionState.Connecting &&
-                        RemoteSession.State != RemoteSessionState.Connected)
+                    if (RemoteSession.State != RemoteSessionState.Connected)
                         return;
 
                     Trace.TraceInformation("Image quality {0}, remote session {1}", int.Parse(args), RemoteSession.Id);
@@ -288,8 +335,7 @@ namespace Myrtille.Web
 
                 case RemoteSessionCommand.SetImageQuantity:
 
-                    if (RemoteSession.State != RemoteSessionState.Connecting &&
-                        RemoteSession.State != RemoteSessionState.Connected)
+                    if (RemoteSession.State != RemoteSessionState.Connected)
                         return;
 
                     Trace.TraceInformation("Image quantity {0}, remote session {1}", int.Parse(args), RemoteSession.Id);
@@ -302,6 +348,10 @@ namespace Myrtille.Web
                         return;
 
                     Trace.TraceInformation("Requesting fullscreen update, all image(s) will now be discarded while waiting for it, remote session {0}", RemoteSession.Id);
+                    if (!_scaleOnResize && args == "scale")
+                    {
+                        return;
+                    }
                     FullscreenEventPending = true;
                     break;
 
@@ -404,7 +454,10 @@ namespace Myrtille.Web
 
         #endregion
 
-        #region Browser Timeout
+        #region Browser
+
+        private bool _scaleOnResize = true;
+        private CancellationTokenSource _reconnectTimeout;
 
         private int _clientIdleTimeoutDelay = 0;
         public CancellationTokenSource ClientIdleTimeout { get; private set; }
@@ -570,7 +623,7 @@ namespace Myrtille.Web
 
         public Hashtable MessageQueues { get; private set; }
 
-        private void SendMessage(RemoteSessionMessage message)
+        public void SendMessage(RemoteSessionMessage message)
         {
             if (WebSockets.Count > 0)
             {

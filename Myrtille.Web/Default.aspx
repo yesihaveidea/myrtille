@@ -66,7 +66,7 @@
         <%=(RemoteSession != null && RemoteSession.StatMode).ToString(CultureInfo.InvariantCulture).ToLower()%>,
         <%=(RemoteSession != null && RemoteSession.DebugMode).ToString(CultureInfo.InvariantCulture).ToLower()%>,
         <%=(RemoteSession != null && RemoteSession.CompatibilityMode).ToString(CultureInfo.InvariantCulture).ToLower()%>,
-        <%=(RemoteSession != null && RemoteSession.ScaleDisplay).ToString(CultureInfo.InvariantCulture).ToLower()%>,
+        <%=(RemoteSession != null && RemoteSession.ScaleDisplay.HasValue ? RemoteSession.ScaleDisplay.Value.ToString(CultureInfo.InvariantCulture).ToLower() : "null")%>,
         <%=(RemoteSession != null ? RemoteSession.ClientWidth.ToString() : "null")%>,
         <%=(RemoteSession != null ? RemoteSession.ClientHeight.ToString() : "null")%>,
         '<%=(RemoteSession != null ? RemoteSession.HostType.ToString() : HostTypeEnum.RDP.ToString())%>');">
@@ -332,6 +332,14 @@
 
                     // detect the browser width & height
                     setClientResolution(display);
+
+                    <%--
+                    // display toolbar on remote session start
+                    if (<%=(RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected)).ToString(CultureInfo.InvariantCulture).ToLower()%>)
+                    {
+                        toggleToolbar();
+                    }
+                    --%>
 
                     // swipe is disabled on IE/Edge because it emulates mouse events by default (experimental)
                     document.getElementById('<%=vswipe.ClientID%>').disabled = display.isIEBrowser();

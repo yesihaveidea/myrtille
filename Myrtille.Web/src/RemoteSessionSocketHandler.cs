@@ -86,6 +86,37 @@ namespace Myrtille.Web
 
             base.OnOpen();
 
+            // connect the remote server
+            if (_remoteSession.State == RemoteSessionState.Connecting && !_remoteSession.Manager.HostClient.ProcessStarted)
+            {
+                try
+                {
+                    // create pipes for the web gateway and the host client to talk
+                    _remoteSession.Manager.Pipes.CreatePipes();
+
+                    // the host client does connect the pipes when it starts; when it stops (either because it was closed, crashed or because the remote session had ended), pipes are released
+                    // as the process command line can be displayed into the task manager / process explorer, the connection settings (including user credentials) are now passed to the host client through the inputs pipe
+                    // use http://technet.microsoft.com/en-us/sysinternals/dd581625 to track the existing pipes
+                    _remoteSession.Manager.HostClient.StartProcess(
+                        _remoteSession.Id,
+                        _remoteSession.HostType,
+                        _remoteSession.SecurityProtocol,
+                        _remoteSession.ServerAddress,
+                        _remoteSession.VMGuid,
+                        _remoteSession.UserDomain,
+                        _remoteSession.UserName,
+                        _remoteSession.StartProgram,
+                        _remoteSession.ClientWidth,
+                        _remoteSession.ClientHeight,
+                        _remoteSession.AllowRemoteClipboard,
+                        _remoteSession.AllowPrintDownload);
+                }
+                catch (Exception exc)
+                {
+                    Trace.TraceError("Failed to connect the remote session {0} ({1})", _remoteSession.Id, exc);
+                }
+            }
+            
             // send a disconnect notification
             if (_remoteSession.State == RemoteSessionState.Disconnected)
             {

@@ -1,5 +1,5 @@
 ﻿# Myrtille
-Myrtille provides a simple and fast access to remote desktops, SSH and remote applications through a web browser, without any plugin, extension or configuration.
+Myrtille provides a simple and fast access to remote desktops, applications and SSH servers through a web browser, without any plugin, extension or configuration.
 
 Technically, Myrtille is an HTTP(S) to RDP and SSH gateway.
 

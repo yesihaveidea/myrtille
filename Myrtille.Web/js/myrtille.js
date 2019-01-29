@@ -74,6 +74,7 @@ var network = null;
 var user = null;
 
 this.getConfig = function() { return config; };
+this.getNetwork = function() { return network; };
 
 var fullscreenPending = false;
 

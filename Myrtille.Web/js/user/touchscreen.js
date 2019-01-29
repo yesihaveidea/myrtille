@@ -26,9 +26,9 @@ function Touchscreen(config, dialog, display, network, user)
     {
         try
         {
-            user.addListener('touchmove', function(e) { touchMove(e); });
-            user.addListener('touchstart', function(e) { touchTap(e, 1); });
-            user.addListener('touchend', function(e) { touchTap(e, 0); });
+            user.addListener('touchmove', function(e) { touchMove(e); }, user.getPassiveEventListeners() ? { passive: true } : false);
+            user.addListener('touchstart', function(e) { touchTap(e, 1); }, user.getPassiveEventListeners() ? { passive: true } : false);
+            user.addListener('touchend', function(e) { touchTap(e, 0); }, user.getPassiveEventListeners() ? { passive: true } : false);
         }
         catch (exc)
         {
@@ -150,11 +150,12 @@ function Touchscreen(config, dialog, display, network, user)
                 }
             }
 
+            touchMoveCount++;
+            var send = true;
+
             if (!gesture)
             {
                 // sampling (same mechanism as mouse)
-                touchMoveCount++;
-                var send = true;
                 if (config.getMouseMoveSamplingRate() == 5 ||
                     config.getMouseMoveSamplingRate() == 10 ||
                     config.getMouseMoveSamplingRate() == 20 ||
@@ -195,15 +196,31 @@ function Touchscreen(config, dialog, display, network, user)
                 }
                 else
                 {
-                    if (yDiff > 0)
+                    // sample touch gestures to avoid sending too many mouse wheel events and thus scrolling too fast
+                    // some browsers may support a finer touch definition; this is the case of firefox compared to chrome (!)
+                    send = touchMoveCount % (display.isFirefoxBrowser() ? 10 : 5) == 0;
+
+                    // sampling debug: display a dot at the current touch move position (green: move sent, red: dropped) - only if canvas is enabled
+                    /*
+                    if (config.getDebugEnabled() && config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
                     {
-                        // scroll down
-                        sendEvent(network.getCommandEnum().SEND_MOUSE_WHEEL_DOWN.text + lastTouchTapX + '-' + lastTouchTapY);
+                        display.getCanvas().getCanvasContext().fillStyle = send ? '#00FF00' : '#FF0000';
+                        display.getCanvas().getCanvasContext().fillRect(touchX, touchY, 1, 1);
                     }
-                    else
+                    */
+
+                    if (send)
                     {
-                        // scroll up
-                        sendEvent(network.getCommandEnum().SEND_MOUSE_WHEEL_UP.text + lastTouchTapX + '-' + lastTouchTapY);
+                        if (yDiff > 0)
+                        {
+                            // scroll down
+                            sendEvent(network.getCommandEnum().SEND_MOUSE_WHEEL_DOWN.text + lastTouchTapX + '-' + lastTouchTapY);
+                        }
+                        else
+                        {
+                            // scroll up
+                            sendEvent(network.getCommandEnum().SEND_MOUSE_WHEEL_UP.text + lastTouchTapX + '-' + lastTouchTapY);
+                        }
                     }
                 }
             }
@@ -268,7 +285,7 @@ function Touchscreen(config, dialog, display, network, user)
                 {
                     sendEvent(network.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + start + touchX + '-' + touchY);   // same event as mouse left button
                 }
-            }, 300);
+            }, 250);
 
             // update the last touch tap position
             lastTouchTapX = touchX;

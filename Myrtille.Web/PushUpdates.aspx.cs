@@ -88,6 +88,16 @@ namespace Myrtille.Web
 
                             switch (message.Type)
                             {
+                                case MessageType.Connected:
+                                    Response.Write("<script>parent.getNetwork().initClient();</script>");
+                                    Response.Flush();
+                                    break;
+
+                                case MessageType.Disconnected:
+                                    Response.Write("<script>parent.location.href = parent.getConfig().getHttpServerUrl();</script>");
+                                    Response.Flush();
+                                    break;
+
                                 case MessageType.PageReload:
                                     Response.Write("<script>parent.location.href = parent.location.href;</script>");
                                     Response.Flush();

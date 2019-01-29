@@ -125,16 +125,6 @@ namespace Myrtille.Web
                     if (!string.IsNullOrEmpty(RemoteSession.StartProgram))
                         RemoteSession.Manager.SendCommand(RemoteSessionCommand.SendStartProgram, RemoteSession.StartProgram);
 
-                    // send browser settings, if defined (they will be otherwise send later by the browser)
-                    if (RemoteSession.ImageEncoding.HasValue)
-                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.SetImageEncoding, ((int)RemoteSession.ImageEncoding).ToString());
-
-                    if (RemoteSession.ImageQuality.HasValue)
-                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.SetImageQuality, RemoteSession.ImageQuality.ToString());
-
-                    if (RemoteSession.ImageQuantity.HasValue)
-                        RemoteSession.Manager.SendCommand(RemoteSessionCommand.SetImageQuantity, RemoteSession.ImageQuantity.ToString());
-
                     // connect the host client to the remote host; a fullscreen update will be sent upon connection
                     RemoteSession.Manager.SendCommand(RemoteSessionCommand.ConnectClient);
                 }

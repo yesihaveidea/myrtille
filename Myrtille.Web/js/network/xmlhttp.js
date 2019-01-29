@@ -209,6 +209,17 @@ function XmlHttp(config, dialog, display, network)
             // update the average "latency"
             network.updateLatency(xhrStartTime);
 
+            // release the xhr
+            cleanup(false);
+
+            // a previous xhr failed to return within a proper time fashion; now that one had returned successfully, lift the error status
+            if (xhrTimeoutElapsed)
+            {
+                //dialog.showDebug('xhr ok');
+                xhrTimeoutElapsed = false;
+                dialog.hideMessage();
+            }
+
             if (text != '')
             {
                 // reload page
@@ -230,6 +241,12 @@ function XmlHttp(config, dialog, display, network)
                 else if (text.length >= 9 && text.substr(0, 9) == 'printjob|')
                 {
                     downloadPdf(text.substr(9, text.length - 9));
+                }
+                // connected session
+                else if (text == 'connected')
+                {
+                    // send settings and request a fullscreen update
+                    network.initClient();
                 }
                 // disconnected session
                 else if (text == 'disconnected')
@@ -263,26 +280,15 @@ function XmlHttp(config, dialog, display, network)
 
                     // add image to display
                     display.addImage(idx, posX, posY, width, height, format, quality, fullscreen, base64Data);
+
+                    // if using divs and count reached a reasonable number, request a fullscreen update
+                    if (config.getDisplayMode() != config.getDisplayModeEnum().CANVAS && display.getImgCount() >= config.getImageCountOk() && !fullscreenPending)
+                    {
+                        //dialog.showDebug('reached a reasonable number of divs, requesting a fullscreen update');
+                        fullscreenPending = true;
+                        network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
+                    }
                 }
-            }
-            
-            // release the xhr
-            cleanup(false);
-
-            // a previous xhr failed to return within a proper time fashion; now that one had returned successfully, lift the error status
-            if (xhrTimeoutElapsed)
-            {
-                //dialog.showDebug('xhr ok');
-                xhrTimeoutElapsed = false;
-                dialog.hideMessage();
-            }
-
-            // if using divs and count reached a reasonable number, request a fullscreen update
-            if (config.getDisplayMode() != config.getDisplayModeEnum().CANVAS && display.getImgCount() >= config.getImageCountOk() && !fullscreenPending)
-            {
-                //dialog.showDebug('reached a reasonable number of divs, requesting a fullscreen update');
-                fullscreenPending = true;
-                network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
             }
 	    }
 	    catch (exc)

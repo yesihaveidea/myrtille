@@ -307,6 +307,12 @@ function Websocket(config, dialog, display, network)
                     {
                         downloadPdf(text.substr(9, text.length - 9));
                     }
+                    // connected session
+                    else if (text == 'connected')
+                    {
+                        // send settings and request a fullscreen update
+                        network.initClient();
+                    }
                     // disconnected session
                     else if (text == 'disconnected')
                     {

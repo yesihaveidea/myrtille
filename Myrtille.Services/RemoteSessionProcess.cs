@@ -179,6 +179,55 @@ namespace Myrtille.Services
                         certIgnore = true;
                     }
 
+                    // the params below have optimal (performance oriented) values and shouldn't be changed (except in case of any issue)
+                    bool compression;
+                    if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPCompression"], out compression))
+                    {
+                        compression = true;
+                    }
+
+                    bool mouseMotion;
+                    if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPMouseMotion"], out mouseMotion))
+                    {
+                        mouseMotion = false;
+                    }
+
+                    bool bitmapCache;
+                    if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPBitmapCache"], out bitmapCache))
+                    {
+                        bitmapCache = true;
+                    }
+
+                    bool offscreenCache;
+                    if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPOffscreenCache"], out offscreenCache))
+                    {
+                        offscreenCache = false;
+                    }
+
+                    bool glyphCache;
+                    if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPGlyphCache"], out glyphCache))
+                    {
+                        glyphCache = true;
+                    }
+
+                    bool asyncInput;
+                    if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPAsyncInput"], out asyncInput))
+                    {
+                        asyncInput = false;
+                    }
+
+                    bool asyncUpdate;
+                    if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPAsyncUpdate"], out asyncUpdate))
+                    {
+                        asyncUpdate = false;
+                    }
+
+                    bool asyncChannels;
+                    if (!bool.TryParse(ConfigurationManager.AppSettings["FreeRDPAsyncChannels"], out asyncChannels))
+                    {
+                        asyncChannels = false;
+                    }
+
                     // pdf virtual printer redirection
 
                     // TOCHECK: for some reason, using the exact pdf virtual printer driver name ("PDF Scribe Virtual Printer") doesn't work (the printer doesn't show into the remote session) with wfreerdp, while it works with mstsc (!)
@@ -206,16 +255,16 @@ namespace Myrtille.Services
                         (menuAnims ? " +" : " -") + "menu-anims" +                                                                  // menu animations
                         (themes ? " +" : " -") + "themes" +                                                                         // themes
                         (smoothFonts ? " +" : " -") + "fonts" +                                                                     // smooth fonts (requires ClearType enabled on the remote server)
-                        " +compression" +                                                                                           // bulk compression (level is autodetected from the rdp version)
+                        (compression ? " +" : " -") + "compression" +                                                               // bulk compression (level is autodetected from the rdp version)
                         (certIgnore ? " /cert-ignore" : string.Empty) +                                                             // ignore certificate warning (when using NLA)
                         (allowPrintDownload ? " /printer:\"Myrtille PDF\",\"MS Publisher Imagesetter\"" : string.Empty) +           // pdf virtual printer
-                        " -mouse-motion" +                                                                                          // mouse motion
-                        " +bitmap-cache" +                                                                                          // bitmap cache
-                        " -offscreen-cache" +                                                                                       // offscreen cache
-                        " +glyph-cache" +                                                                                           // glyph cache
-                        " -async-input" +                                                                                           // async input
-                        " -async-update" +                                                                                          // async update
-                        " -async-channels" +                                                                                        // async channels
+                        (mouseMotion ? " +" : " -") + "mouse-motion" +                                                              // mouse motion
+                        (bitmapCache ? " +" : " -") + "bitmap-cache" +                                                              // bitmap cache
+                        (offscreenCache ? " +" : " -") + "offscreen-cache" +                                                        // offscreen cache
+                        (glyphCache ? " +" : " -") + "glyph-cache" +                                                                // glyph cache
+                        (asyncInput ? " +" : " -") + "async-input" +                                                                // async input
+                        (asyncUpdate ? " +" : " -") + "async-update" +                                                              // async update
+                        (asyncChannels ? " +" : " -") + "async-channels" +                                                          // async channels
                         (allowRemoteClipboard ? " +" : " -") + "clipboard" +                                                        // clipboard support
                         (securityProtocol != SecurityProtocolEnum.auto ? " /sec:" + securityProtocol.ToString() : string.Empty) +   // security protocol
                         " /audio-mode:2";                                                                                           // audio mode (not supported for now, 2: do not play)
