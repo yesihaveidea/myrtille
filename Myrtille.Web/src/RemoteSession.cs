@@ -86,8 +86,8 @@ namespace Myrtille.Web
             UserDomain = userDomain;
             UserName = userName;
             UserPassword = userPassword;
-            ClientWidth = clientWidth;
-            ClientHeight = clientHeight;
+            ClientWidth = clientWidth < 100 ? 100 : clientWidth;
+            ClientHeight = clientHeight < 100 ? 100 : clientHeight;
             StartProgram = startProgram;
             AllowRemoteClipboard = allowRemoteClipboard;
             AllowFileTransfer = allowFileTransfer;

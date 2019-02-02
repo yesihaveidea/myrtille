@@ -229,8 +229,8 @@ namespace Myrtille.Web
                                 var width = int.Parse(resolution[0]);
                                 var height = int.Parse(resolution[1]);
 
-                                RemoteSession.ClientWidth = width;
-                                RemoteSession.ClientHeight = height;
+                                RemoteSession.ClientWidth = width < 100 ? 100 : width;
+                                RemoteSession.ClientHeight = height < 100 ? 100 : height;
 
                                 RemoteSession.State = RemoteSessionState.Disconnecting;
                                 SendCommand(RemoteSessionCommand.CloseClient);

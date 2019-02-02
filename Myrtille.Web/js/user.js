@@ -174,17 +174,6 @@ function User(config, dialog, display, network)
             var width = display.getBrowserWidth() - display.getHorizontalOffset();
             var height = display.getBrowserHeight() - display.getVerticalOffset();
 
-            // ensure a minimal resolution (the reconnection, if enabled, will fail otherwise)
-            if (width < 100)
-            {
-                width = 100;
-            }
-
-            if (height < 100)
-            {
-                height = 100;
-            }
-
             // if scaling display and using a canvas, resize it
             if (config.getScaleDisplay() && config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
             {
