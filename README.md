@@ -118,6 +118,17 @@ Cedric Coste (cedrozor@gmail.com).
 - UltraSam (AppliKr developer: rdp client, http gateway)
 - Paul Oliver (Olive Innovations Ltd: MFA, enterprise mode, SSH terminal)
 
+## Sponsors
+
+- Blackfish Software (http://www.blackfishsoftware.com/) - the makers of IE Tab - swipe on touchscreen devices
+- ElasticServer (http://www.elasticserver.co/) - print a remote document using the browser print dialog
+- Coduct GmbH (https://www.coduct.com/) - reconnect on browser resize, keeping the display aspect ratio
+- Your company here (contact me!)
+
+## Fun
+
+Ever wanted to run Myrtille in your Tesla supercar? :) https://www.youtube.com/watch?v=YwNlf6Bm_so
+
 ## Links
 - Website:	http://cedrozor.github.io/myrtille
 - Sources:	https://github.com/cedrozor/myrtille
