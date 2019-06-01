@@ -1,4 +1,24 @@
-﻿2019-02-14 Version 2.3.1 (stable)
+﻿2019-06-01 Version 2.5.5 (stable)
+	added audio support (MP3 (default)/WAV, config.js)
+	(beta) added a REST API to prevent the connection details to be passed into the querystring; a connection identifier (&cid=) is passed instead and the connection details are retrieved by the myrtille gateway using the REST API
+	(beta) added a REST API to share a remote session and manage the active guest(s)
+	(beta) added a REST API to take screenshots of the remote session (either automatically (periodically), or manually)
+	added the ability to hide the toolbar (web.config, you can hide it if using your own UI)
+	added the ability to disable connection from login screen or url (web.config, you can disable it if using a connection API)
+	fixed a regression into the buffer processing
+	fixed a mouse left button bug which happened sometimes in HTML4
+	fixed a display glitch with too many divs displayed at once in HTML4
+	fixed a keyboard handling issue with Ubuntu in RDP over VM bus (Hyper-V) mode
+	fixed some issues related to session sharing
+	improved the ability to run myrtille into an iframe (like for multiple connections/tabs, requires "cookieless=useURI" mode into web.config): multiple iframes on a same page, key combination to switch from one iframe to another (shift + alt), focus management, etc.; cross domain restriction can be avoided by having all iframes on the same domain as the main page
+	improved the scale and reconnect features on browser resize; they can now be toggled from the toolbar (instead of using a web.config key)
+	toolbar state is now saved into a cookie to persist across page reload(s)
+	stat, debug and compatibility modes are now handled client side, saved into a cookie and always available; they are no longer bound to the remote session (so that, if the remote session is shared, guest(s) can now use them independently from the owner!)
+	a remote session now supports mixed HTML4 and HTML5 client(s)
+	fixed some issues in compatibility (HTML4) mode (long-polling); for example, missing carriage returns and line feeds into SSH terminal and remote clipboard popup
+	removed the display websocket buffer (as the connection remains open, it was not really necessary nor did it provide satisfactory results)
+
+2019-02-14 Version 2.3.1 (stable)
 	the remote session display is now automatically scaled to the browser size on session start
 	NEW! as an alternative to scaling, the remote session can be reconnected on browser resize to preserve the aspect ratio (web.config, disable "ScaleOnResize")
 	fixed a race condition in which the browser sent certain configuration parameters before the connection was effective

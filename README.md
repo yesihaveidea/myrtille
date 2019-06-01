@@ -21,17 +21,19 @@ More information in the DOCUMENTATION.md file.
 - Start remote application from URL
 - File transfer (local and roaming accounts)
 - PDF Virtual Printer
+- Audio support
 - HTML4 and HTML5 support
 - Responsive design
 - Remote clipboard support
 - PNG, JPEG and WEBP compression
 - Realtime connection information
 - On-screen/console/logfile debug information
+- REST APIs (i.e.: hide connection information from the browser, tracks connections, monitor remote sessions, etc.)
 - fully parameterizable
 
 ## Requirements
 - Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required.
-- Gateway (myrtille): IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+
+- Gateway (myrtille): IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+ (with WCF Services > HTTP Activation enabled)
 - RDP server: any RDP enabled machine (preferably Windows Server but can also be Windows XP, 7, 8, 10 or Linux xRDP server)
 - SSH server: any SSH server (tests were made using the built-in Windows 10 OpenSSH server)
 
@@ -45,7 +47,7 @@ Regarding the gateway, a simple dual core CPU with 4GB RAM can handle up to 50 s
 Each session uses about 20KB/sec bandwidth with the browser.
 
 ## Build
-Microsoft Visual Studio 2015. See DOCUMENTATION.md.
+Microsoft Visual Studio 2017. See DOCUMENTATION.md.
 
 ## Installation
 All releases here: https://github.com/cedrozor/myrtille/releases
@@ -62,9 +64,9 @@ You can connect a remote desktop and **start a program automatically from an url
 The installer provides the option to create or not a self-signed certificate for https://myserver/myrtille. Like for all self-signed certificates, you will have to add a security exception into your browser (just ignore the warning message and proceed to the website). **Usage of https is recommended** to secure your remote connection.
 Of course, you can avoid that by installing a certificate provided by a trusted Certification Authority (see DOCUMENTATION.md).
 
-If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (most traces are disabled (commented) into the .js files but can be enabled (uncommented) as needed). *Hidden from version 1.5.0 (can be enabled into default.css)*.
+If you want connection information, you can enable stat (displayed on screen or browser console). If you want debug information, you can enable debug (most traces are disabled (commented) into the .js files but can be enabled (uncommented) as needed).
 
-You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall). *Hidden (autodetected) from version 1.5.0 (can be enabled into default.css)*.
+You can also choose the rendering mode, HTML4 or HTML5 (HTML4 may be useful, for example, if websockets are blocked by a proxy or firewall).
 
 On touchscreen devices, you can pop the device keyboard with the "Keyboard" button. Then enter some text and click "Send". This can be used, for example, to paste the local clipboard content and send it to the server (then it be copied from there, within the remote session).
 Alternatively, you can run **osk.exe** (the Windows on screen keyboard, located into %SystemRoot%\System32) within the remote session. It can even be run automatically on session start (https://www.cybernetman.com/kb/index.cfm/fuseaction/home.viewArticles/articleId/197).
@@ -91,7 +93,10 @@ Myrtille uses the following licensed software:
 - Postscript Printer Drivers: Microsoft Postscript Printer Driver V3 (https://docs.microsoft.com/en-us/windows-hardware/drivers/print/microsoft-postscript-printer-driver), copyright (c) Microsoft Corporation. All rights reserved.
 - Postscript and PDF interpreter/renderer: Ghostscript 9.23 (https://www.ghostscript.com/download/gsdnld.html), licensed under AGPL v3 license.
 - SSH client: SSH.NET 2016.1.0 (https://github.com/sshnet/SSH.NET/), licensed under MIT License.
-- HTML Terminal Emulator: xtermjs, (https://github.com/xtermjs/xterm.js/), licensed under MIT License.
+- HTML Terminal Emulator: xtermjs (https://github.com/xtermjs/xterm.js/), licensed under MIT License.
+- WAV audio support: NAudio (https://github.com/naudio/NAudio), licensed under Microsoft Public License (MS-PL).
+- MP3 audio support: NAudio.Lame (https://github.com/Corey-M/NAudio.Lame), licensed under MIT License.
+- MP3 audio support: Lame (http://lame.sourceforge.net/), licensed under LGPL license.
 
 See DISCLAIMERS.md file.
 
@@ -123,6 +128,7 @@ Cedric Coste (cedrozor@gmail.com).
 - Blackfish Software (http://www.blackfishsoftware.com/) - the makers of IE Tab - swipe on touchscreen devices
 - ElasticServer (http://www.elasticserver.co/) - print a remote document using the browser print dialog
 - Coduct GmbH (https://www.coduct.com/) - reconnect on browser resize, keeping the display aspect ratio
+- Practice-Labs (https://practice-labs.com/) - audio support, REST APIs, improved iframes integration
 - Your company here (contact me!)
 
 ## Fun

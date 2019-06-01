@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ namespace Myrtille.Services.Contracts
         [OperationContract]
         void StartProcess(
             Guid remoteSessionId,
-            HostTypeEnum HostType,
-            SecurityProtocolEnum securityProtocol,
+            HostType HostType,
+            SecurityProtocol securityProtocol,
             string serverAddress,
             string vmGuid,
             string userDomain,
@@ -40,7 +40,8 @@ namespace Myrtille.Services.Contracts
             int clientWidth,
             int clientHeight,
             bool allowRemoteClipboard,
-            bool allowPrintDownload);
+            bool allowPrintDownload,
+            bool allowAudioPlayback);
 
         /// <summary>
         /// stop the host client process

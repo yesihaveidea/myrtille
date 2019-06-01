@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -42,8 +42,17 @@ namespace Myrtille.Web
         private NamedPipeServerStream _updatesPipe;
         public NamedPipeServerStream UpdatesPipe { get { return _updatesPipe; } }
 
+        private NamedPipeServerStream _audioPipe;
+        public NamedPipeServerStream AudioPipe { get { return _audioPipe; } }
+
+        // each audio block is 32768 bytes (32 kb); the audio buffer is up to 6 blocks
+        private const int audioBufferSize = 196608;
+
         public delegate void ProcessUpdatesPipeMessageDelegate(byte[] msg);
         public ProcessUpdatesPipeMessageDelegate ProcessUpdatesPipeMessage { get; set; }
+
+        public delegate void ProcessAudioPipeMessageDelegate(byte[] msg);
+        public ProcessAudioPipeMessageDelegate ProcessAudioPipeMessage { get; set; }
 
         public RemoteSessionPipes(RemoteSession remoteSession)
         {
@@ -67,7 +76,7 @@ namespace Myrtille.Web
                     "remotesession_" + RemoteSession.Id + "_inputs",
                     PipeDirection.InOut,
                     1,
-                    RemoteSession.HostType == HostTypeEnum.RDP ? PipeTransmissionMode.Byte : PipeTransmissionMode.Message,
+                    RemoteSession.HostType == HostType.RDP ? PipeTransmissionMode.Byte : PipeTransmissionMode.Message,
                     PipeOptions.Asynchronous,
                     0,
                     0,
@@ -77,15 +86,34 @@ namespace Myrtille.Web
                     "remotesession_" + RemoteSession.Id + "_updates",
                     PipeDirection.InOut,
                     1,
-                    RemoteSession.HostType == HostTypeEnum.RDP ? PipeTransmissionMode.Byte : PipeTransmissionMode.Message,
+                    RemoteSession.HostType == HostType.RDP ? PipeTransmissionMode.Byte : PipeTransmissionMode.Message,
                     PipeOptions.Asynchronous,
                     0,
                     0,
                     pipeSecurity);
 
+                // RDP only
+                if (RemoteSession.HostType == HostType.RDP)
+                {
+                    _audioPipe = new NamedPipeServerStream(
+                        "remotesession_" + RemoteSession.Id + "_audio",
+                        PipeDirection.InOut,
+                        1,
+                        PipeTransmissionMode.Byte,
+                        PipeOptions.Asynchronous,
+                        audioBufferSize,
+                        audioBufferSize,
+                        pipeSecurity);
+                }
+
                 // wait for client connection
                 InputsPipe.BeginWaitForConnection(InputsPipeConnected, InputsPipe);
                 UpdatesPipe.BeginWaitForConnection(UpdatesPipeConnected, UpdatesPipe);
+
+                if (RemoteSession.HostType == HostType.RDP)
+                {
+                    AudioPipe.BeginWaitForConnection(AudioPipeConnected, AudioPipe);
+                }
             }
             catch (Exception exc)
             {
@@ -97,6 +125,11 @@ namespace Myrtille.Web
         {
             DisposePipe("remoteSession_" + RemoteSession.Id + "_inputs", ref _inputsPipe);
             DisposePipe("remoteSession_" + RemoteSession.Id + "_updates", ref _updatesPipe);
+
+            if (RemoteSession.HostType == HostType.RDP)
+            {
+                DisposePipe("remoteSession_" + RemoteSession.Id + "_audio", ref _audioPipe);
+            }
         }
 
         private void InputsPipeConnected(IAsyncResult e)
@@ -151,6 +184,22 @@ namespace Myrtille.Web
             }
         }
 
+        private void AudioPipeConnected(IAsyncResult e)
+        {
+            try
+            {
+                if (AudioPipe != null)
+                {
+                    AudioPipe.EndWaitForConnection(e);
+                    ReadAudioPipe();
+                }
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to wait for connection on audio pipe, remote session {0} ({1})", RemoteSession.Id, exc);
+            }
+        }
+
         private void ReadUpdatesPipe()
         {
             try
@@ -169,6 +218,28 @@ namespace Myrtille.Web
                 Trace.TraceError("Failed to read updates pipe, remote session {0} ({1})", RemoteSession.Id, exc);
 
                 // there is a problem with the updates pipe, close the remote session in order to avoid it being stuck
+                RemoteSession.Manager.SendCommand(RemoteSessionCommand.CloseClient);
+            }
+        }
+
+        private void ReadAudioPipe()
+        {
+            try
+            {
+                while (AudioPipe != null && AudioPipe.IsConnected)
+                {
+                    var msg = PipeHelper.ReadPipeMessage(AudioPipe, "remotesession_" + RemoteSession.Id + "_audio", false, audioBufferSize);
+                    if (msg != null && msg.Length > 0)
+                    {
+                        ProcessAudioPipeMessage(msg);
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to read audio pipe, remote session {0} ({1})", RemoteSession.Id, exc);
+
+                // there is a problem with the audio pipe, close the remote session in order to avoid it being stuck
                 RemoteSession.Manager.SendCommand(RemoteSessionCommand.CloseClient);
             }
         }

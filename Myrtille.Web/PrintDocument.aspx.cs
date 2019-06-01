@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,20 +25,8 @@ namespace Myrtille.Web
 {
     public partial class PrintDocument : Page
     {
-        private PrinterServiceClient _printerServiceClient;
+        private static PrinterClient _printerClient = new PrinterClient();
         private RemoteSession _remoteSession;
-
-        /// <summary>
-        /// page init
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void Page_Init(
-            object sender,
-            EventArgs e)
-        {
-            _printerServiceClient = new PrinterServiceClient();
-        }
 
         /// <summary>
         /// page load (postback data is now available)
@@ -61,7 +49,7 @@ namespace Myrtille.Web
                 {
                     try
                     {
-                        var fileStream = _printerServiceClient.GetPdfFile(_remoteSession.Id, Request["name"]);
+                        var fileStream = _printerClient.GetPdfFile(_remoteSession.Id, Request["name"]);
                         FileHelper.DownloadFile(Response, fileStream, Request["name"], true, "application/pdf", Request["disposition"]);
                     }
                     catch (ThreadAbortException)
@@ -75,7 +63,7 @@ namespace Myrtille.Web
                     finally
                     {
                         // remove the pdf file
-                        _printerServiceClient.DeletePdfFile(_remoteSession.Id, Request["name"]);
+                        _printerClient.DeletePdfFile(_remoteSession.Id, Request["name"]);
                     }
                 }
             }

@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ namespace Myrtille.Services
 
         public void StartProcess(
             Guid remoteSessionId,
-            HostTypeEnum hostType,
-            SecurityProtocolEnum securityProtocol,
+            HostType hostType,
+            SecurityProtocol securityProtocol,
             string serverAddress,
             string vmGuid,
             string userDomain,
@@ -47,17 +47,18 @@ namespace Myrtille.Services
             int clientWidth,
             int clientHeight,
             bool allowRemoteClipboard,
-            bool allowPrintDownload)
+            bool allowPrintDownload,
+            bool allowAudioPlayback)
         {
             Trace.TraceInformation("Connecting remote session {0}, type {1}, security {2}, server (:port) {3}, vm {4}, domain {5}, user {6}, program {7}",
                 remoteSessionId,
                 hostType,
-                hostType == HostTypeEnum.RDP ? securityProtocol.ToString().ToUpper() : "N/A",
+                hostType == HostType.RDP ? securityProtocol.ToString().ToUpper() : "N/A",
                 serverAddress,
-                hostType == HostTypeEnum.RDP ? (string.IsNullOrEmpty(vmGuid) ? "(none)" : vmGuid) : "N/A",
-                hostType == HostTypeEnum.RDP ? (string.IsNullOrEmpty(userDomain) ? "(none)" : userDomain) : "N/A",
+                hostType == HostType.RDP ? (string.IsNullOrEmpty(vmGuid) ? "(none)" : vmGuid) : "N/A",
+                hostType == HostType.RDP ? (string.IsNullOrEmpty(userDomain) ? "(none)" : userDomain) : "N/A",
                 userName,
-                hostType == HostTypeEnum.RDP ? (string.IsNullOrEmpty(startProgram) ? "(none)" : startProgram) : "N/A");
+                hostType == HostType.RDP ? (string.IsNullOrEmpty(startProgram) ? "(none)" : startProgram) : "N/A");
 
             try
             {
@@ -74,11 +75,11 @@ namespace Myrtille.Services
                 switch (hostType)
                 {
                     // see https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#build for information and steps to build FreeRDP along with myrtille
-                    case HostTypeEnum.RDP:
+                    case HostType.RDP:
                         clientFilePath = @"Myrtille.RDP\FreeRDP";
                         clientFileName = "wfreerdp.exe";
                         break;
-                    case HostTypeEnum.SSH:
+                    case HostType.SSH:
                         clientFilePath = @"Myrtille.SSH\bin";
                         clientFileName = "Myrtille.SSH.exe";
                         break;
@@ -114,7 +115,7 @@ namespace Myrtille.Services
 
                 #region RDP
 
-                if (hostType == HostTypeEnum.RDP)
+                if (hostType == HostType.RDP)
                 {
                     // color depth
                     int bpp;
@@ -266,8 +267,9 @@ namespace Myrtille.Services
                         (asyncUpdate ? " +" : " -") + "async-update" +                                                              // async update
                         (asyncChannels ? " +" : " -") + "async-channels" +                                                          // async channels
                         (allowRemoteClipboard ? " +" : " -") + "clipboard" +                                                        // clipboard support
-                        (securityProtocol != SecurityProtocolEnum.auto ? " /sec:" + securityProtocol.ToString() : string.Empty) +   // security protocol
-                        " /audio-mode:2";                                                                                           // audio mode (not supported for now, 2: do not play)
+                        (securityProtocol != SecurityProtocol.auto ? " /sec:" + securityProtocol.ToString() : string.Empty) +   // security protocol
+                        (allowAudioPlayback ? " /sound" : string.Empty) +                                                           // sound support
+                        " /audio-mode:" + (allowAudioPlayback ? "0" : "2");                                                         // audio mode (0: redirect, 1: play on server, 2: do not play)
                 }
 
                 #endregion

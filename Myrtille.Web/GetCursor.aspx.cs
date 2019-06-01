@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -53,10 +53,9 @@ namespace Myrtille.Web
 
                     // retrieve image data
                     var img = remoteSession.Manager.GetCachedUpdate(imgIdx);
-                    var imgData = img != null ? img.Data : null;
-                    if (imgData != null && imgData.Length > 0)
+                    if (img != null && img.Data.Length > 0)
                     {
-                        CreateCursorFromImage(img.Width, img.Height, img.PosX, img.PosY, imgData, Response.OutputStream);
+                        CreateCursorFromImage(img.Width, img.Height, img.PosX, img.PosY, img.Data, Response.OutputStream);
                     }
                 }
                 catch (Exception exc)

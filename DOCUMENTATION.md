@@ -1,23 +1,24 @@
-﻿- [Introduction](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#introduction)
-- [History](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#history)
-- [Installation](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#installation)
-- [Auto-connect / Start remote application from URL](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#auto-connect--start-remote-application-from-url)
-- [Syntax](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#syntax)
-- [Password Hash](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#password-hash)
-- [File transfer](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#file-transfer)
-- [Print document](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#print-document)
-- [Security](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#security)
-- [Configuration / Performance tweaks / Debug](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#configuration--performance-tweaks--debug)
-- [Code organization](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#code-organization)
-- [Build](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#build)
-- [Startup projects](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#startup-projects)
-- [Communication](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#communication)
-- [Overview](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#overview)
-- [Protocols](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#protocols)
-- [Multifactor Authentication](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#multifactor-authentication)
-- [Enterprise Mode](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#enterprise-mode)
-- [Notes and limitations](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#notes-and-limitations)
-- [Troubleshoot](https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#troubleshoot)
+﻿- [Introduction](#introduction)
+- [History](#history)
+- [Installation](#installation)
+- [Auto-connect / Start remote application from URL](#auto-connect--start-remote-application-from-url)
+- [Syntax](#syntax)
+- [Password Hash](#password-hash)
+- [File transfer](#file-transfer)
+- [Print document](#print-document)
+- [Security](#security)
+- [Configuration / Performance tweaks / Debug](#configuration--performance-tweaks--debug)
+- [Code organization](#code-organization)
+- [Build](#build)
+- [Startup projects](#startup-projects)
+- [Communication](#communication)
+- [Overview](#overview)
+- [Protocols](#protocols)
+- [Multifactor Authentication](#multifactor-authentication)
+- [Enterprise Mode](#enterprise-mode)
+- [REST APIs](#rest-apis)
+- [Notes and limitations](#notes-and-limitations)
+- [Troubleshoot](#troubleshoot)
 
 # Introduction
 I worked hard to make Myrtille as straightforward as possible, with commented code, but some points may needs additional information.
@@ -43,6 +44,8 @@ You need at least IIS 7 before installing myrtille (the HTTP(S) to RDP/SSH gatew
 **CAUTION! If you want to use websockets**, you need IIS 8 or greater with the websocket protocol enabled (disabled by default; see https://www.iis.net/configreference/system.webserver/websocket).
 
 The .NET 4.5+ framework can be installed automatically by the myrtille installer (Setup.exe), enabled as a feature of IIS (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012) or installed separately (https://www.microsoft.com/en-us/download/details.aspx?id=30653).
+
+Into the roles and features management, ensure you have enabled **HTTP Activation** under ".NET Framework 4.5+ Features" > "WCF Services" (required by the Myrtille services and REST API).
 
 The installer does install myrtille under the IIS default website and creates a custom application pool ("MyrtilleAppPool"). If you want to use another website or application pool, you can change it manually afterward (with the IIS manager).
 
@@ -125,11 +128,10 @@ Into the gateway settings (Web.config):
 - **AllowSessionSharing**: allow to share a remote session (default enabled); from version 2.0.0, guests can't interact with the shared session (view only)
 - **ClientIPTracking**: track the client IP (default disabled) and denies access in case of IP change; this should be disabled in some network configurations: shared proxy, roaming connection, private browsing, etc.
 - **ClientIdleTimeout**: disconnect the session after a period of time if the browser window/tab is closed, or connection is lost, to prevent it from being left open server side; default 60000 ms (1 mn). 0 to disable
-- **WebsocketBuffering**: buffer for display updates, when using websockets; updates are sent together (grouped) when the latency gets high and dropped when the bandwidth gets low (>= 1 sec)
 
 Into the services settings (bin/Myrtille.Services.exe.config):
 - **RemoteSessionLog**: rdp/ssh client logs (default disabled); stored into the log folder
-- **FreeRDPxxx**: rdp client settings; allow to tweak the remote connection options (wallpaper, theme, color depth, etc.). use with caution!
+- **FreeRDPxxx**: rdp client settings; allow to tweak the remote connection options (wallpaper, theme, color depth, audio, etc.). use with caution!
 - Multifactor Authentication and Enterprise Mode configuration
 
 Into the PDF virtual printer settings (bin/Myrtille.Printer.exe.config):
@@ -148,8 +150,8 @@ Into the PDF virtual printer settings (bin/Myrtille.Printer.exe.config):
 - **Myrtille.Setup**: MSI installer.
 
 ## Build
-Myrtille uses C#, C++ and vanilla Javascript code (no additional libraries). Microsoft Visual Studio Community 2015 was used as primary development environment, using the .NET 4.5 framework.
-If you want Visual Studio to load the Myrtille setup project, you have to install the (official and free) Microsoft Visual Studio 2015 Installer Projects extension (https://visualstudiogallery.msdn.microsoft.com/f1cc3f3e-c300-40a7-8797-c509fb8933b9).
+Myrtille uses C#, C++ and vanilla Javascript code (no additional libraries). Microsoft Visual Studio Community 2017 was used as primary development environment, using the .NET 4.5 framework.
+If you want Visual Studio to load the Myrtille setup project, you have to install the (official and free) Microsoft Visual Studio 2017 Installer Projects extension (https://marketplace.visualstudio.com/items?itemName=visualstudioclient.MicrosoftVisualStudio2017InstallerProjects).
 
 The Myrtille build have the two classic solution configurations: "Debug" and "Release", on "Any CPU" platform.
 
@@ -168,10 +170,20 @@ Steps to build the FreeRDP fork (and have it working with myrtille):
 - Run cmake as detailed here: https://github.com/FreeRDP/FreeRDP/wiki/Build-on-Windows-Visual-C---2012-(32-and-64-bit) to generate the Visual Studio solution and projects accordingly to your dev environment
 - Open and build the generated solution
 
-If you plan to build the myrtille installer, you have first to build the FreeRDP fork (or you can add the FreeRDP fork solution to the myrtille solution and use the FreeRDP projects outputs instead of files).
+If you plan to build the myrtille installer, you have first to build the FreeRDP fork.
+
+Then, into the installer project, add the following projects outputs (as primary output):
+- winpr
+- winpr-tools
+- freerdp
+- freerdp-client
+- wfreerdp-client
+
+The installer build should now work.
 
 ### Startup projects
 If you want to run Myrtille with Visual Studio, you should set startup projects on the solution in the following order (multiple startup projects):
+- Myrtille.Admin.Services (start) * only required by the Myrtille.Admin.Web mockup *
 - Myrtille.Services (Start)
 - Myrtille.Web (Start)
 
@@ -253,6 +265,20 @@ To specify a custom path for the MyrtilleEnterprise database or use another SQL 
 
 If you wish to create your own enterprise adapter (with a different authentication, database or behavior), `Myrtille.Services.Contracts` contains the interfaces you need.
 
+## REST APIs
+
+Myrtille can support custom REST APIs, to have additional controls over connections and remote sessions.
+
+For example, if you want to hide the connection parameters from the end user (browser), you can use (implement) the **IConnectionService** interface to provide connection details from a connection identifier. This API can also be used to track the connections states (connection/disconnection time, exit code, etc.).
+
+Myrtille also implement a capture API (**ICaptureService**) in order to take screenshots, on demand or periodically, of a remote session display. This could be useful for monitoring user activity on sensitive servers.
+
+For an improved sharing experience, you also have a sharing API (**ISharingService**) to manage the invitations for a remote session, the access privileges, track the active connections, disconnect a guest, etc.
+
+You can check the related endpoints, methods and params into these interfaces (Myrtille.Services.Contracts) and have your own implementations.
+
+See the Myrtille.Admin.Web **mockup** to see how to implement Myrtille into your website and use these APIs.
+
 ## Notes and limitations
 - Starting from myrtille version 1.2.0, the packaged FreeRDP and OpenSSL binaries use a statically-linked runtime; that means there is no longer need for the Microsoft Visual C++ redistributables (x86). It's still a good idea to install them however as they will be required if the build options are changed.
 
@@ -280,6 +306,8 @@ If you wish to create your own enterprise adapter (with a different authenticati
 
 - The "Start program from url" feature doesn't work with an Hyper-V VM connection.
 
+- in HTML4 mode, data is sent to Myrtille using xhrs; these are limited in size (depends on browser and IIS config), so sending a large block of text with the "keyboard" popup may fail in such a case
+
 ## Troubleshoot
 First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+). Note that IIS must be installed separately, before running the installer (see "Installation").
 
@@ -295,8 +323,10 @@ Also please read notes and limitations above.
 	- Ensure IIS is started and "Myrtille.Web" application is running on the "MyrtilleAppPool" application pool.
 	- If you have IIS 8 or greater, ensure the websocket protocol is enabled (HTML4 clients will automatically fallback to long-polling).
 	- Ensure .NET 4.5 is installed (https://stackoverflow.com/questions/6425442/http-error-404-3-not-found-in-iis-7-5/8487214#8487214) and the "MyrtilleAppPool" is running on it.
+	- Ensure you have enabled **HTTP Activation** under ".NET Framework 4.5+ Features" > "WCF Services"
 	- You may have to register .NET 4.5 against IIS (https://stackoverflow.com/questions/13749138/asp-net-4-5-has-not-been-registered-on-the-web-server)
 	- Ensure the "Myrtille.Web" target folder does have enough privileges (should be set automatically by the installer but may depend on specific configurations)
+	- You can have IIS to show a **detailed error information** (in addition to the HTTP error code); see https://stackoverflow.com/questions/2640526/detailed-500-error-message-asp-iis-7-5
 
 - Nothing happens when I click "Connect!"
 	- Ensure you entered valid connection information (server address, user credentials, etc.).
@@ -324,12 +354,12 @@ Also please read notes and limitations above.
 	- Check the RDP (or SSH) server configuration (session disconnect timeout in particular). You can setup it automatically by importing the Myrtille "myrtille\bin\RDPSetup.reg" file into registry.
 
 - Myrtille is slow or buggy
-	- Enable the stats bar to have detailed information about the current connection. Check latency and bandwidth, among other things. **Stats, debug and HTML4 buttons can be enabled into css/Default.css (hidden by default)**
+	- Enable the stats bar to have detailed information about the current connection. Check latency and bandwidth, among other things.
 	- Ensure debug is disabled or otherwise logs are not set to "Information" level (Myrtille "Web.Config" file, "system.diagnostics" section, default is "Warning"). Check logs, if debug is enabled. **FreeRDP logs can be enabled into bin/Myrtille.Services.exe.config ("RemoteSessionLog" key, at the bottom of the file)**. Logs are located into the log folder.
 	- If debug is enabled and you are running Myrtille in debug mode under Visual Studio, you will have the FreeRDP window (session display) and console (rdp events) shown to you. Same for SSH. It may help to debug.
 	- Switch from HTML4 to HTML5 rendering, or inversely (should be faster with HTML5).
 	- Check your network configuration (is something filtering the traffic?) and capabilities (high latency or small bandwidth?).
-	- Ensure buffering is enabled on both client and gateway (see configuration / performance tweaks / Debug (https://github.com/cedrozor/myrtille/blob/master/DOCUMENTATION.md#configuration--performance-tweaks--debug))
+	- Ensure buffering is enabled (see configuration / performance tweaks / Debug (#configuration--performance-tweaks--debug))
 	- the SSH terminal (xtermjs) becomes laggy after some time; try to refresh or clear ("cls") the screen from time to time
 	- Maybe the default settings are not adapted to your configuration. You can tweak the "js/config.js" file as you wish (see extensive comments there).
 	- Despite my best efforts to produce quality and efficient code, I may have missed/messed something... Please don't hesitate to tell me or add your contribution! Thanks! :)

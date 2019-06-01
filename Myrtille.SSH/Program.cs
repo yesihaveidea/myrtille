@@ -2,7 +2,7 @@
     Myrtille: A native HTML4/5 Remote Desktop and SSH Protocol client.
 
     Copyright(c) 2018 Paul Oliver (Olive Innovations)
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ namespace Myrtille.SSH
         private static PipeMessaging pipeMessaging;
         private static SshClient client;
         private static ShellStream shellStream;
+        private static bool loginMessage;
 
         private static int Main(string[] args)
         {
@@ -140,12 +141,6 @@ namespace Myrtille.SSH
                     WriteOutput(command, string.IsNullOrEmpty(data) ? "," : data);
                     HandleKeyboardInput(string.IsNullOrEmpty(data) ? "," : data);
                     break;
-                case RemoteSessionCommand.SetStatMode:
-                case RemoteSessionCommand.SetDebugMode:
-                case RemoteSessionCommand.SetCompatibilityMode:
-                    WriteOutput(command, "Reloading terminal");
-                    pipeMessaging.SendUpdatesPipeMessage("reload");
-                    break;
             }
         }
 
@@ -154,14 +149,37 @@ namespace Myrtille.SSH
             // initial FSU (page (re)load)
             if (fsuType == "initial")
             {
-                // cancel the current command line, if any
-                SendSSHClientData(Encoding.UTF8.GetBytes("\u001b"));    // esc (27)
+                // don't clear the terminal on first initial FSU so that the SSH welcome message upon login can be seen
+                if (!loginMessage)
+                {
+                    loginMessage = true;
+                    return;
+                }
 
-                // give some time to process data
-                Thread.Sleep(1000);
+                // windows
+                if (client.ConnectionInfo.ServerVersion.Contains("Windows"))
+                {
+                    // cancel the current command line, if any
+                    SendSSHClientData(Encoding.UTF8.GetBytes("\u001b"));    // esc (27)
 
-                // clear the terminal
-                SendSSHClientData(Encoding.UTF8.GetBytes("cls\r"));     // cls + enter (13)
+                    // give some time to process data
+                    Thread.Sleep(1000);
+
+                    // clear the terminal
+                    SendSSHClientData(Encoding.UTF8.GetBytes("cls\r"));     // cls + enter (13)
+                }
+                // others
+                else
+                {
+                    // cancel the current command line, if any
+                    SendSSHClientData(Encoding.UTF8.GetBytes("\u0003"));    // break (3)
+
+                    // give some time to process data
+                    Thread.Sleep(1000);
+
+                    // clear the terminal
+                    SendSSHClientData(Encoding.UTF8.GetBytes("clear\r"));   // clear + enter (13)
+                }
             }
             // periodical or adaptive FSU
             // close the ssh client if disconnected
@@ -254,7 +272,7 @@ namespace Myrtille.SSH
                         serverPort = serverUri.Port;
                 }
 
-                var connectionInfo = new ConnectionInfo(serverHost, serverPort, UserName, new PasswordAuthenticationMethod(UserName, Password));
+                var connectionInfo = new Renci.SshNet.ConnectionInfo(serverHost, serverPort, UserName, new PasswordAuthenticationMethod(UserName, Password));
                 connectionInfo.Encoding = Encoding.UTF8;
 
                 client = new SshClient(connectionInfo);

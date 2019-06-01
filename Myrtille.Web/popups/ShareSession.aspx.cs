@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Web.UI;
+using Myrtille.Services.Contracts;
 
 namespace Myrtille.Web
 {
@@ -43,38 +44,58 @@ namespace Myrtille.Web
 
                 _remoteSession = (RemoteSession)Session[HttpSessionStateVariables.RemoteSession.ToString()];
 
-                try
+                // if remote session sharing is enabled, only the remote session owner can share it
+                if (!_remoteSession.AllowSessionSharing || !Session.SessionID.Equals(_remoteSession.OwnerSessionID))
                 {
-                    Application.Lock();
-
-                    // if remote session sharing is enabled, only the remote session owner can share it
-                    if (!_remoteSession.AllowSessionSharing || !Session.SessionID.Equals(_remoteSession.OwnerSessionID))
-                    {
-                        Response.Redirect("~/", true);
-                    }
-
-                    // create a new guest for the remote session
-                    var sharedSessions = (IDictionary<string, RemoteSession>)Application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()];
-                    var guestGuid = Guid.NewGuid().ToString();
-                    sharedSessions.Add(guestGuid, _remoteSession);
-                    sessionUrl.Value = Request.Url.Scheme + "://" + Request.Url.Host + (Request.Url.Port != 80 && Request.Url.Port != 443 ? ":" + Request.Url.Port : "") + Request.ApplicationPath + "/?SSE=" + guestGuid;
-                }
-                catch (ThreadAbortException)
-                {
-                    // occurs because the response is ended after redirect
-                }
-                catch (Exception exc)
-                {
-                    System.Diagnostics.Trace.TraceError("Failed to generate a session sharing url ({0})", exc);
-                }
-                finally
-                {
-                    Application.UnLock();
+                    Response.Redirect("~/", true);
                 }
             }
             catch (Exception exc)
             {
                 System.Diagnostics.Trace.TraceError("Failed to retrieve the active remote session ({0})", exc);
+            }
+        }
+
+        /// <summary>
+        /// create a shared session URL
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void CreateSessionUrlButtonClick(
+            object sender,
+            EventArgs e)
+        {
+            try
+            {
+                Application.Lock();
+
+                // create a new guest for the remote session
+                var sharedSessions = (IDictionary<Guid, SharingInfo>)Application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()];
+                var sharingInfo = new SharingInfo
+                {
+                    RemoteSession = _remoteSession,
+                    GuestInfo = new GuestInfo
+                    {
+                        Id = Guid.NewGuid(),
+                        ConnectionId = _remoteSession.Id,
+                        Control = guestControl.Checked
+                    }
+                };
+
+                sharedSessions.Add(sharingInfo.GuestInfo.Id, sharingInfo);
+                sessionUrl.Value = Request.Url.Scheme + "://" + Request.Url.Host + (Request.Url.Port != 80 && Request.Url.Port != 443 ? ":" + Request.Url.Port : "") + Request.ApplicationPath + "/?gid=" + sharingInfo.GuestInfo.Id;
+            }
+            catch (ThreadAbortException)
+            {
+                // occurs because the response is ended after redirect
+            }
+            catch (Exception exc)
+            {
+                System.Diagnostics.Trace.TraceError("Failed to generate a session sharing url ({0})", exc);
+            }
+            finally
+            {
+                Application.UnLock();
             }
         }
     }

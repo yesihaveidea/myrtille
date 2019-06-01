@@ -1,7 +1,7 @@
 ﻿<%--
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -58,18 +58,20 @@
         <script language="javascript" type="text/javascript" src="js/user/touchscreen.js"></script>
         <script language="javascript" type="text/javascript" src="js/xterm/xterm.js"></script>
         <script language="javascript" type="text/javascript" src="js/xterm/addons/fit/fit.js"></script>
+        <script language="javascript" type="text/javascript" src="js/audio/audiowebsocket.js"></script>
 
 	</head>
 	
     <body onload="startMyrtille(
         <%=(RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected)).ToString(CultureInfo.InvariantCulture).ToLower()%>,
-        <%=(RemoteSession != null && RemoteSession.StatMode).ToString(CultureInfo.InvariantCulture).ToLower()%>,
-        <%=(RemoteSession != null && RemoteSession.DebugMode).ToString(CultureInfo.InvariantCulture).ToLower()%>,
-        <%=(RemoteSession != null && RemoteSession.CompatibilityMode).ToString(CultureInfo.InvariantCulture).ToLower()%>,
-        <%=(RemoteSession != null && RemoteSession.ScaleDisplay.HasValue ? RemoteSession.ScaleDisplay.Value.ToString(CultureInfo.InvariantCulture).ToLower() : "null")%>,
+        getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'stat'),
+        getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'debug'),
+        getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser'),
+        <%=(RemoteSession != null && RemoteSession.BrowserResize.HasValue ? "'" + RemoteSession.BrowserResize.Value.ToString().ToUpper() + "'" : "null")%>,
         <%=(RemoteSession != null ? RemoteSession.ClientWidth.ToString() : "null")%>,
         <%=(RemoteSession != null ? RemoteSession.ClientHeight.ToString() : "null")%>,
-        '<%=(RemoteSession != null ? RemoteSession.HostType.ToString() : HostTypeEnum.RDP.ToString())%>');">
+        '<%=(RemoteSession != null ? RemoteSession.HostType.ToString() : HostType.RDP.ToString())%>',
+        <%=(RemoteSession != null && !string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode).ToString().ToLower()%>);">
 
         <!-- custom UI: all elements below, including the logo, are customizable into Default.css -->
 
@@ -232,12 +234,12 @@
             <!-- *** TOOLBAR                                                                                                                                                                    *** -->
             <!-- ********************************************************************************************************************************************************************************** -->
             
-            <div runat="server" id="toolbarToggle" style="visibility:hidden;display:none;">
+            <div runat="server" id="toolbarToggle" visible="false">
                 <!-- icon from: https://icons8.com/ -->
 			    <img src="img/icons8-menu-horizontal-21.png" alt="show/hide toolbar" width="21px" height="21px" onclick="toggleToolbar();"/>
             </div>
 
-            <div runat="server" id="toolbar" style="visibility:hidden;display:none;">
+            <div runat="server" id="toolbar" visible="false" style="visibility:hidden;display:none;">
 
                 <!-- server info -->
                 <input type="text" runat="server" id="serverInfo" title="connected server" disabled="disabled"/>
@@ -246,16 +248,19 @@
                 <input type="text" runat="server" id="userInfo" title="connected user" disabled="disabled"/>
 
                 <!-- stat bar -->
-                <input type="button" runat="server" id="stat" value="Show Stat" onclick="toggleStatMode();" title="display network and rendering info" disabled="disabled"/>
+                <input type="button" id="stat" value="Stat OFF" onclick="toggleStatMode();" title="display network and rendering info"/>
 
                 <!-- debug log -->
-                <input type="button" runat="server" id="debug" value="Show Debug" onclick="toggleDebugMode();" title="display debug info" disabled="disabled"/>
+                <input type="button" id="debug" value="Debug OFF" onclick="toggleDebugMode();" title="display debug info"/>
 
                 <!-- browser mode -->
-                <input type="button" runat="server" id="browser" value="HTML4" onclick="toggleCompatibilityMode();" title="rendering mode" disabled="disabled"/>
+                <input type="button" id="browser" value="HTML4" onclick="toggleCompatibilityMode();" title="rendering mode"/>
 
                 <!-- scale display -->
-                <input type="button" runat="server" id="scale" value="Scale" onclick="toggleScaleDisplay();" title="dynamically scale the remote session display to the browser size (responsive design)" disabled="disabled"/>
+                <input type="button" runat="server" id="scale" value="Scale OFF" onclick="toggleScaleDisplay();" title="scale the remote session to the browser size (aspect ratio is not preserved)" disabled="disabled"/>
+
+                <!-- reconnect session -->
+                <input type="button" runat="server" id="reconnect" value="Reconnect OFF" onclick="toggleReconnectSession();" title="reconnect the remote session to the browser size (keep aspect ratio)" disabled="disabled"/>
 
                 <!-- virtual keyboard. on devices without a physical keyboard, forces the device virtual keyboard to pop up -->
                 <input type="button" runat="server" id="keyboard" value="Keyboard" onclick="openPopup('virtualKeyboardPopup', 'VirtualKeyboard.aspx');" title="send text to the remote session (tip: can be used to send the local clipboard content (text only))" disabled="disabled"/>
@@ -273,13 +278,13 @@
                 <input type="button" runat="server" id="mrc" value="Right-Click OFF" onclick="toggleRightClick(this);" title="if toggled on, send a Right-Click on the next touch or left-click action" disabled="disabled"/>
 
                 <!-- swipe up/down gesture management for touchscreen devices. emulate vertical scroll in applications -->
-                <input type="button" runat="server" id="vswipe" value="Swipe up/down ON" onclick="toggleVerticalSwipe(this);" title="if toggled on, allow vertical scroll on swipe (experimental feature, disabled on IE/Edge)" disabled="disabled"/>
+                <input type="button" runat="server" id="vswipe" value="Vertical Swipe ON" onclick="toggleVerticalSwipe(this);" title="if toggled on, allow vertical scroll on swipe (experimental feature, disabled on IE/Edge)" disabled="disabled"/>
 
                 <!-- share session -->
                 <input type="button" runat="server" id="share" value="Share" onclick="openPopup('shareSessionPopup', 'ShareSession.aspx');" title="share session" disabled="disabled"/>
 
                 <!-- disconnect -->
-                <input type="button" runat="server" id="disconnect" value="Disconnect" onserverclick="DisconnectButtonClick" title="disconnect session" disabled="disabled"/>
+                <input type="button" runat="server" id="disconnect" value="Disconnect" onclick="doDisconnect();" title="disconnect session" disabled="disabled"/>
 
             </div>
 
@@ -333,16 +338,31 @@
                     // detect the browser width & height
                     setClientResolution(display);
 
-                    <%--
-                    // display toolbar on remote session start
-                    if (<%=(RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected)).ToString(CultureInfo.InvariantCulture).ToLower()%>)
+                    // the toolbar may be disabled from web.config
+                    if (document.getElementById('<%=toolbar.ClientID%>') == null)
+                    {
+                        // disable the cookies related to the toolbar
+                        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'toolbar', 0);
+                        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'stat', 0);
+                        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'debug', 0);
+                        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser', 0);
+                        return;
+                    }
+
+                    // toolbar state is saved into a cookie to persist across page reload(s)
+                    if (<%=(RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected)).ToString(CultureInfo.InvariantCulture).ToLower()%> &&
+                        getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'toolbar'))
                     {
                         toggleToolbar();
                     }
-                    --%>
+
+                    // in addition to having their states also saved into a cookie, stat, debug and compatibility buttons are always available into the toolbar (even for guest(s) if the remote session is shared)
+                    document.getElementById('stat').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'stat') ? 'Stat ON' : 'Stat OFF';
+                    document.getElementById('debug').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'debug') ? 'Debug ON' : 'Debug OFF';
+                    document.getElementById('browser').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser') ? 'HTML4' : 'HTML5';
 
                     // swipe is disabled on IE/Edge because it emulates mouse events by default (experimental)
-                    document.getElementById('<%=vswipe.ClientID%>').disabled = display.isIEBrowser();
+                    document.getElementById('<%=vswipe.ClientID%>').disabled = document.getElementById('<%=vswipe.ClientID%>').disabled || display.isIEBrowser();
                 }
                 catch (exc)
                 {
@@ -397,15 +417,17 @@
 
             function disableToolbar()
             {
-                disableControl('<%=stat.ClientID%>');
-                disableControl('<%=debug.ClientID%>');
-                disableControl('<%=browser.ClientID%>');
+                disableControl('stat');
+                disableControl('debug');
+                disableControl('browser');
                 disableControl('<%=scale.ClientID%>');
+                disableControl('<%=reconnect.ClientID%>');
                 disableControl('<%=keyboard.ClientID%>');
                 disableControl('<%=clipboard.ClientID%>');
                 disableControl('<%=files.ClientID%>');
                 disableControl('<%=cad.ClientID%>');
                 disableControl('<%=mrc.ClientID%>');
+                disableControl('<%=vswipe.ClientID%>');
                 disableControl('<%=share.ClientID%>');
                 disableControl('<%=disconnect.ClientID%>');
             }
@@ -426,7 +448,45 @@
                 {
                     toolbar.style.visibility = 'visible';
                     toolbar.style.display = 'block';
+                }
+
+                setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'toolbar', toolbar.style.visibility == 'visible' ? 1 : 0);
+            }
+
+            function getToggleCookie(name)
+            {
+                if (<%=(RemoteSession == null).ToString().ToLower()%>)
+                    return false;
+
+                var value = getCookie(name);
+                if (value == null)
+                    return false;
+
+                return (value == '1' ? true : false);
+            }
+
+            // http://www.quirksmode.org/js/cookies.html
+            function setCookie(name,value,days) {
+	            var expires = "";
+	            if (days) {
+		            var date = new Date();
+		            date.setTime(date.getTime() + (days*24*60*60*1000));
+		            expires = "; expires=" + date.toUTCString();
 	            }
+	            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+            }
+            function getCookie(name) {
+	            var nameEQ = name + "=";
+	            var ca = document.cookie.split(';');
+	            for(var i=0;i < ca.length;i++) {
+		            var c = ca[i];
+		            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+		            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+	            }
+	            return null;
+            }
+            function eraseCookie(name) {   
+                document.cookie = name + '=; Max-Age=-99999999; path=/';
             }
 
 		</script>

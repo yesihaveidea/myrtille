@@ -1,7 +1,7 @@
 ﻿<%--
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -38,7 +38,14 @@
                 </span>
                 <br/>
                 <div class="shareSessionPopupInput">
+                    <label id="guestControlLabel" for="guestControl">Grant control</label>
+                    <input type="checkbox" runat="server" id="guestControl" title="provide the ability for the guest to interact with the remote session"/>
+                </div>
+                <div class="shareSessionPopupInput">
                     <h5>Session URL</h5>
+                    <input type="button" runat="server" id="createSessionUrl" value="Create" onserverclick="CreateSessionUrlButtonClick"/>
+                    <br/>
+                    <br/>
                     <textarea runat="server" id="sessionUrl" readonly="readonly" rows="4" cols="50"></textarea>
                     <span><h5>Copy the URL and use how required; it can only be used once</h5></span>
                 </div>
@@ -54,10 +61,10 @@
 		    function selectText()
 		    {
 		        var sessionUrl = document.getElementById('sessionUrl');
-		        if (sessionUrl != null)
+		        if (sessionUrl != null && sessionUrl.value != '')
                 {
 		            sessionUrl.focus();
-		            sessionUrl.select();
+                    sessionUrl.select();
                 }
             }
 

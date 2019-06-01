@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,6 +21,13 @@ using Myrtille.Services.Contracts;
 
 namespace Myrtille.Web
 {
+    public enum BrowserResize
+    {
+        Scale = 0,
+        Reconnect = 1,  // default
+        None = 2
+    }
+
     public class RemoteSession
     {
         public RemoteSessionManager Manager { get; private set; }
@@ -28,40 +35,47 @@ namespace Myrtille.Web
         public Guid Id;
         public RemoteSessionState State;
         public string HostName;
-        public HostTypeEnum HostType;                   // RDP or SSH
-        public SecurityProtocolEnum SecurityProtocol;
+        public HostType HostType;                   // RDP or SSH
+        public SecurityProtocol SecurityProtocol;
         public string ServerAddress;                    // :port, if specified
         public string VMGuid;                           // RDP over VM bus (Hyper-V)
+        public string VMAddress;                        // RDP over VM bus (Hyper-V)
         public bool VMEnhancedMode;                     // RDP over VM bus (Hyper-V)
         public string UserDomain;
         public string UserName;
         public string UserPassword;
         public int ClientWidth;
         public int ClientHeight;
-        public bool? ScaleDisplay;                      // provided by the client
+        public BrowserResize? BrowserResize;            // provided by the client
         public ImageEncoding? ImageEncoding;            // provided by the client
         public int? ImageQuality;                       // provided by the client
         public int? ImageQuantity;                      // provided by the client
-        public bool StatMode;
-        public bool DebugMode;
-        public bool CompatibilityMode;
+        public AudioFormat? AudioFormat;                // provided by the client
+        public int? AudioBitrate;                       // provided by the client
+        public int ScreenshotIntervalSecs;              // capture API
+        public CaptureFormat ScreenshotFormat;          // capture API
+        public string ScreenshotPath;                   // capture API
         public string StartProgram;
-        public bool AllowRemoteClipboard;               // set in web config
-        public bool AllowFileTransfer;                  // set in web config
-        public bool AllowPrintDownload;                 // set in web config
-        public bool AllowSessionSharing;                // set in web config
+        public bool AllowRemoteClipboard;               // set in web config + connection service
+        public bool AllowFileTransfer;                  // set in web config + connection service
+        public bool AllowPrintDownload;                 // set in web config + connection service
+        public bool AllowSessionSharing;                // set in web config + connection service
+        public bool AllowAudioPlayback;                 // set in web config + connection service
+        public int ActiveGuests;                        // number of connected guests
+        public int MaxActiveGuests;                     // maximum number of connected guests (0 to disable session sharing)
         public string OwnerSessionID;                   // the http session on which the remote session is bound to
         public int ExitCode;
         public bool Reconnect;
+        public bool ConnectionService;
 
         public RemoteSession(
             Guid id,
-            RemoteSessionState state,
             string hostName,
-            HostTypeEnum hostType,
-            SecurityProtocolEnum securityProtocol,
+            HostType hostType,
+            SecurityProtocol securityProtocol,
             string serverAddress,
             string vmGuid,
+            string vmAddress,
             bool vmEnhancedMode,
             string userDomain,
             string userName,
@@ -73,15 +87,19 @@ namespace Myrtille.Web
             bool allowFileTransfer,
             bool allowPrintDownload,
             bool allowSessionSharing,
-            string ownerSessionID)
+            bool allowAudioPlayback,
+            int maxActiveGuests,
+            string ownerSessionID,
+            bool connectionService)
         {
             Id = id;
-            State = state;
+            State = RemoteSessionState.NotConnected;
             HostName = hostName;
             HostType = hostType;
             SecurityProtocol = securityProtocol;
             ServerAddress = serverAddress;
             VMGuid = vmGuid;
+            VMAddress = vmAddress;
             VMEnhancedMode = vmEnhancedMode;
             UserDomain = userDomain;
             UserName = userName;
@@ -93,7 +111,16 @@ namespace Myrtille.Web
             AllowFileTransfer = allowFileTransfer;
             AllowPrintDownload = allowPrintDownload;
             AllowSessionSharing = allowSessionSharing;
+            AllowAudioPlayback = allowAudioPlayback;
+            ActiveGuests = 0;
+            MaxActiveGuests = maxActiveGuests;
             OwnerSessionID = ownerSessionID;
+            ConnectionService = connectionService;
+
+            // default capture API config
+            ScreenshotIntervalSecs = 60;
+            ScreenshotFormat = CaptureFormat.PNG;
+            ScreenshotPath = string.Empty;
 
             Manager = new RemoteSessionManager(this);
         }

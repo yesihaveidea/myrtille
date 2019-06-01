@@ -50,11 +50,26 @@ namespace Myrtille.Network
         {
             lock (_dataLock)
             {
-                if (_data.Count >= Size)
+                _data.Add(item);
+
+                if (_data.Count == 1)
+                {
+                    if (_timeout != null)
+                    {
+                        _timeout.Cancel();
+                        _timeout = null;
+                    }
+
+                    _timeout = new CancellationTokenSource();
+                    Task.Delay(Delay > 0 ? Delay : 1, _timeout.Token).ContinueWith(task =>
+                    {
+                        Flush();
+                    }, TaskContinuationOptions.NotOnCanceled);
+                }
+                else if (_data.Count >= Size)
                 {
                     Flush();
                 }
-                _data.Add(item);
             }
         }
 

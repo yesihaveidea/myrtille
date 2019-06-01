@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -47,16 +47,20 @@ namespace Myrtille.Services.Contracts
         SendMouseWheelDown = 15,
 
         // control
-        SetStatMode = 16,
-        SetDebugMode = 17,
-        SetCompatibilityMode = 18,
-        SetScaleDisplay = 19,
-        SetImageEncoding = 20,
-        SetImageQuality = 21,
-        SetImageQuantity = 22,
-        RequestFullscreenUpdate = 23,
-        RequestRemoteClipboard = 24,
-        CloseClient = 25
+        SetScaleDisplay = 16,
+        SetReconnectSession = 17,
+        SetImageEncoding = 18,
+        SetImageQuality = 19,
+        SetImageQuantity = 20,
+        SetAudioFormat = 21,
+        SetAudioBitrate = 22,
+        SetScreenshotConfig = 23,
+        StartTakingScreenshots = 24,
+        StopTakingScreenshots = 25,
+        TakeScreenshot = 26,
+        RequestFullscreenUpdate = 27,
+        RequestRemoteClipboard = 28,
+        CloseClient = 29
     }
 
     /*
@@ -88,13 +92,17 @@ namespace Myrtille.Services.Contracts
             FromPrefix["MRB"] = RemoteSessionCommand.SendMouseRightButton;
             FromPrefix["MWU"] = RemoteSessionCommand.SendMouseWheelUp;
             FromPrefix["MWD"] = RemoteSessionCommand.SendMouseWheelDown;
-            FromPrefix["STA"] = RemoteSessionCommand.SetStatMode;
-            FromPrefix["DBG"] = RemoteSessionCommand.SetDebugMode;
-            FromPrefix["CMP"] = RemoteSessionCommand.SetCompatibilityMode;
             FromPrefix["SCA"] = RemoteSessionCommand.SetScaleDisplay;
+            FromPrefix["RCN"] = RemoteSessionCommand.SetReconnectSession;
             FromPrefix["ECD"] = RemoteSessionCommand.SetImageEncoding;
             FromPrefix["QLT"] = RemoteSessionCommand.SetImageQuality;
             FromPrefix["QNT"] = RemoteSessionCommand.SetImageQuantity;
+            FromPrefix["AUD"] = RemoteSessionCommand.SetAudioFormat;
+            FromPrefix["BIT"] = RemoteSessionCommand.SetAudioBitrate;
+            FromPrefix["SSC"] = RemoteSessionCommand.SetScreenshotConfig;
+            FromPrefix["SS1"] = RemoteSessionCommand.StartTakingScreenshots;
+            FromPrefix["SS0"] = RemoteSessionCommand.StopTakingScreenshots;
+            FromPrefix["SCN"] = RemoteSessionCommand.TakeScreenshot;
             FromPrefix["FSU"] = RemoteSessionCommand.RequestFullscreenUpdate;
             FromPrefix["CLP"] = RemoteSessionCommand.RequestRemoteClipboard;
             FromPrefix["CLO"] = RemoteSessionCommand.CloseClient;
@@ -116,13 +124,17 @@ namespace Myrtille.Services.Contracts
             ToPrefix[RemoteSessionCommand.SendMouseRightButton] = "MRB";
             ToPrefix[RemoteSessionCommand.SendMouseWheelUp] = "MWU";
             ToPrefix[RemoteSessionCommand.SendMouseWheelDown] = "MWD";
-            ToPrefix[RemoteSessionCommand.SetStatMode] = "STA";
-            ToPrefix[RemoteSessionCommand.SetDebugMode] = "DBG";
-            ToPrefix[RemoteSessionCommand.SetCompatibilityMode] = "CMP";
             ToPrefix[RemoteSessionCommand.SetScaleDisplay] = "SCA";
+            ToPrefix[RemoteSessionCommand.SetReconnectSession] = "RCN";
             ToPrefix[RemoteSessionCommand.SetImageEncoding] = "ECD";
             ToPrefix[RemoteSessionCommand.SetImageQuality] = "QLT";
             ToPrefix[RemoteSessionCommand.SetImageQuantity] = "QNT";
+            ToPrefix[RemoteSessionCommand.SetAudioFormat] = "AUD";
+            ToPrefix[RemoteSessionCommand.SetAudioBitrate] = "BIT";
+            ToPrefix[RemoteSessionCommand.SetScreenshotConfig] = "SSC";
+            ToPrefix[RemoteSessionCommand.StartTakingScreenshots] = "SS1";
+            ToPrefix[RemoteSessionCommand.StopTakingScreenshots] = "SS0";
+            ToPrefix[RemoteSessionCommand.TakeScreenshot] = "SCN";
             ToPrefix[RemoteSessionCommand.RequestFullscreenUpdate] = "FSU";
             ToPrefix[RemoteSessionCommand.RequestRemoteClipboard] = "CLP";
             ToPrefix[RemoteSessionCommand.CloseClient] = "CLO";

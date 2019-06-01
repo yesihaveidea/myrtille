@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,16 +22,16 @@
 
 function Buffer(config, dialog, network)
 {
+    var bufferSize = config.getBufferSize();
+
     var bufferDelay = config.getBufferDelayBase();
     this.getBufferDelay = function() { return bufferDelay; };
     this.setBufferDelay = function(delay) { bufferDelay = delay; };
 
     var bufferData = new Array();
-    this.getBufferData = function() { return bufferData; };
 
     var sendEmptyBuffer = false;
     this.getSendEmptyBuffer = function() { return sendEmptyBuffer; };
-    this.setSendEmptyBuffer = function(enabled) { sendEmptyBuffer = enabled; };
 
     var clearBuffer = true;
     this.setClearBuffer = function(enabled) { clearBuffer = enabled; };
@@ -58,6 +58,28 @@ function Buffer(config, dialog, network)
         {
             dialog.showDebug('buffer init error: ' + exc.message);
             config.setBufferEnabled(false);
+        }
+    };
+
+    this.addItem = function(data)
+    {
+        bufferData.push(data);
+
+        if (bufferData.length == 1)
+        {
+            if (bufferTimeout != null)
+            {
+                window.clearTimeout(bufferTimeout);
+                bufferTimeout = null;
+            }
+
+            //dialog.showDebug('buffer delay: ' + bufferDelay);
+            bufferTimeout = window.setTimeout(function() { doFlush(); }, bufferDelay);
+        }
+        else if (bufferData.length >= bufferSize)
+        {
+            //dialog.showDebug('buffer is full, flushing');
+            doFlush();
         }
     };
 
@@ -93,7 +115,7 @@ function Buffer(config, dialog, network)
                     bufferData = [];
                 }
             }
-            
+
             // set the next buffer flush tick
             //dialog.showDebug('buffer delay: ' + bufferDelay);
             bufferTimeout = window.setTimeout(function() { doFlush(); }, bufferDelay);

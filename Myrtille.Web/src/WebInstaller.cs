@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -94,6 +94,23 @@ namespace Myrtille.Web
                     }
                 }
 
+                // admin services port
+                int adminServicesPort = 8008;
+                if (!string.IsNullOrEmpty(Context.Parameters["ADMINSERVICESPORT"]))
+                {
+                    int.TryParse(Context.Parameters["ADMINSERVICESPORT"], out adminServicesPort);
+                }
+
+                if (adminServicesPort != 8008)
+                {
+                    // application settings
+                    var settings = XmlTools.GetNode(navigator, "/configuration/applicationSettings/Myrtille.Web.Properties.Settings");
+                    if (settings != null)
+                    {
+                        settings.InnerXml = settings.InnerXml.Replace("8008", adminServicesPort.ToString());
+                    }
+                }
+
                 // ssl certificate
                 if (!string.IsNullOrEmpty(Context.Parameters["SSLCERT"]))
                 {
@@ -109,6 +126,48 @@ namespace Myrtille.Web
                 if (appSettings != null)
                 {
                     XmlTools.WriteConfigKey(appSettings, "AllowPrintDownload", (!string.IsNullOrEmpty(Context.Parameters["PDFPRINTER"])).ToString().ToLower());
+                }
+
+                // connection api
+                if (!string.IsNullOrEmpty(Context.Parameters["CONNECTIONAPI"]))
+                {
+                    var systemWeb = XmlTools.GetNode(navigator, "/configuration/system.web");
+                    if (systemWeb != null)
+                    {
+                        XmlNode sessionStateUseUri = null;
+                        XmlNode sessionStateUseCookies = null;
+
+                        foreach (XmlNode node in systemWeb.ChildNodes)
+                        {
+                            // session state
+                            // the connection api is likely to be used with iframes
+                            // as for multiple connections/tabs, Myrtille must be configured in cookieless mode
+                            if (node is XmlComment && node.Value.StartsWith("<sessionState") && node.Value.Contains("cookieless=\"UseUri\""))
+                            {
+                                sessionStateUseUri = node;
+                            }
+                            else if (node.Name == "sessionState" && node.OuterXml.Contains("cookieless=\"UseCookies\""))
+                            {
+                                sessionStateUseCookies = node;
+                            }
+                        }
+
+                        // uncomment cookieless="UseUri"
+                        if (sessionStateUseUri != null)
+                        {
+                            var nodeReader = XmlReader.Create(new StringReader(sessionStateUseUri.Value));
+                            var uncommentedNode = config.ReadNode(nodeReader);
+                            systemWeb.ReplaceChild(uncommentedNode, sessionStateUseUri);
+                        }
+
+                        // comment cookieless="UseCookies"
+                        if (sessionStateUseCookies != null)
+                        {
+                            var commentContent = sessionStateUseCookies.OuterXml;
+                            var commentedNode = config.CreateComment(commentContent);
+                            systemWeb.ReplaceChild(commentedNode, sessionStateUseCookies);
+                        }
+                    }
                 }
 
                 // save config

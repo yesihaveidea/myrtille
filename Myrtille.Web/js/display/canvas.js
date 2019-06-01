@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -46,8 +46,8 @@ function Canvas(config, dialog, display)
             else
             {
                 // set canvas properties (same size as browser if scaling display or original (unscaled) size otherwise)
-                canvasObject.width = config.getScaleDisplay() ? display.getBrowserWidth() - display.getHorizontalOffset() : config.getDisplayWidth();
-                canvasObject.height = config.getScaleDisplay() ? display.getBrowserHeight() - display.getVerticalOffset() : config.getDisplayHeight();
+                canvasObject.width = config.getBrowserResize() == config.getBrowserResizeEnum().SCALE ? display.getBrowserWidth() : config.getDisplayWidth();
+                canvasObject.height = config.getBrowserResize() == config.getBrowserResizeEnum().SCALE ? display.getBrowserHeight() : config.getDisplayHeight();
 
                 // set a tab index so the canvas can be focused
                 canvasObject.setAttribute('tabindex', 0);

@@ -13,6 +13,24 @@ namespace Myrtille.Web {
     public partial class ShareSession {
         
         /// <summary>
+        /// guestControl control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox guestControl;
+        
+        /// <summary>
+        /// createSessionUrl control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputButton createSessionUrl;
+        
+        /// <summary>
         /// sessionUrl control.
         /// </summary>
         /// <remarks>

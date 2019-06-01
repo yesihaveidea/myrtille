@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -107,10 +107,14 @@ function XmlHttp(config, dialog, display, network)
 
             if (xhr != null)
             {
-                // give priority to commands with data over empty polling
-                if (data != null && data != '')
+                // give priority to fullscreen update requests (by design, unbuffered command for immediate consideration)
+                // also give priority to mouse clicks because the remote session may become unstable if it does not receive a mouse button release following a mouse button click
+                if (data != null && (data.indexOf(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text) != -1 ||
+                    data.indexOf(network.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text) != -1 ||
+                    data.indexOf(network.getCommandEnum().SEND_MOUSE_MIDDLE_BUTTON.text) != -1 ||
+                    data.indexOf(network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text) != -1))
                 {
-                    //dialog.showDebug('xhr data priority');
+                    //dialog.showDebug('xhr priority');
                     cleanup(false);
                 }
                 else
@@ -245,12 +249,27 @@ function XmlHttp(config, dialog, display, network)
                 // connected session
                 else if (text == 'connected')
                 {
+                    // if running myrtille into an iframe, register the iframe url (into a cookie)
+                    // this is necessary to prevent a new http session from being generated when reloading the page, due to the missing http session id into the iframe url (!)
+                    // multiple iframes (on the same page), like multiple connections/tabs, requires cookieless="UseUri" for sessionState into web.config
+                    if (parent != null && window.name != '')
+                    {
+                        parent.setCookie(window.name, window.location.href);
+                    }
+
                     // send settings and request a fullscreen update
                     network.initClient();
                 }
                 // disconnected session
                 else if (text == 'disconnected')
                 {
+                    // if running myrtille into an iframe, unregister the iframe url
+                    if (parent != null && window.name != '')
+                    {
+                        parent.eraseCookie(window.name);
+                    }
+
+                    // back to login screen
                     window.location.href = config.getHttpServerUrl();
                 }
                 // new image

@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,14 +17,11 @@
 */
 
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Web.SessionState;
 using Microsoft.Web.WebSockets;
-using Myrtille.Network;
 using Myrtille.Services.Contracts;
 
 namespace Myrtille.Web
@@ -35,10 +32,6 @@ namespace Myrtille.Web
         private readonly RemoteSession _remoteSession;
 
         public bool BinaryMode { get; private set; }
-
-        public DataBuffer<int> Buffer { get; private set; }
-        private const int _bufferSize = 100;
-        private const int _bufferDelay = 10;
 
         public RemoteSessionSocketHandler(HttpSessionState session, bool binaryMode)
             : base()
@@ -53,20 +46,6 @@ namespace Myrtille.Web
 
                 // retrieve the remote session for the given http session
                 _remoteSession = (RemoteSession)session[HttpSessionStateVariables.RemoteSession.ToString()];
-
-                bool websocketBuffering;
-                if (!bool.TryParse(ConfigurationManager.AppSettings["WebsocketBuffering"], out websocketBuffering))
-                {
-                    websocketBuffering = true;
-                }
-
-                // RDP: display updates are buffered to fit the client latency; buffer data is also invalidated past the image cache duration (default 1 sec) to avoid lag
-                // SSH: terminal messages are unbuffered
-                if (websocketBuffering && _remoteSession.HostType == HostTypeEnum.RDP)
-                {
-                    Buffer = new DataBuffer<int>(_bufferSize, _bufferDelay);
-                    Buffer.SendBufferData = SendBufferData;
-                }
             }
             catch (Exception exc)
             {
@@ -79,15 +58,18 @@ namespace Myrtille.Web
             Trace.TraceInformation("Opening websocket, remote session {0}", _remoteSession.Id);
             _remoteSession.Manager.WebSockets.Add(this);
 
-            if (Buffer != null)
-            {
-                Buffer.Start();
-            }
-
             base.OnOpen();
 
+            // update guest information
+            if (!_session.SessionID.Equals(_remoteSession.OwnerSessionID))
+            {
+                if (_session[HttpSessionStateVariables.GuestInfo.ToString()] != null)
+                {
+                    ((GuestInfo)_session[HttpSessionStateVariables.GuestInfo.ToString()]).Websocket = true;
+                }
+            }
             // connect the remote server
-            if (_remoteSession.State == RemoteSessionState.Connecting && !_remoteSession.Manager.HostClient.ProcessStarted)
+            else if (_remoteSession.State == RemoteSessionState.Connecting && !_remoteSession.Manager.HostClient.ProcessStarted)
             {
                 try
                 {
@@ -109,7 +91,8 @@ namespace Myrtille.Web
                         _remoteSession.ClientWidth,
                         _remoteSession.ClientHeight,
                         _remoteSession.AllowRemoteClipboard,
-                        _remoteSession.AllowPrintDownload);
+                        _remoteSession.AllowPrintDownload,
+                        _remoteSession.AllowAudioPlayback);
                 }
                 catch (Exception exc)
                 {
@@ -129,11 +112,6 @@ namespace Myrtille.Web
         {
             Trace.TraceInformation("Closing websocket, remote session {0}", _remoteSession.Id);
             _remoteSession.Manager.WebSockets.Remove(this);
-
-            if (Buffer != null)
-            {
-                Buffer.Stop();
-            }
 
             base.OnClose();
         }
@@ -161,15 +139,8 @@ namespace Myrtille.Web
                 var msgParams = message.Split(new[] { "&" }, StringSplitOptions.None);
 
                 var data = Uri.UnescapeDataString(msgParams[0]);
-                var imgIdx = int.Parse(msgParams[1]);   // if needed
-                var latency = int.Parse(msgParams[2]);  // if needed
-
-                // fit buffer delay according to latency
-                if (Buffer != null)
-                {
-                    Buffer.Delay = latency;
-                }
-
+                var imgIdx = int.Parse(msgParams[1]);       // if needed
+                var latency = int.Parse(msgParams[2]);      // if needed
                 var timestamp = long.Parse(msgParams[3]);
 
                 // process input(s)
@@ -189,25 +160,18 @@ namespace Myrtille.Web
 
         public void ProcessImage(RemoteSessionImage image)
         {
-            if (Buffer != null)
+            if (!BinaryMode)
             {
-                Buffer.AddItem(image.Idx);
+                Send(GetImageText(image) + ";");
             }
             else
             {
-                if (!BinaryMode)
+                using (var memoryStream = new MemoryStream())
                 {
-                    Send(GetImageText(image) + ";");
-                }
-                else
-                {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        var bytes = GetImageBytes(image);
-                        memoryStream.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
-                        memoryStream.Write(bytes, 0, bytes.Length);
-                        Send(memoryStream.ToArray());
-                    }
+                    var bytes = GetImageBytes(image);
+                    memoryStream.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
+                    memoryStream.Write(bytes, 0, bytes.Length);
+                    Send(memoryStream.ToArray());
                 }
             }
         }
@@ -227,51 +191,6 @@ namespace Myrtille.Web
                     memoryStream.Write(bytes, 0, bytes.Length);
                     Send(memoryStream.ToArray());
                 }
-            }
-        }
-
-        public void SendBufferData(List<int> data)
-        {
-            if (!BinaryMode)
-            {
-                SendBufferText(data);
-            }
-            else
-            {
-                SendBufferBytes(data);
-            }
-        }
-
-        private void SendBufferText(List<int> data)
-        {
-            var text = string.Empty;
-            foreach (var imageIdx in data)
-            {
-                var image = _remoteSession.Manager.GetCachedUpdate(imageIdx);
-                if (image != null)
-                {
-                    text += GetImageText(image) + ";";
-                }
-            }
-            Send(text);
-        }
-
-        private void SendBufferBytes(List<int> data)
-        {
-            using (var memoryStream = new MemoryStream())
-            {
-                foreach (var imageIdx in data)
-                {
-                    var image = _remoteSession.Manager.GetCachedUpdate(imageIdx);
-                    if (image != null)
-                    {
-                        var bytes = GetImageBytes(image);
-                        memoryStream.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
-                        memoryStream.Write(bytes, 0, bytes.Length);
-                    }
-                }
-
-                Send(memoryStream.ToArray());
             }
         }
 

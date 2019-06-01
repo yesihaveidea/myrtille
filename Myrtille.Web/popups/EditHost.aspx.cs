@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,22 +25,10 @@ namespace Myrtille.Web
 {
     public partial class EditHost : Page
     {
-        private EnterpriseServiceClient _enterpriseClient;
+        private static EnterpriseClient _enterpriseClient = new EnterpriseClient();
         private EnterpriseSession _enterpriseSession;
         private long? _hostId = null;
-        private HostTypeEnum _hostType;
-
-        /// <summary>
-        /// page init
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void Page_Init(
-            object sender,
-            EventArgs e)
-        {
-            _enterpriseClient = new EnterpriseServiceClient();
-        }
+        private HostType _hostType;
 
         /// <summary>
         /// page load (postback data is now available)
@@ -67,7 +55,7 @@ namespace Myrtille.Web
 
                     if (Request["hostType"] == null || !Enum.TryParse(Request["hostType"], out _hostType))
                     {
-                        _hostType = HostTypeEnum.RDP;
+                        _hostType = HostType.RDP;
                     }
 
                     // retrieve the host, if any (create if empty)
@@ -117,10 +105,10 @@ namespace Myrtille.Web
                         deleteHost.Disabled = true;
                     }
 
-                    vmGuidInput.Visible = _hostType == HostTypeEnum.RDP;
-                    vmEnhancedModeInput.Visible = _hostType == HostTypeEnum.RDP;
-                    rdpSecurityInput.Visible = _hostType == HostTypeEnum.RDP;
-                    startProgramInput.Visible = _hostType == HostTypeEnum.RDP;
+                    vmGuidInput.Visible = _hostType == HostType.RDP;
+                    vmEnhancedModeInput.Visible = _hostType == HostType.RDP;
+                    rdpSecurityInput.Visible = _hostType == HostType.RDP;
+                    startProgramInput.Visible = _hostType == HostType.RDP;
                 }
                 catch (ThreadAbortException)
                 {
@@ -156,7 +144,7 @@ namespace Myrtille.Web
                     VMGuid = vmGuid.Value,
                     VMEnhancedMode = vmEnhancedMode.Checked,
                     DirectoryGroups = groupsAccess.Value,
-                    Protocol = (SecurityProtocolEnum)securityProtocol.SelectedIndex,
+                    Protocol = (SecurityProtocol)securityProtocol.SelectedIndex,
                     StartRemoteProgram = startProgram.Value,
                     PromptForCredentials = promptCredentials.Checked
                 };

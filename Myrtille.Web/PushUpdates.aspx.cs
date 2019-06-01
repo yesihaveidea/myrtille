@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Web;
 using System.Web.UI;
 
@@ -61,27 +62,12 @@ namespace Myrtille.Web
                     var remainingTime = longPollingDuration;
                     var currentImgIdx = imgIdx;
 
+                    // notifications
+                    var messageQueue = (List<RemoteSessionMessage>)remoteSession.Manager.MessageQueues[Session.SessionID];
+
                     while (remainingTime > 0)
                     {
-                        // disconnected session
-                        if (remoteSession.State == RemoteSessionState.Disconnected)
-                        {
-                            Response.Write("<script>parent.location.href = parent.getConfig().getHttpServerUrl();</script>");
-                            Response.Flush();
-                            break;
-                        }
-
-                        // message queue
-                        List<RemoteSessionMessage> messageQueue = null;
-                        lock (remoteSession.Manager.MessageQueues.SyncRoot)
-                        {
-                            if (!remoteSession.Manager.MessageQueues.ContainsKey(Session.SessionID))
-                            {
-                                remoteSession.Manager.MessageQueues.Add(Session.SessionID, new List<RemoteSessionMessage>());
-                            }
-                            messageQueue = (List<RemoteSessionMessage>)remoteSession.Manager.MessageQueues[Session.SessionID];
-                        }
-
+                        // unstack message(s)
                         while (messageQueue.Count > 0)
                         {
                             var message = messageQueue[0];
@@ -89,32 +75,35 @@ namespace Myrtille.Web
                             switch (message.Type)
                             {
                                 case MessageType.Connected:
-                                    Response.Write("<script>parent.getNetwork().initClient();</script>");
+                                    // add a slight delay before writing data
+                                    // the output stream may not be ready yet if the remote session was just reconnected
+                                    Thread.Sleep(2000);
+                                    Response.Write("<script>parent.inject('if (parent != null && window.name != \\'\\') { parent.setCookie(window.name, window.location.href); };network.initClient();');</script>");
                                     Response.Flush();
                                     break;
 
                                 case MessageType.Disconnected:
-                                    Response.Write("<script>parent.location.href = parent.getConfig().getHttpServerUrl();</script>");
+                                    Response.Write("<script>parent.inject('window.location.href = config.getHttpServerUrl();');</script>");
                                     Response.Flush();
                                     break;
 
                                 case MessageType.PageReload:
-                                    Response.Write("<script>parent.location.href = parent.location.href;</script>");
+                                    Response.Write("<script>parent.inject('window.location.href = window.location.href;');</script>");
                                     Response.Flush();
                                     break;
 
                                 case MessageType.RemoteClipboard:
-                                    Response.Write(string.Format("<script>parent.showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', '{0}', true);</script>", message.Text));
+                                    Response.Write(string.Format("<script>parent.inject('showDialogPopup(\\'showDialogPopup\\', \\'ShowDialog.aspx\\', \\'Ctrl+C to copy to local clipboard (Cmd-C on Mac)\\', \\'{0}\\', true);');</script>", message.Text.Replace(@"\", @"\\\\").Replace("\r", @"\\r").Replace("\n", @"\\n").Replace("'", @"\\\'")));
                                     Response.Flush();
                                     break;
 
                                 case MessageType.TerminalOutput:
-                                    Response.Write(string.Format("<script>parent.writeTerminal('{0}');</script>", message.Text.Replace(@"\", @"\\").Replace("\n", @"\n").Replace("'", @"\'")));
+                                    Response.Write(string.Format("<script>parent.inject('writeTerminal(\\'{0}\\');');</script>", message.Text.Replace(@"\", @"\\\\").Replace("\r", @"\\r").Replace("\n", @"\\n").Replace("'", @"\\\'")));
                                     Response.Flush();
                                     break;
 
                                 case MessageType.PrintJob:
-                                    Response.Write(string.Format("<script>parent.downloadPdf('{0}');</script>", message.Text));
+                                    Response.Write(string.Format("<script>parent.inject('downloadPdf(\\'{0}\\');');</script>", message.Text));
                                     Response.Flush();
                                     break;
                             }
@@ -126,6 +115,7 @@ namespace Myrtille.Web
                         }
 
                         // retrieve the next update, if available; otherwise, wait it for the remaining time
+                        // stop waiting if a message is received during that time
                         var image = remoteSession.Manager.GetNextUpdate(currentImgIdx, remainingTime);
                         if (image != null)
                         {
@@ -137,12 +127,12 @@ namespace Myrtille.Web
                                 image.PosY + "," +
                                 image.Width + "," +
                                 image.Height + "," +
-                                "'" + image.Format.ToString().ToLower() + "'," +
+                                "\\'" + image.Format.ToString().ToLower() + "\\'," +
                                 image.Quality + "," +
                                 image.Fullscreen.ToString().ToLower() + "," +
-                                "'" + Convert.ToBase64String(image.Data) + "'";
+                                "\\'" + Convert.ToBase64String(image.Data) + "\\'";
 
-                            imgData = "<script>parent.pushImage(" + imgData + ");</script>";
+                            imgData = "<script>parent.inject('processImage(" + imgData + ");');</script>";
 
                             // write the output
                             Response.Write(imgData);
@@ -160,7 +150,7 @@ namespace Myrtille.Web
                 }
                 catch (Exception exc)
                 {
-                    System.Diagnostics.Trace.TraceError("Failed to push display update(s), remote session {0} ({1})", remoteSession.Id, exc);
+                    System.Diagnostics.Trace.TraceError("Failed to push update(s), remote session {0} ({1})", remoteSession.Id, exc);
                 }
             }
             catch (Exception exc)

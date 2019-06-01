@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -196,204 +196,190 @@ function Websocket(config, dialog, display, network)
 
             if (data != null && data != '')
             {
-                var images = null;
+                var text = '';
                 var dataView = null;
+                var chunkSize = 0;
 
                 if (config.getImageMode() != config.getImageModeEnum().BINARY)
                 {
+                    text = data;
+
                     if (config.getHostType() == config.getHostTypeEnum().RDP)
                     {
-                        if (data.indexOf(';') != -1)
+                        if (data.indexOf(';') == -1)
                         {
-                            //dialog.showDebug('base64 data');
-                            images = data.split(';');
-                            //dialog.showDebug('buffered images: ' + (images.length - 1));
+                            //dialog.showDebug('message data: ' + text);
                         }
                         else
                         {
-                            //dialog.showDebug('text data');
+                            var image = text.split(';');
+                            text = image[0];
+                            //dialog.showDebug('base64 image: ' + text);
                         }
                     }
                     else
                     {
-                        //dialog.showDebug('terminal data');
+                        //dialog.showDebug('terminal data: ' + text);
                     }
                 }
                 else
                 {
-                    //dialog.showDebug('binary data');
                     dataView = new DataView(data);
-                    images = 0;
+
+                    chunkSize = dataView.getUint32(0, true);
+                    //dialog.showDebug('chunk size: ' + chunkSize);
+
+                    var imgTag = dataView.getUint32(4, true);
+                    //dialog.showDebug('image tag: ' + imgTag);
+
+                    if (imgTag != 0)
+                    {
+                        var bytes = new Uint8Array(data, 4, data.byteLength - 4);
+                        text = bytesToStr(bytes);
+                        if (config.getHostType() == config.getHostTypeEnum().RDP)
+                        {
+                            //dialog.showDebug('message data: ' + text);
+                        }
+                        else
+                        {
+                            //dialog.showDebug('terminal data: ' + text);
+                        }
+                    }
+                    else
+                    {
+                        //dialog.showDebug('binary image');
+                    }
                 }
 
-                var complete = false;
-                var pos = 0;
-
-                while (!complete)
+                // reload page
+                if (text == 'reload')
                 {
-                    var text = '';
+                    window.location.href = window.location.href;
+                }
+                // receive terminal data, send to xtermjs
+                else if (text.length >= 5 && text.substr(0, 5) == 'term|')
+                {
+                    /* IE hack!
+
+                    for some reason, IE (all versions) is very slow to render the terminal, whatever the connection speed
+                    while I was debugging, I found the rendering was way faster after displaying the received data into the debug div (?!)
+                        
+                    I don't really understand why... perhaps it's due to the fact the data is already into the DOM when the terminal handles it...
+                    so I made up an hidden "cache div" and put the data on it before writing to the terminal
+                    I didn't found any other solution but it's pretty harmless anyway as the cache div is hidden
+
+                    other browsers don't seem to have the same issue, neither benefit from that hack, so IE only for now...
+                    also interesting to note, this issue occurs only when using websockets (long-polling and xhr only: ok)
+
+                    */
+
+                    if (display.isIEBrowser())
+                    {
+                        var cacheDiv = document.getElementById('cacheDiv');
+                        if (cacheDiv != null)
+                        {
+                            cacheDiv.innerHTML = text.substr(5, text.length - 5);
+                        }
+                    }
+
+                    display.getTerminalDiv().writeTerminal(text.substr(5, text.length - 5));
+                }
+                // remote clipboard
+                else if (text.length >= 10 && text.substr(0, 10) == 'clipboard|')
+                {
+                    showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', text.substr(10, text.length - 10), true);
+                }
+                // print job
+                else if (text.length >= 9 && text.substr(0, 9) == 'printjob|')
+                {
+                    downloadPdf(text.substr(9, text.length - 9));
+                }
+                // connected session
+                else if (text == 'connected')
+                {
+                    // if running myrtille into an iframe, register the iframe url (into a cookie)
+                    // this is necessary to prevent a new http session from being generated when reloading the page, due to the missing http session id into the iframe url (!)
+                    // multiple iframes (on the same page), like multiple connections/tabs, requires cookieless="UseUri" for sessionState into web.config
+                    if (parent != null && window.name != '')
+                    {
+                        parent.setCookie(window.name, window.location.href);
+                    }
+
+                    // send settings and request a fullscreen update
+                    network.initClient();
+                }
+                // disconnected session
+                else if (text == 'disconnected')
+                {
+                    // if running myrtille into an iframe, unregister the iframe url
+                    if (parent != null && window.name != '')
+                    {
+                        parent.eraseCookie(window.name);
+                    }
+
+                    // back to login screen
+                    window.location.href = config.getHttpServerUrl();
+                }
+                // server ack
+                else if (text.length >= 4 && text.substr(0, 4) == 'ack,')
+                {
+                    var ackInfo = text.split(',');
+                    //dialog.showDebug('websocket ack: ' + ackInfo[1]);
+
+                    // update the average "latency"
+                    network.updateLatency(parseInt(ackInfo[1]));
+                }
+                // new image
+                else
+                {
+                    var imgInfo, idx, posX, posY, width, height, format, quality, fullscreen, imgData;
 
                     if (config.getImageMode() != config.getImageModeEnum().BINARY)
                     {
-                        if (images == null)
-                        {
-                            text = data;
-                            //dialog.showDebug('message: ' + text);
-                            complete = true;
-                        }
-                        else
-                        {
-                            text = images[pos];
-                            //dialog.showDebug('image: ' + text);
-                        }
+                        imgInfo = text.split(',');
+
+                        idx = parseInt(imgInfo[0]);
+                        posX = parseInt(imgInfo[1]);
+                        posY = parseInt(imgInfo[2]);
+                        width = parseInt(imgInfo[3]);
+                        height = parseInt(imgInfo[4]);
+                        format = imgInfo[5];
+                        quality = parseInt(imgInfo[6]);
+                        fullscreen = imgInfo[7] == 'true';
+                        imgData = imgInfo[8];
                     }
                     else
                     {
-                        var chunkSize = dataView.getUint32(pos, true);
-                        //dialog.showDebug('chunk size: ' + chunkSize);
-
-                        var imgTag = dataView.getUint32(pos + 4, true);
-                        //dialog.showDebug('image tag: ' + imgTag);
-
-                        if (imgTag != 0)
-                        {
-                            var bytes = new Uint8Array(data, 4, data.byteLength - 4);
-                            text = bytesToStr(bytes);
-                            //dialog.showDebug('message: ' + text);
-                            complete = true;
-                        }
+                        idx = dataView.getUint32(8, true);
+                        posX = dataView.getUint32(12, true);
+                        posY = dataView.getUint32(16, true);
+                        width = dataView.getUint32(20, true);
+                        height = dataView.getUint32(24, true);
+                        format = display.getFormatText(dataView.getUint32(28, true));
+                        quality = dataView.getUint32(32, true);
+                        fullscreen = dataView.getUint32(36, true) == 1;
+                        imgData = new Uint8Array(data, 40, chunkSize - 36);
                     }
 
-                    // reload page
-                    if (text == 'reload')
+                    // update bandwidth usage
+                    network.setBandwidthUsage(network.getBandwidthUsage() + imgData.length);
+
+                    // if a fullscreen request is pending, release it
+                    if (fullscreen && fullscreenPending)
                     {
-                        window.location.href = window.location.href;
+                        //dialog.showDebug('received a fullscreen update, divs will be cleaned');
+                        fullscreenPending = false;
                     }
-                    // receive terminal data, send to xtermjs
-                    else if (text.length >= 5 && text.substr(0, 5) == 'term|')
+
+                    // add image to display
+                    display.addImage(idx, posX, posY, width, height, format, quality, fullscreen, imgData);
+
+                    // if using divs and count reached a reasonable number, request a fullscreen update
+                    if (config.getDisplayMode() != config.getDisplayModeEnum().CANVAS && display.getImgCount() >= config.getImageCountOk() && !fullscreenPending)
                     {
-                        /* IE hack!
-
-                        for some reason, IE (all versions) is very slow to render the terminal, whatever the connection speed
-                        while I was debugging, I found the rendering was way faster after displaying the received data into the debug div (?!)
-                        
-                        I don't really understand why... perhaps it's due to the fact the data is already into the DOM when the terminal handles it...
-                        so I made up an hidden "cache div" and put the data on it before writing to the terminal
-                        I didn't found any other solution but it's pretty harmless anyway as the cache div is hidden
-
-                        other browsers don't seem to have the same issue, neither benefit from that hack, so IE only for now...
-                        also interesting to note, this issue occurs only when using websockets (long-polling and xhr only: ok)
-
-                        */
-
-                        if (display.isIEBrowser())
-                        {
-                            var cacheDiv = document.getElementById('cacheDiv');
-                            if (cacheDiv != null)
-                            {
-                                cacheDiv.innerHTML = text.substr(5, text.length - 5);
-                            }
-                        }
-
-                        display.getTerminalDiv().writeTerminal(text.substr(5, text.length - 5));
-                    }
-                    // remote clipboard
-                    else if (text.length >= 10 && text.substr(0, 10) == 'clipboard|')
-                    {
-                        showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', text.substr(10, text.length - 10), true);
-                    }
-                    // print job
-                    else if (text.length >= 9 && text.substr(0, 9) == 'printjob|')
-                    {
-                        downloadPdf(text.substr(9, text.length - 9));
-                    }
-                    // connected session
-                    else if (text == 'connected')
-                    {
-                        // send settings and request a fullscreen update
-                        network.initClient();
-                    }
-                    // disconnected session
-                    else if (text == 'disconnected')
-                    {
-                        window.location.href = config.getHttpServerUrl();
-                    }
-                    // server ack
-                    else if (text.length >= 4 && text.substr(0, 4) == 'ack,')
-                    {
-                        var ackInfo = text.split(',');
-                        //dialog.showDebug('websocket ack: ' + ackInfo[1]);
-
-                        // update the average "latency"
-                        network.updateLatency(parseInt(ackInfo[1]));
-                    }
-                    // new image
-                    else
-                    {
-                        var imgInfo, idx, posX, posY, width, height, format, quality, fullscreen, imgData;
-
-                        if (config.getImageMode() != config.getImageModeEnum().BINARY)
-                        {
-                            imgInfo = text.split(',');
-
-                            idx = parseInt(imgInfo[0]);
-                            posX = parseInt(imgInfo[1]);
-                            posY = parseInt(imgInfo[2]);
-                            width = parseInt(imgInfo[3]);
-                            height = parseInt(imgInfo[4]);
-                            format = imgInfo[5];
-                            quality = parseInt(imgInfo[6]);
-                            fullscreen = imgInfo[7] == 'true';
-                            imgData = imgInfo[8];
-
-                            pos++;
-                            complete = pos == images.length - 1;
-                        }
-                        else
-                        {
-                            idx = dataView.getUint32(pos + 8, true);
-                            posX = dataView.getUint32(pos + 12, true);
-                            posY = dataView.getUint32(pos + 16, true);
-                            width = dataView.getUint32(pos + 20, true);
-                            height = dataView.getUint32(pos + 24, true);
-                            format = display.getFormatText(dataView.getUint32(pos + 28, true));
-                            quality = dataView.getUint32(pos + 32, true);
-                            fullscreen = dataView.getUint32(pos + 36, true) == 1;
-                            imgData = new Uint8Array(data, pos + 40, chunkSize - 36);
-
-                            pos += chunkSize + 4;
-                            complete = pos == data.byteLength;
-
-                            images++;
-                            if (complete)
-                            {
-                                //dialog.showDebug('buffered images: ' + images);
-                            }
-                        }
-
-                        //dialog.showDebug('position: ' + pos);
-                        //dialog.showDebug('complete: ' + complete);
-
-                        // update bandwidth usage
-                        network.setBandwidthUsage(network.getBandwidthUsage() + imgData.length);
-
-                        // if a fullscreen request is pending, release it
-                        if (fullscreen && fullscreenPending)
-                        {
-                            //dialog.showDebug('received a fullscreen update, divs will be cleaned');
-                            fullscreenPending = false;
-                        }
-
-                        // add image to display
-                        display.addImage(idx, posX, posY, width, height, format, quality, fullscreen, imgData);
-
-                        // if using divs and count reached a reasonable number, request a fullscreen update
-                        if (config.getDisplayMode() != config.getDisplayModeEnum().CANVAS && display.getImgCount() >= config.getImageCountOk() && !fullscreenPending)
-                        {
-                            //dialog.showDebug('reached a reasonable number of divs, requesting a fullscreen update');
-                            fullscreenPending = true;
-                            network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
-                        }
+                        //dialog.showDebug('reached a reasonable number of divs, requesting a fullscreen update');
+                        fullscreenPending = true;
+                        network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
                     }
                 }
             }

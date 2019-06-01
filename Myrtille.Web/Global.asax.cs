@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,7 +19,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Web;
+using System.Web.Http;
+using System.Web.Routing;
 using log4net.Config;
 
 namespace Myrtille.Web
@@ -27,6 +31,7 @@ namespace Myrtille.Web
     public enum HttpApplicationStateVariables
     {
         Cache,
+        RemoteSessions,
         SharedRemoteSessions
     }
 
@@ -35,7 +40,8 @@ namespace Myrtille.Web
         ClientIP,
         ClientKey,
         EnterpriseSession,
-        RemoteSession
+        RemoteSession,
+        GuestInfo
     }
 
     public class Global : HttpApplication
@@ -52,13 +58,42 @@ namespace Myrtille.Web
                 // application cache
                 Application[HttpApplicationStateVariables.Cache.ToString()] = Context.Cache;
 
+                // remote sessions
+                Application[HttpApplicationStateVariables.RemoteSessions.ToString()] = new Dictionary<Guid, RemoteSession>();
+
                 // shared remote sessions
-                Application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()] = new Dictionary<string, RemoteSession>();
+                Application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()] = new Dictionary<Guid, SharingInfo>();
+
+                // Lame MP3 dlls require the web application bin path to be present into the PATH environment variable
+                AddBinToPathEnvironment();
+
+                // Web Api
+                RouteTable.Routes.MapHttpRoute(
+                    name: "WebApi",
+                    routeTemplate: "api/{controller}/{action}/{id}",
+                    defaults: new { id = RouteParameter.Optional });
             }
             catch (Exception exc)
             {
                 Trace.TraceError("Failed to start Myrtille.Web application ({0})", exc);
                 throw;
+            }
+        }
+
+        // https://github.com/Corey-M/NAudio.Lame/wiki/Using-NAudio.Lame-with-MVC
+        private static void AddBinToPathEnvironment()
+        {
+            // bin path
+            var binPath = Path.Combine(new string[] { AppDomain.CurrentDomain.BaseDirectory, "bin" });
+
+            // PATH environment
+            var path = Environment.GetEnvironmentVariable("PATH") ?? "";
+
+            // add the bin path if not already present
+            if (!path.Split(Path.PathSeparator).Contains(binPath, StringComparer.CurrentCultureIgnoreCase))
+            {
+                path = string.Join(Path.PathSeparator.ToString(), new string[] { path, binPath });
+                Environment.SetEnvironmentVariable("PATH", path);
             }
         }
     }

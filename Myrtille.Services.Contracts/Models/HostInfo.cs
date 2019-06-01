@@ -1,8 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2018 Paul Oliver (Olive Innovations)
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,9 +18,13 @@
 
 namespace Myrtille.Services.Contracts
 {
-    public enum HostTypeEnum
+    public class HostInfo
     {
-        RDP = 0,
-        SSH = 1
+        public HostType HostType { get; set; }
+        public SecurityProtocol SecurityProtocol { get; set; }
+        /// <summary>
+        /// Hyper-V: hypervisor IP address; other: host IP address (:port, if other than the standard 3389 (rdp), 2179 (rdp over vm bus) or 22 (ssh)). use [] for ipv6
+        /// </summary>
+        public string IPAddress { get; set; }
     }
 }

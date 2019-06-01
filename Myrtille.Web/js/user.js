@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ function User(config, dialog, display, network)
 
     // keyboard
     var keyboard = null;
+    this.getKeyboard = function() { return keyboard; };
 
     // mouse
     var mouse = null;
@@ -155,7 +156,7 @@ function User(config, dialog, display, network)
             }
 
             verticalSwipeEnabled = !verticalSwipeEnabled;
-            button.value = verticalSwipeEnabled ? 'Swipe up/down ON' : 'Swipe up/down OFF';
+            button.value = verticalSwipeEnabled ? 'Vertical Swipe ON' : 'Vertical Swipe OFF';
             //dialog.showDebug('toggling ' + button.value);
         }
         catch (exc)
@@ -166,16 +167,16 @@ function User(config, dialog, display, network)
 
     function browserResize()
     {
+        if (config.getBrowserResize() == config.getBrowserResizeEnum().NONE)
+            return;
+
         try
         {
-            if (!config.getScaleDisplay())
-                return;
-
-            var width = display.getBrowserWidth() - display.getHorizontalOffset();
-            var height = display.getBrowserHeight() - display.getVerticalOffset();
+            var width = display.getBrowserWidth();
+            var height = display.getBrowserHeight();
 
             // if scaling display and using a canvas, resize it
-            if (config.getScaleDisplay() && config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
+            if (config.getBrowserResize() == config.getBrowserResizeEnum().SCALE && config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
             {
                 // in order to avoid flicker when resizing, creates a temporary canvas (same size as the actual canvas)
                 var tempCanvas = document.createElement('canvas');
@@ -206,8 +207,16 @@ function User(config, dialog, display, network)
             // send the new browser resolution
             commands.push(network.getCommandEnum().SEND_BROWSER_RESIZE.text + width + 'x' + height);
 
-            //dialog.showDebug('scale fullscreen update');
-            commands.push(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'scale');
+            if (config.getBrowserResize() == config.getBrowserResizeEnum().SCALE)
+            {
+                //dialog.showDebug('scale fullscreen update');
+                commands.push(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'scale');
+            }
+            else
+            {
+                // disable the toolbar while reconnecting
+                disableToolbar();
+            }
 
             network.send(commands.toString());
         }

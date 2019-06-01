@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -51,6 +51,12 @@ function Dialog(config)
     var statImageMode = config.getImageMode();
     var statImageSize = 0;
 
+    var statAudioFormat = config.getAudioFormat();
+    var statAudioBitrate = config.getAudioBitrate();
+
+    var statData = {};
+    this.getStatDataJson = function() { return JSON.stringify(statData); }
+
     var showStatEnum =
     {
         HOST_TYPE: { value: 0, text: 'HOST_TYPE' },
@@ -69,7 +75,9 @@ function Dialog(config)
         IMAGE_QUALITY: { value: 13, text: 'IMAGE_QUALITY' },
         IMAGE_QUANTITY: { value: 14, text: 'IMAGE_QUANTITY' },
         IMAGE_MODE: { value: 15, text: 'IMAGE_MODE' },
-        IMAGE_SIZE: { value: 16, text: 'IMAGE_SIZE' }
+        IMAGE_SIZE: { value: 16, text: 'IMAGE_SIZE' },
+        AUDIO_FORMAT: { value: 17, text: 'AUDIO_FORMAT' },
+        AUDIO_BITRATE: { value: 18, text: 'AUDIO_BITRATE' }
     };
 
     if (Object.freeze)
@@ -84,22 +92,7 @@ function Dialog(config)
     {
         try
         {
-            if (!config.getStatEnabled())
-                return;
-
             //this.showDebug('showStat, key: ' + key.text + ', value: ' + value);
-
-            if (statDiv == null)
-            {
-                statDiv = document.getElementById('statDiv');
-                if (statDiv == null)
-                {
-                    this.showDebug('statDiv is undefined');
-                    return;
-                }
-                statDiv.style.display = 'block';
-                statDiv.style.visibility = 'visible';
-            }
 
             switch (key)
             {
@@ -170,25 +163,68 @@ function Dialog(config)
                 case showStatEnum.IMAGE_SIZE:
                     statImageSize = value;
                     break;
+
+                case showStatEnum.AUDIO_FORMAT:
+                    statAudioFormat = value;
+                    break;
+
+                case showStatEnum.AUDIO_BITRATE:
+                    statAudioBitrate = value;
+                    break;
             }
 
-            statDiv.innerHTML =
-                'TYPE: ' + statHostType.text + ', ' +
-                'LATENCY (ms): ' + statLatency + ', ' +
-                'BUFFER (ms): ' + statBuffer + ', ' +
-                'MOUSE SAMPLING (%): ' + (config.getMouseMoveSamplingRate() > 0 ? config.getMouseMoveSamplingRate() : 'NONE') + ', ' +
-                'BANDWIDTH (KB/s): ' + statBandwidthUsage + '/' + statBandwidthSize + ' (' + (statBandwidthSize > 0 ? Math.round((statBandwidthUsage * 100) / statBandwidthSize) : 0) + '%), ' +
-                'PERIODICAL FSU (s): ' + config.getPeriodicalFullscreenInterval() / 1000 + ', ' +
-                'ADAPTIVE FSU (s): ' + config.getAdaptiveFullscreenTimeout() / 1000 + ', ' +
-                'NETWORK: ' + statNetworkMode.text + (statNetworkMode == config.getNetworkModeEnum().LONGPOLLING ? ' (' + config.getLongPollingDuration() / 1000 + 's)' : '') + ', ' +
-                'DISPLAY: ' + statDisplayMode.text + ', ' +
-                'IMG COUNT: ' + statImageCount + ' (' + statImageCountPerSec + '/s), OK: ' + statImageCountOk + ', MAX: ' + statImageCountMax + ', ' +
-                'INDEX: ' + statImageIndex + ', ' +
-                'FORMAT: ' + statImageFormat.toUpperCase() + ', ' +
-                'QUALITY (%): ' + statImageQuality + ', ' +
-                'QUANTITY (%): ' + statImageQuantity + ', ' +
-                'MODE: ' + statImageMode.text + ', ' +
-                'SIZE (KB): ' + statImageSize;
+            // have all stats into an object that will be serialized in JSON
+            statData.HostType = statHostType.text;
+            statData.Latency = statLatency;
+            statData.Buffer = statBuffer;
+            statData.MouseMoveSampling = config.getMouseMoveSamplingRate() > 0 ? config.getMouseMoveSamplingRate() : 'NONE';
+            statData.Bandwidth = statBandwidthUsage + '/' + statBandwidthSize + ' (' + (statBandwidthSize > 0 ? Math.round((statBandwidthUsage * 100) / statBandwidthSize) : 0) + '%)';
+            statData.PeriodicalFSU = config.getPeriodicalFullscreenInterval() / 1000;
+            statData.AdaptiveFSU = config.getAdaptiveFullscreenTimeout() / 1000;
+            statData.NetworkMode = statNetworkMode.text + (statNetworkMode == config.getNetworkModeEnum().LONGPOLLING ? ' (' + config.getLongPollingDuration() / 1000 + 's)' : '');
+            statData.DisplayMode = statDisplayMode.text;
+            statData.ImageCount = statImageCount + ' (' + statImageCountPerSec + '/s)';
+            statData.ImageIndex = statImageIndex;
+            statData.ImageFormat = statImageFormat.toUpperCase();
+            statData.ImageQuality = statImageQuality;
+            statData.ImageQuantity = statImageQuantity;
+            statData.ImageMode = statImageMode.text;
+            statData.ImageSize = statImageSize;
+            statData.Audio = statAudioFormat.text + (statAudioFormat == config.getAudioFormatEnum().NONE ? '' : ' (' + statAudioBitrate + ' kbps)');
+
+            if (config.getStatEnabled())
+            {
+                if (statDiv == null)
+                {
+                    statDiv = document.getElementById('statDiv');
+                    if (statDiv == null)
+                    {
+                        this.showDebug('statDiv is undefined');
+                        return;
+                    }
+                    statDiv.style.display = 'block';
+                    statDiv.style.visibility = 'visible';
+                }
+
+                statDiv.innerText =
+                    'TYPE: ' + statData.HostType + ', ' +
+                    'LATENCY (ms): ' + statData.Latency + ', ' +
+                    'BUFFER (ms): ' + statData.Buffer + ', ' +
+                    'MOUSE SAMPLING (%): ' + statData.MouseMoveSampling + ', ' +
+                    'BANDWIDTH (KB/s): ' + statData.Bandwidth + ', ' +
+                    'PERIODICAL FSU (s): ' + statData.PeriodicalFSU + ', ' +
+                    'ADAPTIVE FSU (s): ' + statData.AdaptiveFSU + ', ' +
+                    'NETWORK: ' + statData.NetworkMode + ', ' +
+                    'DISPLAY: ' + statData.DisplayMode + ', ' +
+                    'IMG COUNT: ' + statData.ImageCount + ', ' +
+                    'INDEX: ' + statData.ImageIndex + ', ' +
+                    'FORMAT: ' + statData.ImageFormat + ', ' +
+                    'QUALITY (%): ' + statData.ImageQuality + ', ' +
+                    'QUANTITY (%): ' + statData.ImageQuantity + ', ' +
+                    'MODE: ' + statData.ImageMode + ', ' +
+                    'SIZE (KB): ' + statData.ImageSize + ', ' +
+                    'AUDIO: ' + statData.Audio;
+            }
         }
         catch (exc)
         {

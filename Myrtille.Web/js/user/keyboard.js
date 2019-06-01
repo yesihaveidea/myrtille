@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -80,6 +80,18 @@ function Keyboard(config, dialog, display, network, user)
         return keyCode;
     }
 
+    this.setKeyCombination = function()
+    {
+        //dialog.showDebug('waiting key combination');
+        keyCombination = true;
+        keyCombinationTimeout = window.setTimeout(function()
+        {
+            //dialog.showDebug('cancelling key combination');
+            keyCombination = false;
+            keyCombinationTimeout = null;
+        }, 1500);
+    };
+
 	/*************************************************************************************************************************************************************************************************/
 	/*** Keydown                                                                                                                                                                                   ***/
 	/*************************************************************************************************************************************************************************************************/
@@ -89,9 +101,13 @@ function Keyboard(config, dialog, display, network, user)
 	var modCtrl = false;
 	var modAlt = false;
 
+    // key combination
+    var keyCombination = false;
+    var keyCombinationTimeout = null;
+
     // latest keydown code
     var keydownCode = null;
-    
+
     // keycode to charcode mapping
     var keyCodeToCharCode = new Array();
 
@@ -137,14 +153,46 @@ function Keyboard(config, dialog, display, network, user)
                 (keyCode == 122) ||     // F11
                 (keyCode == 123));      // F12
 
-            if (!keyIsChar || modCtrl)
+            // RDP over VM bus (Hyper-V): send keys as scancodes when enhanced mode is disabled
+            if (!keyIsChar || modCtrl || config.getVMNotEnhanced())
             {
+                // if running myrtille into an iframe, provide a key combination (shift + tab) to switch iframe(s) focus
+                if (parent != null && window.name != '')
+                {
+                    if (!keyCombination)
+                    {
+                        // shift
+                        if (keyCode == 16)
+                        {
+                            this.setKeyCombination();
+                            user.cancelEvent(e);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // tab
+                        if (keyCode == 9)
+                        {
+                            keyCombination = false;
+                            if (keyCombinationTimeout != null)
+                            {
+                                //dialog.showDebug('key combination complete');
+                                window.clearTimeout(keyCombinationTimeout);
+                                keyCombinationTimeout = null;
+                            }
+                            parent.switchIframe(window.name);
+                            user.cancelEvent(e);
+                            return false;
+                        }
+                    }
+                }
                 sendEvent(keyCode, true, false);
                 user.cancelEvent(e);
                 return false;
             }
 
-	        keydownCode = keyCode;
+            keydownCode = keyCode;
         }
         catch (exc)
         {
@@ -202,6 +250,9 @@ function Keyboard(config, dialog, display, network, user)
 	        var keyCode = processKeyState(e, 'keyup', false);
 	        
             if (!keyCode)
+                return false;
+
+            if (keyCombination)
                 return false;
 
             // check key type

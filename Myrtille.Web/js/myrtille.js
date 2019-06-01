@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 /*** Main                                                                                                                                                                                          ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, scaleDisplay, displayWidth, displayHeight, hostType)
+function Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced)
 {
     var config = null;
     this.getConfig = function() { return config; };
@@ -41,7 +41,7 @@ function Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, s
     {
         try
         {
-            config = new Config(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, scaleDisplay, displayWidth, displayHeight, hostType);
+            config = new Config(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced);
             
             dialog = new Dialog(config);
             
@@ -69,16 +69,14 @@ function Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, s
 var myrtille = null;
 var config = null;
 var dialog = null;
+this.getDialog = function() { return dialog; }
 var display = null;
 var network = null;
 var user = null;
 
-this.getConfig = function() { return config; };
-this.getNetwork = function() { return network; };
-
 var fullscreenPending = false;
 
-function startMyrtille(remoteSessionActive, statEnabled, debugEnabled, compatibilityMode, scaleDisplay, displayWidth, displayHeight, hostType)
+function startMyrtille(remoteSessionActive, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced)
 {
     try
     {
@@ -108,7 +106,7 @@ function startMyrtille(remoteSessionActive, statEnabled, debugEnabled, compatibi
         var httpServerUrl = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + '/' + pathname + '/';
         //alert('http server url: ' + httpServerUrl);
 
-        myrtille = new Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, scaleDisplay, displayWidth, displayHeight, hostType);
+        myrtille = new Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced);
         myrtille.init();
 
         // code shortcuts
@@ -125,22 +123,24 @@ function startMyrtille(remoteSessionActive, statEnabled, debugEnabled, compatibi
     }
 }
 
-this.pushImage = function(idx, posX, posY, width, height, format, quality, fullscreen, base64Data)
+this.inject = function(code)
 {
     try
     {
+        //dialog.showDebug('myrtille inject: ' + code);
+
         if (config.getAdditionalLatency() > 0)
         {
-            window.setTimeout(function() { processImage(idx, posX, posY, width, height, format, quality, fullscreen, base64Data); }, Math.round(config.getAdditionalLatency() / 2));
+            window.setTimeout(function() { eval(code); }, Math.round(config.getAdditionalLatency() / 2));
         }
         else
         {
-            processImage(idx, posX, posY, width, height, format, quality, fullscreen, base64Data);
+            eval(code);
         }
     }
     catch (exc)
     {
-        dialog.showDebug('myrtille pushImage error: ' + exc.message);
+        dialog.showDebug('myrtille inject error: ' + exc.message);
     }
 }
 
@@ -180,7 +180,8 @@ function toggleStatMode()
     try
     {
         disableToolbar();
-        network.send(network.getCommandEnum().SET_STAT_MODE.text + (config.getStatEnabled() ? 0 : 1));
+        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'stat', config.getStatEnabled() ? 0 : 1);
+        window.location.href = window.location.href;
     }
     catch (exc)
     {
@@ -193,7 +194,8 @@ function toggleDebugMode()
     try
     {
         disableToolbar();
-        network.send(network.getCommandEnum().SET_DEBUG_MODE.text + (config.getDebugEnabled() ? 0 : 1));
+        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'debug', config.getDebugEnabled() ? 0 : 1);
+        window.location.href = window.location.href;
     }
     catch (exc)
     {
@@ -206,7 +208,8 @@ function toggleCompatibilityMode()
     try
     {
         disableToolbar();
-        network.send(network.getCommandEnum().SET_COMPATIBILITY_MODE.text + (config.getCompatibilityMode() ? 0 : 1));
+        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser', config.getCompatibilityMode() ? 0 : 1);
+        window.location.href = window.location.href;
     }
     catch (exc)
     {
@@ -220,15 +223,28 @@ function toggleScaleDisplay()
     {
         disableToolbar();
 
-        var width = display.getBrowserWidth() - display.getHorizontalOffset();
-        var height = display.getBrowserHeight() - display.getVerticalOffset();
+        var width = display.getBrowserWidth();
+        var height = display.getBrowserHeight();
 
         // send resolution while enabling display scaling
-        network.send(network.getCommandEnum().SET_SCALE_DISPLAY.text + (config.getScaleDisplay() ? 0 : (width + 'x' + height)));
+        network.send(network.getCommandEnum().SET_SCALE_DISPLAY.text + (config.getBrowserResize() == config.getBrowserResizeEnum().SCALE ? 0 : (width + 'x' + height)));
     }
     catch (exc)
     {
         dialog.showDebug('myrtille toggleScaleDisplay error: ' + exc.message);
+    }
+}
+
+function toggleReconnectSession()
+{
+    try
+    {
+        disableToolbar();
+        network.send(network.getCommandEnum().SET_RECONNECT_SESSION.text + (config.getBrowserResize() == config.getBrowserResizeEnum().RECONNECT ? 0 : 1));
+    }
+    catch (exc)
+    {
+        dialog.showDebug('myrtille toggleReconnectSession error: ' + exc.message);
     }
 }
 
@@ -312,7 +328,7 @@ this.sendText = function(text)
     }
 }
 
-function sendKey(keyCode, release)
+this.sendKey = function(keyCode, release)
 {
     try
     {
@@ -324,7 +340,7 @@ function sendKey(keyCode, release)
         user.triggerActivity();
 
         var keys = new Array();
-                
+
         keys.push(network.getCommandEnum().SEND_KEY_SCANCODE.text + keyCode + '-1');
 
         if (release)
@@ -338,7 +354,35 @@ function sendKey(keyCode, release)
     }
 }
 
-function sendCtrlAltDel()
+this.sendChar = function(char, release)
+{
+    try
+    {
+        //dialog.showDebug('char to send: ' + char);
+    
+        if (char == null || char == '')
+            return;
+
+        user.triggerActivity();
+
+        var charCode = char.charCodeAt(0);
+
+        var keys = new Array();
+
+        keys.push(network.getCommandEnum().SEND_KEY_UNICODE.text + charCode + '-1');
+
+        if (release)
+            keys.push(network.getCommandEnum().SEND_KEY_UNICODE.text + charCode + '-0');
+                
+        network.processUserEvent('keyboard', keys.toString());
+    }
+    catch (exc)
+    {
+        dialog.showDebug('myrtille sendChar error: ' + exc.message);
+    }
+}
+
+this.sendCtrlAltDel = function()
 {
     try
     {
@@ -365,6 +409,21 @@ function sendCtrlAltDel()
     catch (exc)
     {
         dialog.showDebug('myrtille sendCtrlAltDel error: ' + exc.message);
+    }
+}
+
+this.setKeyCombination = function()
+{
+    try
+    {
+        if (user == null)
+            return;
+
+        user.getKeyboard().setKeyCombination();
+    }
+    catch (exc)
+    {
+        alert('myrtille setKeyCombination error: ' + exc.message);
     }
 }
 
@@ -495,5 +554,18 @@ this.writeTerminal = function(data)
     catch (exc)
     {
         alert('myrtille writeTerminal error: ' + exc.message);
+    }
+}
+
+this.doDisconnect = function()
+{
+    try
+    {
+        disableToolbar();
+        network.send(network.getCommandEnum().CLOSE_CLIENT.text);
+    }
+    catch (exc)
+    {
+        dialog.showDebug('myrtille doDisconnect error: ' + exc.message);
     }
 }

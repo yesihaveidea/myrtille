@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -35,7 +35,8 @@ namespace Myrtille.Helpers
         public static byte[] ReadPipeMessage(
             PipeStream pipe,
             string pipeName,
-            bool sizeHeader = true)
+            bool sizeHeader = true,
+            int bufferSize = 4096)
         {
             if (pipe == null)
             {
@@ -76,7 +77,7 @@ namespace Myrtille.Helpers
                             }
                             else
                             {
-                                buffer = new byte[4096];
+                                buffer = new byte[bufferSize];
                                 if ((bytesRead = pipe.Read(buffer, 0, buffer.Length)) > 0)
                                 {
                                     memoryStream.Write(buffer, 0, bytesRead);
@@ -85,7 +86,7 @@ namespace Myrtille.Helpers
                         }
                         else
                         {
-                            buffer = new byte[4096];
+                            buffer = new byte[bufferSize];
                             do
                             {
                                 memoryStream.Write(buffer, 0, pipe.Read(buffer, 0, buffer.Length));

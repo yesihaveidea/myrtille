@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ using Myrtille.Services.Contracts;
 
 namespace Myrtille.Web
 {
-    public class PrinterServiceClient : ClientBase<IPrinterService>, IPrinterService
+    public class PrinterClient : ClientBase<IPrinterService>, IPrinterService
     {
         public Stream GetPdfFile(Guid remoteSessionId, string fileName)
         {

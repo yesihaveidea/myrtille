@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,10 +25,11 @@ function Config(
     statEnabled,                                        // displays various stats above the remote session display
     debugEnabled,                                       // displays debug messages; more traces can be enabled by uncommenting them in js files
     compatibilityMode,                                  // old HTML4 browsers (no websocket, no canvas) or HTML5 otherwise
-    scaleDisplay,                                       // scale the remote session display to the browser size (responsive design)
+    browserResize,                                      // scale display (responsive design), reconnect session (keep aspect ratio) or none
     displayWidth,                                       // remote session original (unscaled) display width
     displayHeight,                                      // remote session original (unscaled) display height
-    hostType)                                           // type of remote session host RDP or SSH
+    hostType,                                           // type of remote session host RDP or SSH
+    vmNotEnhanced)                                      // RDP over VM bus (Hyper-V), simple session mode
 {
     /*************************************************************************************************************************************************************************************************/
     /*** Enums                                                                                                                                                                                     ***/
@@ -38,6 +39,14 @@ function Config(
     {
         RDP: { value: 0, text: 'RDP' },
         SSH: { value: 1, text: 'SSH' }
+    };
+
+    // action on browser resize (RDP host only)
+    var browserResizeEnum =
+    {
+        SCALE: { value: 0, text: 'SCALE' },
+        RECONNECT: { value: 1, text: 'RECONNECT' },
+        NONE: { value: 2, text: 'NONE' }
     };
 
     // see comments into display.js
@@ -66,6 +75,14 @@ function Config(
         BINARY: { value: 3, text: 'BINARY' }
     };
 
+    // audio formats supported
+    var audioFormatEnum =
+    {
+        NONE: { value: 0, text: 'NONE' },               // disable audio
+        WAV: { value: 1, text: 'WAV' },                 // uncompressed PCM (best quality); use if bandwidth is not an issue
+        MP3: { value: 2, text: 'MP3' }                  // compressed MPEG 3 (good quality); 8x smaller than WAV at 128 kbps
+    };
+
     // see comments into network.js
     var networkModeEnum =
     {
@@ -81,9 +98,11 @@ function Config(
     if (Object.freeze)
     {
         Object.freeze(hostTypeEnum);
+        Object.freeze(browserResizeEnum);
         Object.freeze(displayModeEnum);
         Object.freeze(imageEncodingEnum);
         Object.freeze(imageModeEnum);
+        Object.freeze(audioFormatEnum);
         Object.freeze(networkModeEnum);
     }
 
@@ -99,22 +118,27 @@ function Config(
     var keyboardHelperTimeout = 3000;                   // duration (ms) before removing the keyboard helper
 
     // display
+    var defaultResize = browserResizeEnum.RECONNECT;    // default action on browser resize (RDP host only)
     var displayMode = displayModeEnum.AUTO;             // display mode
     var imageEncoding = imageEncodingEnum.PNG;          // image encoding
-    var imageQuality = 100;                             // image quality (%) higher = better; not applicable for PNG (lossless); tweaked dynamically to fit the available bandwidth if using JPEG, PNG_JPEG or WEBP encoding. for best user experience, fullscreen updates are always done in higher quality (75%), regardless of this setting and bandwidth
+    var imageQuality = 100;                             // image quality (%) higher = better; not applicable for PNG (lossless); tweaked dynamically to fit the available bandwidth if using JPEG, AUTO or WEBP encoding. for best user experience, fullscreen updates are always done in higher quality (75%), regardless of this setting and bandwidth
     var imageQuantity = 100;                            // image quantity (%) less images = lower cpu and bandwidth usage / faster; more = smoother display (skipping images may result in some display inconsistencies). tweaked dynamically to fit the available bandwidth; possible values: 5, 10, 20, 25, 50, 100 (lower = higher drop rate)
     var imageTweakBandwidthLowerThreshold = 50;         // tweak the image quality & quantity depending on the available bandwidth (%): lower threshold
     var imageTweakBandwidthHigherThreshold = 90;        // tweak the image quality & quantity depending on the available bandwidth (%): higher threshold
     var imageTweakLatencyLowerThreshold = 250;          // tweak the image quantity depending on the average latency (ms): lower threshold
     var imageTweakLatencyHigherThreshold = 750;         // tweak the image quantity depending on the average latency (ms): higher threshold
     var imageTweakLatencyCountPerSec = 20;              // tweak the image quantity depending on the average latency and image count per second
-    var imageCountOk = 500;                             // reasonable number of images to display at once; for HTML4 (divs), used to clean the DOM (by requesting a fullscreen update) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
-    var imageCountMax = 1000;                           // maximal number of images to display at once; for HTML4 (divs), used to clean the DOM (by reloading the page) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
+    var imageCountOk = 100;                             // reasonable number of images to display at once; for HTML4 (divs), used to clean the DOM (by requesting a fullscreen update) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
+    var imageCountMax = 200;                            // maximal number of images to display at once; for HTML4 (divs), used to clean the DOM (by reloading the page) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
     var imageMode = imageModeEnum.AUTO;                 // image mode
     var imageBlobEnabled = false;                       // display images from local cached urls using blob objects (HTML5 only, binary mode)
     var imageDebugEnabled = false;                      // display a red border around images, for debug purpose
     var periodicalFullscreenInterval = 30000;           // periodical fullscreen update (ms); used to refresh the whole display
     var adaptiveFullscreenTimeout = 1500;               // adaptive fullscreen update (ms); requested after a given period of user inactivity (=no input). 0 to disable
+
+    // audio
+    var audioFormat = audioFormatEnum.WAV;              // audio format (HTML5); requires websocket enabled and RDP host; IE doesn't support WAV format (MP3 fallback); others: WAV and MP3 support
+    var audioBitrate = 1411;                            // bitrate (kbps); possible values for WAV: 1411 (44100 Hz, 16 bits stereo); possible values for MP3: 128, 160, 256, 320 (CBR); lower = lesser quality, but also less bandwidth usage (128 kbps is good enough for sound notifications)
 
     // network
     var additionalLatency = 0;                          // simulate a network latency (ms) which adds to the real latency (useful to test various network situations). 0 to disable
@@ -143,8 +167,9 @@ function Config(
     this.getHttpServerUrl = function() { return httpServerUrl; };
 
     // host type
-    this.getHostType = function() { return hostType == 'RDP' ? hostTypeEnum.RDP : hostTypeEnum.SSH; }
+    this.getHostType = function() { return hostType == 'RDP' ? hostTypeEnum.RDP : hostTypeEnum.SSH; };
     this.getHostTypeEnum = function() { return hostTypeEnum; };
+    this.getVMNotEnhanced = function() { return vmNotEnhanced; };
 
     // dialog
     this.getStatEnabled = function() { return statEnabled; };
@@ -157,7 +182,9 @@ function Config(
 
     // display
     this.getCompatibilityMode = function() { return compatibilityMode; };
-    this.getScaleDisplay = function() { return scaleDisplay; };
+    this.getBrowserResizeEnum = function() { return browserResizeEnum; };
+    this.getBrowserResize = function() { return (browserResize == null ? null : (browserResize == 'SCALE' ? browserResizeEnum.SCALE : (browserResize == 'RECONNECT' ? browserResizeEnum.RECONNECT : browserResizeEnum.NONE))); };
+    this.getDefaultResize = function() { return defaultResize; };
     this.getDisplayWidth = function() { return displayWidth; };
     this.getDisplayHeight = function() { return displayHeight; };
     this.getDisplayModeEnum = function() { return displayModeEnum; };
@@ -185,6 +212,13 @@ function Config(
     this.getImageDebugEnabled = function() { return imageDebugEnabled; };
     this.getPeriodicalFullscreenInterval = function() { return periodicalFullscreenInterval; };
     this.getAdaptiveFullscreenTimeout = function() { return adaptiveFullscreenTimeout; };
+
+    // audio
+    this.getAudioFormatEnum = function() { return audioFormatEnum; };
+    this.getAudioFormat = function() { return audioFormat; };
+    this.setAudioFormat = function(format) { audioFormat = format; };
+    this.getAudioBitrate = function() { return audioBitrate; };
+    this.setAudioBitrate = function(bitrate) { audioBitrate = bitrate; };
 
     // network
     this.getAdditionalLatency = function() { return additionalLatency; };

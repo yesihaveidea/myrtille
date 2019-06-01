@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Myrtille.Admin.Web.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ConnectionServiceUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://localhost:8008/Myrtille/ConnectionService/</Value>
+    </Setting>
+    <Setting Name="CaptureServiceUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://localhost/Myrtille/api/Capture/</Value>
+    </Setting>
+    <Setting Name="SharingServiceUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://localhost/Myrtille/api/Sharing/</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

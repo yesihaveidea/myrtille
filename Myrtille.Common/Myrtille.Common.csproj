@@ -90,6 +90,7 @@
     <Compile Include="Helpers\ClientIPHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Helpers\FirewallHelper.cs" />
+    <Compile Include="Helpers\GuidHelper.cs" />
     <Compile Include="Helpers\HttpSessionHelper.cs" />
     <Compile Include="Helpers\IISHelper.cs" />
     <Compile Include="Helpers\PermissionsHelper.cs" />

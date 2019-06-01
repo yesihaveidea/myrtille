@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -230,7 +230,7 @@ label,
 #userInfo
 {
     float: left;
-    width: 250px;
+    width: 150px;
 }
 
 #serverInfo
@@ -243,6 +243,7 @@ label,
 #debug,
 #browser,
 #scale,
+#reconnect,
 #keyboard,
 #clipboard,
 #files,
@@ -253,18 +254,8 @@ label,
 #disconnect
 {
     float: left;
-    width: 135px;
+    width: 120px;
 }
-
-/* debug and browser mode are disabled by default (to enable for test or diagnostic, just comment out the css below and tweak the controls width above) */
-/*
-#debug,
-#browser
-{
-    visibility: hidden;
-    display: none;
-}
-*/
 
 /* background fader */
 
@@ -445,7 +436,7 @@ label,
 #shareSessionPopupInner
 {
     width: 400px;
-    height: 300px;
+    height: 370px;
 }
 
 #shareSessionPopupInner
@@ -465,6 +456,16 @@ label,
     padding-left: 10px;
 }
 
+#guestControlLabel
+{
+    padding-top: 10px;
+    width: 100px;
+}
+
+#guestControl
+{
+    margin-top: 17px;
+}
 
 /* change password popup */
 

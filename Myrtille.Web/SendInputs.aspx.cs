@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Web.UI;
+using Myrtille.Services.Contracts;
 
 namespace Myrtille.Web
 {
@@ -48,8 +49,20 @@ namespace Myrtille.Web
                 // retrieve the remote session for the current http session
                 remoteSession = (RemoteSession)Session[HttpSessionStateVariables.RemoteSession.ToString()];
 
+                // update guest information
+                if (!Session.SessionID.Equals(remoteSession.OwnerSessionID))
+                {
+                    // filters out the dummy xhr calls (used with websocket to keep the http session alive)
+                    if (!string.IsNullOrEmpty(Request.QueryString["data"]))
+                    {
+                        if (Session[HttpSessionStateVariables.GuestInfo.ToString()] != null)
+                        {
+                            ((GuestInfo)Session[HttpSessionStateVariables.GuestInfo.ToString()]).Websocket = false;
+                        }
+                    }
+                }
                 // connect the remote server
-                if (remoteSession.State == RemoteSessionState.Connecting && !remoteSession.Manager.HostClient.ProcessStarted)
+                else if (remoteSession.State == RemoteSessionState.Connecting && !remoteSession.Manager.HostClient.ProcessStarted)
                 {
                     try
                     {
@@ -71,7 +84,8 @@ namespace Myrtille.Web
                             remoteSession.ClientWidth,
                             remoteSession.ClientHeight,
                             remoteSession.AllowRemoteClipboard,
-                            remoteSession.AllowPrintDownload);
+                            remoteSession.AllowPrintDownload,
+                            remoteSession.AllowAudioPlayback);
                     }
                     catch (Exception exc)
                     {
@@ -96,23 +110,8 @@ namespace Myrtille.Web
                     // xhr only
                     if (imgReturn)
                     {
-                        // disconnected session
-                        if (remoteSession.State == RemoteSessionState.Disconnected)
-                        {
-                            Response.Write("disconnected");
-                            return;
-                        }
-
-                        // message queue
-                        List<RemoteSessionMessage> messageQueue = null;
-                        lock (remoteSession.Manager.MessageQueues.SyncRoot)
-                        {
-                            if (!remoteSession.Manager.MessageQueues.ContainsKey(Session.SessionID))
-                            {
-                                remoteSession.Manager.MessageQueues.Add(Session.SessionID, new List<RemoteSessionMessage>());
-                            }
-                            messageQueue = (List<RemoteSessionMessage>)remoteSession.Manager.MessageQueues[Session.SessionID];
-                        }
+                        // notifications
+                        var messageQueue = (List<RemoteSessionMessage>)remoteSession.Manager.MessageQueues[Session.SessionID];
 
                         // concatenate text for terminal output to avoid a slow rendering
                         // if another message type is in the queue, it will be given priority over the terminal

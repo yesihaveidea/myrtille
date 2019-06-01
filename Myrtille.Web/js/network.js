@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2018 Cedric Coste
+    Copyright(c) 2014-2019 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,8 +26,9 @@ function Network(config, dialog, display)
     var xmlhttp = null;
     this.getXmlhttp = function() { return xmlhttp; };
 
-    // websocket
+    // websockets
     var websocket = null;
+    var audioWebsocket = null;
 
     // long-polling
     var longPolling = null;
@@ -93,16 +94,20 @@ function Network(config, dialog, display)
         SEND_MOUSE_WHEEL_DOWN: { value: 15, text: 'MWD' },
 
         // control
-        SET_STAT_MODE: { value: 16, text: 'STA' },
-        SET_DEBUG_MODE: { value: 17, text: 'DBG' },
-        SET_COMPATIBILITY_MODE: { value: 18, text: 'CMP' },
-        SET_SCALE_DISPLAY: { value: 19, text: 'SCA' },
-        SET_IMAGE_ENCODING: { value: 20, text: 'ECD' },
-        SET_IMAGE_QUALITY: { value: 21, text: 'QLT' },
-        SET_IMAGE_QUANTITY: { value: 22, text: 'QNT' },
-        REQUEST_FULLSCREEN_UPDATE: { value: 23, text: 'FSU' },
-        REQUEST_REMOTE_CLIPBOARD: { value: 24, text: 'CLP' },
-        CLOSE_CLIENT: { value: 25, text: 'CLO' }
+        SET_SCALE_DISPLAY: { value: 16, text: 'SCA' },
+        SET_RECONNECT_SESSION: { value: 17, text: 'RCN' },
+        SET_IMAGE_ENCODING: { value: 18, text: 'ECD' },
+        SET_IMAGE_QUALITY: { value: 19, text: 'QLT' },
+        SET_IMAGE_QUANTITY: { value: 20, text: 'QNT' },
+        SET_AUDIO_FORMAT: { value: 21, text: 'AUD' },
+        SET_AUDIO_BITRATE: { value: 22, text: 'BIT' },
+        SET_SCREENSHOT_CONFIG: { value: 23, text: 'SSC' },
+        START_TAKING_SCREENSHOTS: { value: 24, text: 'SS1' },
+        STOP_TAKING_SCREENSHOTS: { value: 25, text: 'SS0' },
+        TAKE_SCREENSHOT: { value: 26, text: 'SCN' },
+        REQUEST_FULLSCREEN_UPDATE: { value: 27, text: 'FSU' },
+        REQUEST_REMOTE_CLIPBOARD: { value: 28, text: 'CLP' },
+        CLOSE_CLIENT: { value: 29, text: 'CLO' }
     };
 
     if (Object.freeze)
@@ -225,8 +230,22 @@ function Network(config, dialog, display)
             // use websocket if enabled
             if (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET)
             {
+                // display and notifications
                 websocket = new Websocket(config, dialog, display, this);
                 websocket.init();
+            }
+
+            // websocket enabled and functional, RDP host
+            if (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && config.getHostType() == config.getHostTypeEnum().RDP)
+            {
+                // audio
+                audioWebsocket = new AudioWebsocket(config, dialog, display, this);
+                audioWebsocket.init();
+            }
+            else
+            {
+                // audio disabled
+                config.setAudioFormat(config.getAudioFormatEnum().NONE);
             }
 
             // only websocket supports the binary image mode
@@ -250,11 +269,17 @@ function Network(config, dialog, display)
                 // send settings and request a fullscreen update
                 this.initClient();
             }
+            else
+            {
+                // if using websocket, the connection remains open; there is no real need for a buffer
+                config.setBufferEnabled(false);
+            }
 
             dialog.showStat(dialog.getShowStatEnum().NETWORK_MODE, config.getNetworkMode());
+            dialog.showStat(dialog.getShowStatEnum().AUDIO_FORMAT, config.getAudioFormat());
+            dialog.showStat(dialog.getShowStatEnum().AUDIO_BITRATE, config.getAudioBitrate());
 
             // if using xhr only, force enable the user inputs buffer in order to allow polling update(s) even if the user does nothing ("send empty" feature, see comments in buffer.js)
-            // even if using websocket or long-polling, using a buffer is recommended
             config.setBufferEnabled(config.getBufferEnabled() || config.getNetworkMode() == config.getNetworkModeEnum().XHR);
             if (config.getBufferEnabled())
             {
@@ -330,18 +355,37 @@ function Network(config, dialog, display)
 
             if (config.getHostType() == config.getHostTypeEnum().RDP)
             {
-                //dialog.showDebug('sending rendering config');
+                //dialog.showDebug('sending display config');
                 commands.push(commandEnum.SET_IMAGE_ENCODING.text + config.getImageEncoding().value);
                 commands.push(commandEnum.SET_IMAGE_QUALITY.text + config.getImageQuality());
                 commands.push(commandEnum.SET_IMAGE_QUANTITY.text + config.getImageQuantity());
-            }
 
-            // autoscale display on remote session start
-            if (config.getScaleDisplay() == null)
-            {
-                var width = display.getBrowserWidth() - display.getHorizontalOffset();
-                var height = display.getBrowserHeight() - display.getVerticalOffset();
-                commands.push(commandEnum.SET_SCALE_DISPLAY.text + width + 'x' + height);
+                //dialog.showDebug('sending audio config');
+                commands.push(commandEnum.SET_AUDIO_FORMAT.text + config.getAudioFormat().value);
+                if (config.getAudioFormat() != config.getAudioFormatEnum().NONE)
+                {
+                    commands.push(commandEnum.SET_AUDIO_BITRATE.text + config.getAudioBitrate());
+                }
+
+                // set action on browser resize
+                if (config.getBrowserResize() == null)
+                {
+                    switch (config.getDefaultResize())
+                    {
+                        case config.getBrowserResizeEnum().SCALE:
+                            var width = display.getBrowserWidth();
+                            var height = display.getBrowserHeight();
+                            commands.push(commandEnum.SET_SCALE_DISPLAY.text + width + 'x' + height);
+                            break;
+
+                        case config.getBrowserResizeEnum().RECONNECT:
+                            commands.push(commandEnum.SET_RECONNECT_SESSION.text + 1);
+                            break;
+                   
+                        default:
+                            commands.push(commandEnum.SET_RECONNECT_SESSION.text + 0);
+                    }
+                }
             }
 
             //dialog.showDebug('initial fullscreen update');
@@ -416,6 +460,10 @@ function Network(config, dialog, display)
                         buffer.setBufferDelay(config.getBufferDelayBase() + roundtripDurationAvg);
                     }
                     dialog.showStat(dialog.getShowStatEnum().BUFFER, buffer.getBufferDelay());
+                }
+                else
+                {
+                    dialog.showStat(dialog.getShowStatEnum().BUFFER, 'NONE');
                 }
             }
         }
@@ -578,18 +626,11 @@ function Network(config, dialog, display)
             if (config.getBufferEnabled())
             {
                 //dialog.showDebug('buffering ' + event + ' event: ' + data);
-                if (buffer.getBufferData().length >= config.getBufferSize())
-                {
-                    //dialog.showDebug('buffer is full, flushing');
-                    buffer.flush();
-                }
-                buffer.getBufferData().push(data);
+                buffer.addItem(data);
             }
             // otherwise, send it over the network
 		    else
             {
-                dialog.showStat(dialog.getShowStatEnum().BUFFER, 'NONE');
-
                 //dialog.showDebug('sending ' + event + ' event: ' + data);
                 doSend(data);
             }

@@ -292,33 +292,6 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlInputText userInfo;
         
         /// <summary>
-        /// stat control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputButton stat;
-        
-        /// <summary>
-        /// debug control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputButton debug;
-        
-        /// <summary>
-        /// browser control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputButton browser;
-        
-        /// <summary>
         /// scale control.
         /// </summary>
         /// <remarks>
@@ -326,6 +299,15 @@ namespace Myrtille.Web {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlInputButton scale;
+        
+        /// <summary>
+        /// reconnect control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputButton reconnect;
         
         /// <summary>
         /// keyboard control.
