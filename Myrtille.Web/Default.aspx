@@ -254,7 +254,7 @@
                 <input type="button" id="debug" value="Debug OFF" onclick="toggleDebugMode();" title="display debug info"/>
 
                 <!-- browser mode -->
-                <input type="button" id="browser" value="HTML4" onclick="toggleCompatibilityMode();" title="rendering mode"/>
+                <input type="button" id="browser" value="HTML5 OFF" onclick="toggleCompatibilityMode();" title="rendering mode"/>
 
                 <!-- scale display -->
                 <input type="button" runat="server" id="scale" value="Scale OFF" onclick="toggleScaleDisplay();" title="scale the remote session to the browser size (aspect ratio is not preserved)" disabled="disabled"/>
@@ -359,7 +359,7 @@
                     // in addition to having their states also saved into a cookie, stat, debug and compatibility buttons are always available into the toolbar (even for guest(s) if the remote session is shared)
                     document.getElementById('stat').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'stat') ? 'Stat ON' : 'Stat OFF';
                     document.getElementById('debug').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'debug') ? 'Debug ON' : 'Debug OFF';
-                    document.getElementById('browser').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser') ? 'HTML4' : 'HTML5';
+                    document.getElementById('browser').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser') ? 'HTML5 OFF' : 'HTML5 ON';
 
                     // swipe is disabled on IE/Edge because it emulates mouse events by default (experimental)
                     document.getElementById('<%=vswipe.ClientID%>').disabled = document.getElementById('<%=vswipe.ClientID%>').disabled || display.isIEBrowser();
