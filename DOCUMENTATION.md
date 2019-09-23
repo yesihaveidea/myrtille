@@ -1,6 +1,7 @@
 ﻿- [Introduction](#introduction)
 - [History](#history)
 - [Installation](#installation)
+- [Remote Desktop Services](#remote-desktop-services)
 - [Auto-connect / Start remote application from URL](#auto-connect--start-remote-application-from-url)
 - [Syntax](#syntax)
 - [Password Hash](#password-hash)
@@ -52,6 +53,14 @@ The installer does install myrtille under the IIS default website and creates a 
 All releases here: https://github.com/cedrozor/myrtille/releases
 - Setup.exe (preferred installation method): setup bootstrapper
 - Myrtille.msi: MSI package (x86)
+
+## Remote Desktop Services
+
+**For best experience**, and be able to go over the default limit of 2 concurrent users, you will need to install the [RDS role](https://www.exitthefastlane.com/2016/05/native-rds-in-server2016-part-1-basics.html) on your remote server(s). Optionally, you can install the [RD Connection Broker](https://www.tech-coffee.net/rds-2016-farm-deploy-the-farm-in-azure/) feature to allow load-balancing across an RDS farm (possibly hosted on Azure) and manage the applications allowed to run (and with which parameters) on session start.
+
+You will also need to enable [multiple sessions per user](https://portal.databasemart.com/kb/a220/how-to-enable-multiple-single-remote-desktop-sessions-in-windows-server-2012.aspx) if you don't want your users to be limited to 1 session only (if you have several users sharing the same account, they will disconnect each others otherwise).
+
+The RDS role offers you a **grace period of 120 days** after which you will need to use an [RD License Server](https://www.exitthefastlane.com/2016/06/native-rds-in-server2016-part-3-rdsh.html) with proper licenses (CALs) to suit your licensing mode ("Per Device" or "Per User").
 
 ## Auto-connect / Start remote application from URL
 Starting from version 1.3.0, it's possible to connect and run a program automatically, on session start, from an URL. It's a feature comparable to remoteApp (.rdp files).

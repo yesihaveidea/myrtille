@@ -1,5 +1,6 @@
 ﻿2019-09-23 Version 2.5.5 (patched)
 	* HOTFIX * fixed a critical issue with FreeRDP (exit code 131085) when using an RD license server configured in "per device" mode, past the 120 days of the RDS grace period
+	updated readme and documentation about the RDS role
 
 2019-06-01 Version 2.5.5 (stable)
 	added audio support (MP3 (default)/WAV, config.js)
