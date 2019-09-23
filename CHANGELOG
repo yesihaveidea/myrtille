@@ -1,4 +1,7 @@
-﻿2019-06-01 Version 2.5.5 (stable)
+﻿2019-09-23 Version 2.5.5 (patched)
+	* HOTFIX * fixed a critical issue with FreeRDP (exit code 131085) when using an RD license server configured in "per device" mode, past the 120 days of the RDS grace period
+
+2019-06-01 Version 2.5.5 (stable)
 	added audio support (MP3 (default)/WAV, config.js)
 	(beta) added a REST API to prevent the connection details to be passed into the querystring; a connection identifier (&cid=) is passed instead and the connection details are retrieved by the myrtille gateway using the REST API
 	(beta) added a REST API to share a remote session and manage the active guest(s)
