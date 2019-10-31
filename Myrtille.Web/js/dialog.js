@@ -496,6 +496,9 @@ function closePopup()
             bgfDiv.style.visibility = 'hidden';
             bgfDiv.style.display = 'none';
         }
+
+        // get focus back
+        window.focus();
     }
     catch (exc)
     {
@@ -512,7 +515,7 @@ this.getShowDialogPopupText = function() { return showDialogPopupText; };
 var showDialogPopupSelectText = false;
 this.getShowDialogPopupSelectText = function() { return showDialogPopupSelectText; };
 
-this.showDialogPopup = function(id, src, desc, text, selectText)
+this.showDialogPopup = function(id, desc, text, selectText)
 {
     // properties
     showDialogPopupDesc = desc;
@@ -520,5 +523,5 @@ this.showDialogPopup = function(id, src, desc, text, selectText)
     showDialogPopupSelectText = selectText;
 
     // popup
-    openPopup(id, src);
+    openPopup(id, 'ShowDialog.aspx');
 }

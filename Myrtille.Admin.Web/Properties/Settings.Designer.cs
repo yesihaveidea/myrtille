@@ -25,28 +25,10 @@ namespace Myrtille.Admin.Web.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:8008/Myrtille/ConnectionService/")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:8008/Myrtille_microarea_admin/ConnectionService/")]
         public string ConnectionServiceUrl {
             get {
                 return ((string)(this["ConnectionServiceUrl"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost/Myrtille/api/Capture/")]
-        public string CaptureServiceUrl {
-            get {
-                return ((string)(this["CaptureServiceUrl"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost/Myrtille/api/Sharing/")]
-        public string SharingServiceUrl {
-            get {
-                return ((string)(this["SharingServiceUrl"]));
             }
         }
     }

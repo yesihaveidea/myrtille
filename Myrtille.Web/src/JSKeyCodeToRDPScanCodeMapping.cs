@@ -51,14 +51,24 @@ namespace Myrtille.Web
             // see http://protocolsofmatrix.blogspot.com/2007/09/javascript-keycode-reference-table-for.html or http://www.webonweboff.com/tips/js/event_key_codes.aspx for js keycodes
             // see http://www.vmware.com/support/ws55/doc/ws_devices_keymap_vscan.html or https://github.com/neutrinolabs/xrdp/blob/devel/xrdp/rdp-scan-codes.txt for rdp scancodes
 
+            // the left and right location distinction for key modifiers is not currently done
+            // while this is fine for most applications, some of them may need this distinction
+            // also, some keys are a combination of key modifiers (i.e.: alt+gr = left ctrl + right alt)
+
+            // TODO: make that distinction, by passing the key location from javascript (in addition to the key code),
+            // then use the appropriate rdp scancodes (currently disabled below)
+
             MapTable = new Hashtable();
 
             MapTable.Add(8, new RdpScanCode(14, false));            // backspace
             MapTable.Add(9, new RdpScanCode(15, false));            // tab
             MapTable.Add(13, new RdpScanCode(28, false));           // enter
-            MapTable.Add(16, new RdpScanCode(42, false));           // shift
-            MapTable.Add(17, new RdpScanCode(29, false));           // ctrl
-            MapTable.Add(18, new RdpScanCode(56, false));           // alt
+            MapTable.Add(16, new RdpScanCode(42, false));           // shift (left)
+            //MapTable.Add(16, new RdpScanCode(54, false));         // shift (right)
+            MapTable.Add(17, new RdpScanCode(29, false));           // ctrl (left)
+            //MapTable.Add(17, new RdpScanCode(29, true));          // ctrl (right)
+            //MapTable.Add(18, new RdpScanCode(56, false));         // alt (left) * disabled to prevent interfering with the browser alt+key menu *
+            MapTable.Add(18, new RdpScanCode(56, true));            // alt (right)
             MapTable.Add(19, new RdpScanCode(256, false));          // pause/break
             MapTable.Add(20, new RdpScanCode(58, false));           // caps lock
             MapTable.Add(27, new RdpScanCode(1, false));            // escape

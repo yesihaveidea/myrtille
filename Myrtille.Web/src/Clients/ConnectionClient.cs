@@ -26,7 +26,7 @@ namespace Myrtille.Web
 {
     public class ConnectionClient
     {
-        private static RestClient restClient;
+        private RestClient restClient;
         private static IDictionary<Guid, RemoteSessionState> connectionsState = new Dictionary<Guid, RemoteSessionState>();
         private static object connectionsLock = new object();
 

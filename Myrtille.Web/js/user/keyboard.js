@@ -20,7 +20,7 @@
 /*** Keyboard                                                                                                                                                                                      ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function Keyboard(config, dialog, display, network, user)
+function Keyboard(base, config, dialog, display, network, user)
 {
     this.init = function()
     {
@@ -50,6 +50,12 @@ function Keyboard(config, dialog, display, network, user)
         return true;
     }
 
+    function KeyInfo(keyCode, keyLocation)
+    {
+        this.KeyCode = keyCode;
+        this.KeyLocation = keyLocation;
+    }
+
     function processKeyState(e, keyState, modKeyActive)
     {
 	    //dialog.showDebug(keyState);
@@ -57,14 +63,24 @@ function Keyboard(config, dialog, display, network, user)
         if (!processEvent(e))
             return false;
 
-		var keyCode = null;
-		if (window.event) keyCode = window.event.keyCode;
-		else if (e.which) keyCode = e.which;
+        var keyCode = null;
+        var keyLocation = null;
+
+        if (window.event)
+        {
+            keyCode = window.event.keyCode;
+            keyLocation = window.event.location;
+        }
+        else
+        {
+            if (e.which) keyCode = e.which;
+            if (e.location) keyLocation = e.location;
+        }
 
         if (keyCode == null)
             return false;
 
-        //dialog.showDebug(keyState + ' code: ' + keyCode);
+        //dialog.showDebug(keyState + ' code: ' + keyCode + ', location: ' + keyLocation + (keyLocation == 1 ? ' (left)' : (keyLocation == 2 ? ' (right)' : '')));
 
         if (keyCode == 144)     // numlock
             return false;
@@ -77,7 +93,7 @@ function Keyboard(config, dialog, display, network, user)
 		else if (keyCode == 18)
 			modAlt = modKeyActive;
 
-        return keyCode;
+        return new KeyInfo(keyCode, keyLocation);
     }
 
     this.setKeyCombination = function()
@@ -115,46 +131,57 @@ function Keyboard(config, dialog, display, network, user)
     {
 	    try
 	    {
-	        var keyCode = processKeyState(e, 'keydown', true);
+	        var keyInfo = processKeyState(e, 'keydown', true);
 	        
-            if (!keyCode)
+            if (!keyInfo)
                 return false;
+
+            // the alt key may interfere with the browser alt + key menu
+            // fact is, the remote session receives the alt key down but NOT the alt key up
+            // this is due to the page (or iframe) losing the focus (on alt key down) and thus is no longer able to listen for input events (and capture alt key up)
+            // this is nasty because the remote session remains stuck, waiting for an alt key up which will never arrive! the result is, the user can no longer type any text...
+            // if it happens, the only way to unblock the session is to send a ctrl+alt+del sequence
+            if (keyInfo.KeyCode == 18 && keyInfo.KeyLocation == 1)
+            {
+                user.cancelEvent(e);
+                return false;
+            }
 
             // non character keys are sent as scancodes on keydown and keyup
 	        // character keys are sent as unicode on keypress and keyup, using the keypress character code
             var keyIsChar =
-              !((keyCode == 8) ||       // backspace
-                (keyCode == 9) ||       // tab
-                (keyCode == 13) ||      // enter
-                (keyCode == 16) ||      // shift
-                (keyCode == 17) ||      // ctrl
-                (keyCode == 18) ||      // alt
-                (keyCode == 27) ||      // esc
-                (keyCode == 35) ||      // end
-                (keyCode == 36) ||      // home
-                (keyCode == 33) ||      // page up
-                (keyCode == 34) ||      // page down
-                (keyCode == 37) ||      // keypad left arrow
-                (keyCode == 38) ||      // keypad up arrow
-                (keyCode == 39) ||      // keypad right arrow
-                (keyCode == 40) ||      // keypad down arrow
-                (keyCode == 45) ||      // insert
-                (keyCode == 46) ||      // delete
-                (keyCode == 112) ||     // F1
-                (keyCode == 113) ||     // F2
-                (keyCode == 114) ||     // F3
-                (keyCode == 115) ||     // F4
-                (keyCode == 116) ||     // F5
-                (keyCode == 117) ||     // F6
-                (keyCode == 118) ||     // F7
-                (keyCode == 119) ||     // F8
-                (keyCode == 120) ||     // F9
-                (keyCode == 121) ||     // F10
-                (keyCode == 122) ||     // F11
-                (keyCode == 123));      // F12
+              !((keyInfo.KeyCode == 8) ||       // backspace
+                (keyInfo.KeyCode == 9) ||       // tab
+                (keyInfo.KeyCode == 13) ||      // enter
+                (keyInfo.KeyCode == 16) ||      // shift
+                (keyInfo.KeyCode == 17) ||      // ctrl
+                (keyInfo.KeyCode == 18) ||      // alt
+                (keyInfo.KeyCode == 27) ||      // esc
+                (keyInfo.KeyCode == 35) ||      // end
+                (keyInfo.KeyCode == 36) ||      // home
+                (keyInfo.KeyCode == 33) ||      // page up
+                (keyInfo.KeyCode == 34) ||      // page down
+                (keyInfo.KeyCode == 37) ||      // keypad left arrow
+                (keyInfo.KeyCode == 38) ||      // keypad up arrow
+                (keyInfo.KeyCode == 39) ||      // keypad right arrow
+                (keyInfo.KeyCode == 40) ||      // keypad down arrow
+                (keyInfo.KeyCode == 45) ||      // insert
+                (keyInfo.KeyCode == 46) ||      // delete
+                (keyInfo.KeyCode == 112) ||     // F1
+                (keyInfo.KeyCode == 113) ||     // F2
+                (keyInfo.KeyCode == 114) ||     // F3
+                (keyInfo.KeyCode == 115) ||     // F4
+                (keyInfo.KeyCode == 116) ||     // F5
+                (keyInfo.KeyCode == 117) ||     // F6
+                (keyInfo.KeyCode == 118) ||     // F7
+                (keyInfo.KeyCode == 119) ||     // F8
+                (keyInfo.KeyCode == 120) ||     // F9
+                (keyInfo.KeyCode == 121) ||     // F10
+                (keyInfo.KeyCode == 122) ||     // F11
+                (keyInfo.KeyCode == 123));      // F12
 
             // RDP over VM bus (Hyper-V): send keys as scancodes when enhanced mode is disabled
-            if (!keyIsChar || modCtrl || config.getVMNotEnhanced())
+            if (!keyIsChar || modCtrl || modAlt || config.getVMNotEnhanced())
             {
                 // if running myrtille into an iframe, provide a key combination (shift + tab) to switch iframe(s) focus
                 if (parent != null && window.name != '')
@@ -162,7 +189,7 @@ function Keyboard(config, dialog, display, network, user)
                     if (!keyCombination)
                     {
                         // shift
-                        if (keyCode == 16)
+                        if (keyInfo.KeyCode == 16)
                         {
                             this.setKeyCombination();
                             user.cancelEvent(e);
@@ -172,7 +199,7 @@ function Keyboard(config, dialog, display, network, user)
                     else
                     {
                         // tab
-                        if (keyCode == 9)
+                        if (keyInfo.KeyCode == 9)
                         {
                             keyCombination = false;
                             if (keyCombinationTimeout != null)
@@ -187,12 +214,12 @@ function Keyboard(config, dialog, display, network, user)
                         }
                     }
                 }
-                sendEvent(keyCode, true, false);
+                sendEvent(keyInfo.KeyCode, true, false);
                 user.cancelEvent(e);
                 return false;
             }
 
-            keydownCode = keyCode;
+            keydownCode = keyInfo.KeyCode;
         }
         catch (exc)
         {
@@ -247,23 +274,31 @@ function Keyboard(config, dialog, display, network, user)
     {
 	    try
 	    {
-	        var keyCode = processKeyState(e, 'keyup', false);
+	        var keyInfo = processKeyState(e, 'keyup', false);
 	        
-            if (!keyCode)
+            if (!keyInfo)
                 return false;
+
+            // alt
+            if (keyInfo.KeyCode == 18 && keyInfo.KeyLocation == 1)
+            {
+                user.cancelEvent(e);
+                return false;
+            }
 
             if (keyCombination)
                 return false;
 
-            // check key type
-	        if (keyCodeToCharCode[keyCode] == null)
+            // non character key
+            if (keyCodeToCharCode[keyInfo.KeyCode] == null)
             {
-	            sendEvent(keyCode, false, false);
+                sendEvent(keyInfo.KeyCode, false, false);
             }
+            // character key
 	        else
 	        {
-	            sendEvent(keyCodeToCharCode[keyCode], false, true);
-	            keyCodeToCharCode[keyCode] = null;
+                sendEvent(keyCodeToCharCode[keyInfo.KeyCode], false, true);
+                keyCodeToCharCode[keyInfo.KeyCode] = null;
 	        }
 
             //dialog.showDebug('*************************');
@@ -294,7 +329,7 @@ function Keyboard(config, dialog, display, network, user)
             // a key event is composed of 2 parts: key code and state
             // the key code is prefixed to indicate the server to process it as unicode (character key) or scancode (non character key)
             // the key state is either 1 (down) or 0 (up)
-            var keyEvent = (keyIsChar ? network.getCommandEnum().SEND_KEY_UNICODE.text : network.getCommandEnum().SEND_KEY_SCANCODE.text) + keyCode + '-' + (keyPressed ? '1' : '0');
+            var keyEvent = (keyIsChar ? base.getCommandEnum().SEND_KEY_UNICODE.text : base.getCommandEnum().SEND_KEY_SCANCODE.text) + keyCode + '-' + (keyPressed ? '1' : '0');
 
             // pass the event to the network
             network.processUserEvent('keyboard', keyEvent);

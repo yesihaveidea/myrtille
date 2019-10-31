@@ -20,7 +20,7 @@
 /*** XmlHttp                                                                                                                                                                                       ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function XmlHttp(config, dialog, display, network)
+function XmlHttp(base, config, dialog, display, network)
 {
     var xhr = null;
     var xhrStartTime = null;
@@ -64,7 +64,6 @@ function XmlHttp(config, dialog, display, network)
                     try
                     {
                         return new ActiveXObject(MSXMLXMLHTTPPROGIDS[i]);
-                        ok = true;
                     }
                     catch (exc2)
                     {}
@@ -107,12 +106,13 @@ function XmlHttp(config, dialog, display, network)
 
             if (xhr != null)
             {
-                // give priority to fullscreen update requests (by design, unbuffered command for immediate consideration)
+                // give priority to fullscreen update and browser pulse requests (by design, unbuffered command for immediate consideration)
                 // also give priority to mouse clicks because the remote session may become unstable if it does not receive a mouse button release following a mouse button click
-                if (data != null && (data.indexOf(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text) != -1 ||
-                    data.indexOf(network.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text) != -1 ||
-                    data.indexOf(network.getCommandEnum().SEND_MOUSE_MIDDLE_BUTTON.text) != -1 ||
-                    data.indexOf(network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text) != -1))
+                if (data != null && (data.indexOf(base.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text) != -1 ||
+                    data.indexOf(base.getCommandEnum().SEND_BROWSER_PULSE.text) != -1 ||
+                    data.indexOf(base.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text) != -1 ||
+                    data.indexOf(base.getCommandEnum().SEND_MOUSE_MIDDLE_BUTTON.text) != -1 ||
+                    data.indexOf(base.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text) != -1))
                 {
                     //dialog.showDebug('xhr priority');
                     cleanup(false);
@@ -239,7 +239,7 @@ function XmlHttp(config, dialog, display, network)
                 // remote clipboard
                 else if (text.length >= 10 && text.substr(0, 10) == 'clipboard|')
                 {
-                    showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', text.substr(10, text.length - 10), true);
+                    writeClipboard(text.substr(10, text.length - 10));
                 }
                 // print job
                 else if (text.length >= 9 && text.substr(0, 9) == 'printjob|')
@@ -258,7 +258,7 @@ function XmlHttp(config, dialog, display, network)
                     }
 
                     // send settings and request a fullscreen update
-                    network.initClient();
+                    base.initClient();
                 }
                 // disconnected session
                 else if (text == 'disconnected')
@@ -269,7 +269,7 @@ function XmlHttp(config, dialog, display, network)
                         parent.eraseCookie(window.name);
                     }
 
-                    // back to login screen
+                    // back to default page
                     window.location.href = config.getHttpServerUrl();
                 }
                 // new image
@@ -305,7 +305,7 @@ function XmlHttp(config, dialog, display, network)
                     {
                         //dialog.showDebug('reached a reasonable number of divs, requesting a fullscreen update');
                         fullscreenPending = true;
-                        network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
+                        network.send(base.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
                     }
                 }
             }

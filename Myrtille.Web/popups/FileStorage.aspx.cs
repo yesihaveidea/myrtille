@@ -27,7 +27,7 @@ namespace Myrtille.Web
 {
     public partial class FileStorage : Page
     {
-        private static FileStorageClient _fileStorageClient = new FileStorageClient();
+        private FileStorageClient _fileStorageClient = new FileStorageClient();
         private RemoteSession _remoteSession;
 
         /// <summary>

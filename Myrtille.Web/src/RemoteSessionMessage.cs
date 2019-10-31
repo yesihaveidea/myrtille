@@ -16,6 +16,8 @@
     limitations under the License.
 */
 
+using System.Text;
+
 namespace Myrtille.Web
 {
     public enum MessageType
@@ -25,7 +27,8 @@ namespace Myrtille.Web
         PageReload = 2,
         RemoteClipboard = 3,
         TerminalOutput = 4,
-        PrintJob = 5
+        PrintJob = 5,
+        Ack = 6
     }
 
     public class RemoteSessionMessage

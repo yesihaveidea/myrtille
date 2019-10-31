@@ -33,40 +33,42 @@ namespace Myrtille.Services.Contracts
 
         // browser
         SendBrowserResize = 7,
+        SendBrowserPulse = 8,
 
         // keyboard
-        SendKeyUnicode = 8,
-        SendKeyScancode = 9,
+        SendKeyUnicode = 9,
+        SendKeyScancode = 10,
 
         // mouse
-        SendMouseMove = 10,
-        SendMouseLeftButton = 11,
-        SendMouseMiddleButton = 12,
-        SendMouseRightButton = 13,
-        SendMouseWheelUp = 14,
-        SendMouseWheelDown = 15,
+        SendMouseMove = 11,
+        SendMouseLeftButton = 12,
+        SendMouseMiddleButton = 13,
+        SendMouseRightButton = 14,
+        SendMouseWheelUp = 15,
+        SendMouseWheelDown = 16,
 
         // control
-        SetScaleDisplay = 16,
-        SetReconnectSession = 17,
-        SetImageEncoding = 18,
-        SetImageQuality = 19,
-        SetImageQuantity = 20,
-        SetAudioFormat = 21,
-        SetAudioBitrate = 22,
-        SetScreenshotConfig = 23,
-        StartTakingScreenshots = 24,
-        StopTakingScreenshots = 25,
-        TakeScreenshot = 26,
-        RequestFullscreenUpdate = 27,
-        RequestRemoteClipboard = 28,
-        CloseClient = 29
+        SetScaleDisplay = 17,
+        SetReconnectSession = 18,
+        SetImageEncoding = 19,
+        SetImageQuality = 20,
+        SetImageQuantity = 21,
+        SetAudioFormat = 22,
+        SetAudioBitrate = 23,
+        SetScreenshotConfig = 24,
+        StartTakingScreenshots = 25,
+        StopTakingScreenshots = 26,
+        TakeScreenshot = 27,
+        RequestFullscreenUpdate = 28,
+        SendLocalClipboard = 29,
+        CloseClient = 30
     }
 
     /*
     prefixes (3 chars) are used to serialize commands with strings instead of numbers
     they make it easier to read log traces to find out which commands are issued
     they must match the prefixes used client side
+    commands can also be reordered without any issue
     */
     public static class RemoteSessionCommandMapping
     {
@@ -84,6 +86,7 @@ namespace Myrtille.Services.Contracts
             FromPrefix["PRG"] = RemoteSessionCommand.SendStartProgram;
             FromPrefix["CON"] = RemoteSessionCommand.ConnectClient;
             FromPrefix["RSZ"] = RemoteSessionCommand.SendBrowserResize;
+            FromPrefix["PLS"] = RemoteSessionCommand.SendBrowserPulse;
             FromPrefix["KUC"] = RemoteSessionCommand.SendKeyUnicode;
             FromPrefix["KSC"] = RemoteSessionCommand.SendKeyScancode;
             FromPrefix["MMO"] = RemoteSessionCommand.SendMouseMove;
@@ -104,7 +107,7 @@ namespace Myrtille.Services.Contracts
             FromPrefix["SS0"] = RemoteSessionCommand.StopTakingScreenshots;
             FromPrefix["SCN"] = RemoteSessionCommand.TakeScreenshot;
             FromPrefix["FSU"] = RemoteSessionCommand.RequestFullscreenUpdate;
-            FromPrefix["CLP"] = RemoteSessionCommand.RequestRemoteClipboard;
+            FromPrefix["CLP"] = RemoteSessionCommand.SendLocalClipboard;
             FromPrefix["CLO"] = RemoteSessionCommand.CloseClient;
 
             ToPrefix = new Hashtable();
@@ -116,6 +119,7 @@ namespace Myrtille.Services.Contracts
             ToPrefix[RemoteSessionCommand.SendStartProgram] = "PRG";
             ToPrefix[RemoteSessionCommand.ConnectClient] = "CON";
             ToPrefix[RemoteSessionCommand.SendBrowserResize] = "RSZ";
+            ToPrefix[RemoteSessionCommand.SendBrowserPulse] = "PLS";
             ToPrefix[RemoteSessionCommand.SendKeyUnicode] = "KUC";
             ToPrefix[RemoteSessionCommand.SendKeyScancode] = "KSC";
             ToPrefix[RemoteSessionCommand.SendMouseMove] = "MMO";
@@ -136,7 +140,7 @@ namespace Myrtille.Services.Contracts
             ToPrefix[RemoteSessionCommand.StopTakingScreenshots] = "SS0";
             ToPrefix[RemoteSessionCommand.TakeScreenshot] = "SCN";
             ToPrefix[RemoteSessionCommand.RequestFullscreenUpdate] = "FSU";
-            ToPrefix[RemoteSessionCommand.RequestRemoteClipboard] = "CLP";
+            ToPrefix[RemoteSessionCommand.SendLocalClipboard] = "CLP";
             ToPrefix[RemoteSessionCommand.CloseClient] = "CLO";
         }
     }

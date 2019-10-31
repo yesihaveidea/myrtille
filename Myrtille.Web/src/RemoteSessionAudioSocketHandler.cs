@@ -32,8 +32,8 @@ namespace Myrtille.Web
 {
     public class RemoteSessionAudioSocketHandler : WebSocketHandler
     {
-        private readonly HttpSessionState _session;
-        private readonly RemoteSession _remoteSession;
+        private HttpSessionState _session;
+        private RemoteSession _remoteSession;
 
         public bool BinaryMode { get; private set; }
 
@@ -125,12 +125,7 @@ namespace Myrtille.Web
             }
             else
             {
-                using (var audioStream = new MemoryStream())
-                {
-                    var bytes = GetAudioBytes(audio.Data, audio.Format, audio.Bitrate);
-                    audioStream.Write(bytes, 0, bytes.Length);
-                    Send(audioStream.ToArray());
-                }
+                Send(GetAudioBytes(audio.Data, audio.Format, audio.Bitrate));
             }
         }
 
@@ -147,12 +142,7 @@ namespace Myrtille.Web
                     }
                 }
 
-                using (var audioStream = new MemoryStream())
-                {
-                    var bytes = GetAudioBytes(memoryStream.ToArray(), _remoteSession.AudioFormat.Value, _remoteSession.AudioBitrate.Value);
-                    audioStream.Write(bytes, 0, bytes.Length);
-                    Send(audioStream.ToArray());
-                }
+                Send(GetAudioBytes(memoryStream.ToArray(), _remoteSession.AudioFormat.Value, _remoteSession.AudioBitrate.Value));
             }
         }
 

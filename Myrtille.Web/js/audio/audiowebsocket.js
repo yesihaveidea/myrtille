@@ -20,7 +20,7 @@
 /*** Audio Websocket                                                                                                                                                                               ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function AudioWebsocket(config, dialog, display, network)
+function AudioWebsocket(base, config, dialog, display, network)
 {
     var ws = null;
     var wsOpened = false;
@@ -116,18 +116,5 @@ function AudioWebsocket(config, dialog, display, network)
         {
             dialog.showDebug('audio websocket receive error: ' + exc.message);
         }
-    }
-
-    function bytesToBase64(bytes)
-    {
-        var str = '';
-        var arr = new Uint8Array(bytes);
-
-        for (var i = 0; i < bytes.byteLength; i++)
-        {
-            str += String.fromCharCode(arr[i]);
-        }
-
-        return window.btoa(str);
     }
 }

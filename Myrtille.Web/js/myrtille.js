@@ -20,7 +20,7 @@
 /*** Main                                                                                                                                                                                          ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced)
+function Myrtille(httpServerUrl, connectionState, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced)
 {
     var config = null;
     this.getConfig = function() { return config; };
@@ -37,21 +37,78 @@ function Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, b
     var user = null;
     this.getUser = function() { return user; };
 
+    /*
+    prefixes (3 chars) are used to serialize commands with strings instead of numbers
+    they make it easier to read log traces to find out which commands are issued
+    they must match the prefixes used server side
+    commands can also be reordered without any issue
+    */
+    var commandEnum =
+        {
+            // connection
+            SEND_SERVER_ADDRESS: { value: 0, text: 'SRV' },
+            SEND_VM_GUID: { value: 1, text: 'VMG' },
+            SEND_USER_DOMAIN: { value: 2, text: 'DOM' },
+            SEND_USER_NAME: { value: 3, text: 'USR' },
+            SEND_USER_PASSWORD: { value: 4, text: 'PWD' },
+            SEND_START_PROGRAM: { value: 5, text: 'PRG' },
+            CONNECT_CLIENT: { value: 6, text: 'CON' },
+
+            // browser
+            SEND_BROWSER_RESIZE: { value: 7, text: 'RSZ' },
+            SEND_BROWSER_PULSE: { value: 8, text: 'PLS' },
+
+            // keyboard
+            SEND_KEY_UNICODE: { value: 9, text: 'KUC' },
+            SEND_KEY_SCANCODE: { value: 10, text: 'KSC' },
+
+            // mouse
+            SEND_MOUSE_MOVE: { value: 11, text: 'MMO' },
+            SEND_MOUSE_LEFT_BUTTON: { value: 12, text: 'MLB' },
+            SEND_MOUSE_MIDDLE_BUTTON: { value: 13, text: 'MMB' },
+            SEND_MOUSE_RIGHT_BUTTON: { value: 14, text: 'MRB' },
+            SEND_MOUSE_WHEEL_UP: { value: 15, text: 'MWU' },
+            SEND_MOUSE_WHEEL_DOWN: { value: 16, text: 'MWD' },
+
+            // control
+            SET_SCALE_DISPLAY: { value: 17, text: 'SCA' },
+            SET_RECONNECT_SESSION: { value: 18, text: 'RCN' },
+            SET_IMAGE_ENCODING: { value: 19, text: 'ECD' },
+            SET_IMAGE_QUALITY: { value: 20, text: 'QLT' },
+            SET_IMAGE_QUANTITY: { value: 21, text: 'QNT' },
+            SET_AUDIO_FORMAT: { value: 22, text: 'AUD' },
+            SET_AUDIO_BITRATE: { value: 23, text: 'BIT' },
+            SET_SCREENSHOT_CONFIG: { value: 24, text: 'SSC' },
+            START_TAKING_SCREENSHOTS: { value: 25, text: 'SS1' },
+            STOP_TAKING_SCREENSHOTS: { value: 26, text: 'SS0' },
+            TAKE_SCREENSHOT: { value: 27, text: 'SCN' },
+            REQUEST_FULLSCREEN_UPDATE: { value: 28, text: 'FSU' },
+            SEND_LOCAL_CLIPBOARD: { value: 29, text: 'CLP' },
+            CLOSE_CLIENT: { value: 30, text: 'CLO' }
+        };
+
+    if (Object.freeze)
+    {
+        Object.freeze(commandEnum);
+    }
+
+    this.getCommandEnum = function() { return commandEnum; };
+
     this.init = function()
     {
         try
         {
-            config = new Config(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced);
+            config = new Config(httpServerUrl, connectionState, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced);
             
             dialog = new Dialog(config);
             
-            display = new Display(config, dialog);
+            display = new Display(this, config, dialog);
             display.init();
 
-            network = new Network(config, dialog, display);
+            network = new Network(this, config, dialog, display);
             network.init();
 
-            user = new User(config, dialog, display, network);
+            user = new User(this, config, dialog, display, network);
             user.init();
         }
         catch (exc)
@@ -60,6 +117,143 @@ function Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, b
             throw exc;
         }
     };
+
+    this.initClient = function()
+    {
+        if (config.getHostType() != config.getHostTypeEnum().RDP)
+        {
+            sendSettings();
+        }
+        else
+        {
+            // retrieve the clipboard (async) first
+            this.readClipboard(true);
+        }
+    };
+
+    this.readClipboard = function(init)
+    {
+        //dialog.showDebug('reading clipboard text');
+
+        try
+        {
+            if (navigator.clipboard)
+            {
+                navigator.clipboard.readText()
+                    .then(function(text)
+                    {
+                        // local clipboard
+                        // max length 1MB (truncated above this size)
+                        if (text.length > 1048576)
+                        {
+                            text = text.substr(0, 1048576) + '--- TRUNCATED ---';
+                        }
+
+                        dialog.showDebug('text read from clipboard: ' + (text.length <= 100 ? text : text.substr(0, 100) + '...') + ' (length: ' + (text.length <= 1048576 ? text.length : '1048576, truncated') + ')');
+                        if (init)
+                        {
+                            sendSettings(text);
+                        }
+                        else
+                        {
+                            try
+                            {
+                                // send the clipboard text as unicode code points
+                                network.send(commandEnum.SEND_LOCAL_CLIPBOARD.text + strToUnicode(text));
+                            }
+                            catch (exc)
+                            {
+                                dialog.showDebug('failed to send clipboard: ' + exc.message);
+                            }
+                        }
+                    })
+                    .catch(function(err)
+                    {
+                        dialog.showDebug('failed to read text from clipboard (' + err + ')');
+                        if (init)
+                        {
+                            sendSettings();
+                        }
+                    });
+            }
+            else
+            {
+                dialog.showDebug('async clipboard API is not supported or clipboard read access is denied (do you use HTTPS?)');
+                if (init)
+                {
+                    sendSettings();
+                }
+            }
+        }
+        catch (exc)
+        {
+            dialog.showDebug('myrtille readClipboard error: ' + exc.message);
+            if (init)
+            {
+                sendSettings();
+            }
+        }
+    };
+
+    function sendSettings(clipboardText)
+    {
+        try
+        {
+            var commands = new Array();
+
+            if (config.getHostType() == config.getHostTypeEnum().RDP)
+            {
+                //dialog.showDebug('sending display config');
+                commands.push(commandEnum.SET_IMAGE_ENCODING.text + config.getImageEncoding().value);
+                commands.push(commandEnum.SET_IMAGE_QUALITY.text + config.getImageQuality());
+                commands.push(commandEnum.SET_IMAGE_QUANTITY.text + config.getImageQuantity());
+
+                //dialog.showDebug('sending audio config');
+                commands.push(commandEnum.SET_AUDIO_FORMAT.text + config.getAudioFormat().value);
+                if (config.getAudioFormat() != config.getAudioFormatEnum().NONE)
+                {
+                    commands.push(commandEnum.SET_AUDIO_BITRATE.text + config.getAudioBitrate());
+                }
+
+                // set action on browser resize
+                if (config.getBrowserResize() == null)
+                {
+                    switch (config.getDefaultResize())
+                    {
+                        case config.getBrowserResizeEnum().SCALE:
+                            var width = display.getBrowserWidth();
+                            var height = display.getBrowserHeight();
+                            commands.push(commandEnum.SET_SCALE_DISPLAY.text + width + 'x' + height);
+                            break;
+
+                        case config.getBrowserResizeEnum().RECONNECT:
+                            commands.push(commandEnum.SET_RECONNECT_SESSION.text + 1);
+                            break;
+
+                        default:
+                            commands.push(commandEnum.SET_RECONNECT_SESSION.text + 0);
+                    }
+                }
+
+                // initial clipboard synchronization
+                if (clipboardText != null && clipboardText != '')
+                {
+                    // send the clipboard text as unicode code points
+                    commands.push(commandEnum.SEND_LOCAL_CLIPBOARD.text + strToUnicode(clipboardText));
+                }
+            }
+
+            //dialog.showDebug('initial fullscreen update');
+            commands.push(commandEnum.REQUEST_FULLSCREEN_UPDATE.text + 'initial');
+
+            network.send(commands.toString());
+        }
+        catch (exc)
+        {
+            dialog.showDebug('myrtille sendSettings error: ' + exc.message);
+            throw exc;
+        }
+    }
 }
 
 /*****************************************************************************************************************************************************************************************************/
@@ -67,21 +261,21 @@ function Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, b
 /*****************************************************************************************************************************************************************************************************/
 
 var myrtille = null;
+this.getMyrtille = function() { return myrtille; };
 var config = null;
 var dialog = null;
-this.getDialog = function() { return dialog; }
 var display = null;
 var network = null;
 var user = null;
 
 var fullscreenPending = false;
 
-function startMyrtille(remoteSessionActive, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced)
+function startMyrtille(connectionState, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced)
 {
     try
     {
         // if no remote session is running, leave
-        if (!remoteSessionActive)
+        if (connectionState == null || (connectionState != 'CONNECTING' && connectionState != 'CONNECTED'))
             return;
 
         // retrieve the http server url
@@ -106,7 +300,7 @@ function startMyrtille(remoteSessionActive, statEnabled, debugEnabled, compatibi
         var httpServerUrl = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + '/' + pathname + '/';
         //alert('http server url: ' + httpServerUrl);
 
-        myrtille = new Myrtille(httpServerUrl, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced);
+        myrtille = new Myrtille(httpServerUrl, connectionState, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced);
         myrtille.init();
 
         // code shortcuts
@@ -166,7 +360,7 @@ function processImage(idx, posX, posY, width, height, format, quality, fullscree
         {
             //dialog.showDebug('reached a reasonable number of divs, requesting a fullscreen update');
             fullscreenPending = true;
-            network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
+            network.send(myrtille.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
         }
     }
     catch (exc)
@@ -227,7 +421,7 @@ function toggleScaleDisplay()
         var height = display.getBrowserHeight();
 
         // send resolution while enabling display scaling
-        network.send(network.getCommandEnum().SET_SCALE_DISPLAY.text + (config.getBrowserResize() == config.getBrowserResizeEnum().SCALE ? 0 : (width + 'x' + height)));
+        network.send(myrtille.getCommandEnum().SET_SCALE_DISPLAY.text + (config.getBrowserResize() == config.getBrowserResizeEnum().SCALE ? 0 : (width + 'x' + height)));
     }
     catch (exc)
     {
@@ -240,7 +434,7 @@ function toggleReconnectSession()
     try
     {
         disableToolbar();
-        network.send(network.getCommandEnum().SET_RECONNECT_SESSION.text + (config.getBrowserResize() == config.getBrowserResizeEnum().RECONNECT ? 0 : 1));
+        network.send(myrtille.getCommandEnum().SET_RECONNECT_SESSION.text + (config.getBrowserResize() == config.getBrowserResizeEnum().RECONNECT ? 0 : 1));
     }
     catch (exc)
     {
@@ -274,15 +468,39 @@ function toggleVerticalSwipe(button)
     }
 }
 
-function requestRemoteClipboard()
+var clipboardText = null;
+this.getClipboardText = function() { return clipboardText; };
+
+this.writeClipboard = function(text)
 {
+    //dialog.showDebug('received clipboard text: ' + text);
+    clipboardText = text;
+
     try
     {
-        network.send(network.getCommandEnum().REQUEST_REMOTE_CLIPBOARD.text);
+        if (navigator.clipboard)
+        {
+            navigator.clipboard.writeText(text)
+                .then(function()
+                {
+                    dialog.showDebug('text copied to clipboard: ' + (text.length <= 100 ? text : text.substr(0, 100) + '...') + ' (length: ' + (text.length <= 1048576 ? text.length : '1048576, truncated') + ')');
+                })
+                .catch(function(err)
+                {
+                    dialog.showDebug('failed to write text to clipboard (' + err + ')');
+                    openPopup('copyClipboardPopup', 'CopyClipboard.aspx');
+                });
+        }
+        else
+        {
+            dialog.showDebug('async clipboard API is not supported or clipboard write access is denied (do you use HTTPS?)');
+            openPopup('copyClipboardPopup', 'CopyClipboard.aspx');
+        }
     }
     catch (exc)
     {
-        dialog.showDebug('myrtille requestRemoteClipboard error: ' + exc.message);
+        dialog.showDebug('myrtille writeClipboard error: ' + exc.message);
+        openPopup('copyClipboardPopup', 'CopyClipboard.aspx');
     }
 }
 
@@ -308,14 +526,14 @@ this.sendText = function(text)
                 if (charCode == 10)     // LF
                     charCode = 13;      // CR
 
-                keys.push((charCode == 13 ? network.getCommandEnum().SEND_KEY_SCANCODE.text : network.getCommandEnum().SEND_KEY_UNICODE.text) + charCode + '-1');
-                keys.push((charCode == 13 ? network.getCommandEnum().SEND_KEY_SCANCODE.text : network.getCommandEnum().SEND_KEY_UNICODE.text) + charCode + '-0');
+                keys.push((charCode == 13 ? myrtille.getCommandEnum().SEND_KEY_SCANCODE.text : myrtille.getCommandEnum().SEND_KEY_UNICODE.text) + charCode + '-1');
+                keys.push((charCode == 13 ? myrtille.getCommandEnum().SEND_KEY_SCANCODE.text : myrtille.getCommandEnum().SEND_KEY_UNICODE.text) + charCode + '-0');
             }
             else
             {
                 var char = text.charAt(i);
                 //dialog.showDebug('sending char: ' + char);
-                keys.push(network.getCommandEnum().SEND_KEY_UNICODE.text + char);
+                keys.push(myrtille.getCommandEnum().SEND_KEY_UNICODE.text + char);
             }
         }
 
@@ -341,10 +559,10 @@ this.sendKey = function(keyCode, release)
 
         var keys = new Array();
 
-        keys.push(network.getCommandEnum().SEND_KEY_SCANCODE.text + keyCode + '-1');
+        keys.push(myrtille.getCommandEnum().SEND_KEY_SCANCODE.text + keyCode + '-1');
 
         if (release)
-            keys.push(network.getCommandEnum().SEND_KEY_SCANCODE.text + keyCode + '-0');
+            keys.push(myrtille.getCommandEnum().SEND_KEY_SCANCODE.text + keyCode + '-0');
                 
         network.processUserEvent('keyboard', keys.toString());
     }
@@ -369,10 +587,10 @@ this.sendChar = function(char, release)
 
         var keys = new Array();
 
-        keys.push(network.getCommandEnum().SEND_KEY_UNICODE.text + charCode + '-1');
+        keys.push(myrtille.getCommandEnum().SEND_KEY_UNICODE.text + charCode + '-1');
 
         if (release)
-            keys.push(network.getCommandEnum().SEND_KEY_UNICODE.text + charCode + '-0');
+            keys.push(myrtille.getCommandEnum().SEND_KEY_UNICODE.text + charCode + '-0');
                 
         network.processUserEvent('keyboard', keys.toString());
     }
@@ -562,7 +780,7 @@ this.doDisconnect = function()
     try
     {
         disableToolbar();
-        network.send(network.getCommandEnum().CLOSE_CLIENT.text);
+        network.send(myrtille.getCommandEnum().CLOSE_CLIENT.text);
     }
     catch (exc)
     {

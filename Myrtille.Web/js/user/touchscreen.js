@@ -20,7 +20,7 @@
 /*** Touchscreen                                                                                                                                                                                   ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function Touchscreen(config, dialog, display, network, user)
+function Touchscreen(base, config, dialog, display, network, user)
 {
     this.init = function()
     {
@@ -177,7 +177,7 @@ function Touchscreen(config, dialog, display, network, user)
                 if (send)
                 {
                     user.triggerActivity();
-                    sendEvent(network.getCommandEnum().SEND_MOUSE_MOVE.text + touchX + '-' + touchY);  // same event as mouse move
+                    sendEvent(base.getCommandEnum().SEND_MOUSE_MOVE.text + touchX + '-' + touchY);  // same event as mouse move
                 }
             }
             else
@@ -192,7 +192,7 @@ function Touchscreen(config, dialog, display, network, user)
                     window.clearTimeout(touchTapTimeout);
                     touchTapTimeout = null;
                     touchTapCancelled = true;
-                    sendEvent(network.getCommandEnum().SEND_MOUSE_MOVE.text + lastTouchTapX + '-' + lastTouchTapY);
+                    sendEvent(base.getCommandEnum().SEND_MOUSE_MOVE.text + lastTouchTapX + '-' + lastTouchTapY);
                 }
                 else
                 {
@@ -214,12 +214,12 @@ function Touchscreen(config, dialog, display, network, user)
                         if (yDiff > 0)
                         {
                             // scroll down
-                            sendEvent(network.getCommandEnum().SEND_MOUSE_WHEEL_DOWN.text + lastTouchTapX + '-' + lastTouchTapY);
+                            sendEvent(base.getCommandEnum().SEND_MOUSE_WHEEL_DOWN.text + lastTouchTapX + '-' + lastTouchTapY);
                         }
                         else
                         {
                             // scroll up
-                            sendEvent(network.getCommandEnum().SEND_MOUSE_WHEEL_UP.text + lastTouchTapX + '-' + lastTouchTapY);
+                            sendEvent(base.getCommandEnum().SEND_MOUSE_WHEEL_UP.text + lastTouchTapX + '-' + lastTouchTapY);
                         }
                     }
                 }
@@ -275,7 +275,7 @@ function Touchscreen(config, dialog, display, network, user)
                 if (user.getRightClickButton() != null && user.getRightClickButton().value == 'Right-Click ON')
                 {
                     //dialog.showDebug('emulating mouse right click ' + (start ? 'down' : 'up'));
-                    sendEvent(network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + start + touchX + '-' + touchY);
+                    sendEvent(base.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + start + touchX + '-' + touchY);
                     if (!start)
                     {
                         user.toggleRightClick(user.getRightClickButton());
@@ -283,7 +283,7 @@ function Touchscreen(config, dialog, display, network, user)
                 }
                 else
                 {
-                    sendEvent(network.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + start + touchX + '-' + touchY);   // same event as mouse left button
+                    sendEvent(base.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + start + touchX + '-' + touchY);   // same event as mouse left button
                 }
             }, 250);
 

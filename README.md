@@ -24,7 +24,7 @@ More information in the DOCUMENTATION.md file.
 - Audio support
 - HTML4 and HTML5 support
 - Responsive design
-- Remote clipboard support
+- clipboard synchronization
 - PNG, JPEG and WEBP compression
 - Realtime connection information
 - On-screen/console/logfile debug information
@@ -32,7 +32,7 @@ More information in the DOCUMENTATION.md file.
 - fully parameterizable
 
 ## Requirements
-- Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required.
+- Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required. The clipboard synchronization requires Chrome (or async clipboard API support) and HTTPS connection
 - Gateway (myrtille): IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+ (with WCF Services > HTTP Activation enabled)
 - RDP server: any RDP enabled machine (preferably Windows Server but can also be Windows XP, 7, 8, 10 or Linux xRDP server)
 - SSH server: any SSH server (tests were made using the built-in Windows 10 OpenSSH server)
@@ -105,6 +105,7 @@ Myrtille uses the following licensed software:
 - WAV audio support: NAudio (https://github.com/naudio/NAudio), licensed under Microsoft Public License (MS-PL).
 - MP3 audio support: NAudio.Lame (https://github.com/Corey-M/NAudio.Lame), licensed under MIT License.
 - MP3 audio support: Lame (http://lame.sourceforge.net/), licensed under LGPL license.
+- Remote Desktop Services API wrapper: Cassia (https://github.com/danports/cassia), licensed under MIT License.
 
 See DISCLAIMERS.md file.
 

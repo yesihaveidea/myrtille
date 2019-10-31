@@ -20,7 +20,7 @@
 /*** Terminal                                                                                                                                                                                        ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function TerminalDiv(config, dialog, display)
+function TerminalDiv(base, config, dialog, display)
 {
     var term = null;
 
@@ -36,7 +36,7 @@ function TerminalDiv(config, dialog, display)
             display.getDisplayDiv().appendChild(div);
 
             Terminal.applyAddon(fit);
-            term = new Terminal(config, dialog, display, network, user);
+            term = new Terminal(base, config, dialog, display, network, user);
             term.open(div);
             term.fit();
             term.focus();

@@ -35,6 +35,7 @@ namespace Myrtille.Services
         private static ServiceHost _printerService;
         private static ServiceHost _mfaAuthentication;
         private static ServiceHost _enterpriseServices;
+        private static ServiceHost _applicationPoolService;
 
         public static IMultifactorAuthenticationAdapter _multifactorAdapter = null;
         public static IEnterpriseAdapter _enterpriseAdapter = null;
@@ -109,6 +110,7 @@ namespace Myrtille.Services
                 _printerService = OpenService(typeof(PrinterService));
                 _mfaAuthentication = OpenService(typeof(MFAAuthentication));
                 _enterpriseServices = OpenService(typeof(EnterpriseService));
+                _applicationPoolService = OpenService(typeof(ApplicationPoolService));
 
                 Console.WriteLine("press any key to exit...");
                 Console.ReadKey();
@@ -118,6 +120,7 @@ namespace Myrtille.Services
                 CloseService(ref _printerService);
                 CloseService(ref _mfaAuthentication);
                 CloseService(ref _enterpriseServices);
+                CloseService(ref _applicationPoolService);
             }
         }
 
@@ -131,6 +134,7 @@ namespace Myrtille.Services
             _printerService = OpenService(typeof(PrinterService));
             _mfaAuthentication = OpenService(typeof(MFAAuthentication));
             _enterpriseServices = OpenService(typeof(EnterpriseService));
+            _applicationPoolService = OpenService(typeof(ApplicationPoolService));
         }
  
 		protected override void OnStop()
@@ -140,6 +144,7 @@ namespace Myrtille.Services
             CloseService(ref _printerService);
             CloseService(ref _mfaAuthentication);
             CloseService(ref _enterpriseServices);
+            CloseService(ref _applicationPoolService);
         }
 
         // TODO? create config sections (into app.config) for the 2 adapters below

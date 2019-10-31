@@ -20,7 +20,7 @@
 /*** Buffer                                                                                                                                                                                        ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function Buffer(config, dialog, network)
+function Buffer(base, config, dialog, network)
 {
     var bufferSize = config.getBufferSize();
 

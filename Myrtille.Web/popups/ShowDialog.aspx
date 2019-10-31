@@ -26,7 +26,7 @@
     <head>
         <title>Myrtille</title>
         <link rel="stylesheet" type="text/css" href="../css/Default.css"/>
-	</head>    
+	</head>
 
     <body onload="displayText();">
         

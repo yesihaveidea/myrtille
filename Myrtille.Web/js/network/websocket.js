@@ -20,7 +20,7 @@
 /*** Websocket                                                                                                                                                                                     ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function Websocket(config, dialog, display, network)
+function Websocket(base, config, dialog, display, network)
 {
     var ws = null;
     var wsOpened = false;
@@ -95,8 +95,12 @@ function Websocket(config, dialog, display, network)
         },
         config.getHttpSessionKeepAliveInterval());
 
-        // send settings and request a fullscreen update
-        network.initClient();
+        // if connecting, the gateway will automatically connect the remote server when the socket is opened server side
+        // if connected, send the client settings and request a fullscreen update
+        if (config.getConnectionState() == 'CONNECTED')
+        {
+            base.initClient();
+        }
     }
 
     function message(e)
@@ -198,7 +202,6 @@ function Websocket(config, dialog, display, network)
             {
                 var text = '';
                 var dataView = null;
-                var chunkSize = 0;
 
                 if (config.getImageMode() != config.getImageModeEnum().BINARY)
                 {
@@ -226,16 +229,23 @@ function Websocket(config, dialog, display, network)
                 {
                     dataView = new DataView(data);
 
-                    chunkSize = dataView.getUint32(0, true);
-                    //dialog.showDebug('chunk size: ' + chunkSize);
-
-                    var imgTag = dataView.getUint32(4, true);
+                    var imgTag = dataView.getUint32(0, true);
                     //dialog.showDebug('image tag: ' + imgTag);
 
                     if (imgTag != 0)
                     {
-                        var bytes = new Uint8Array(data, 4, data.byteLength - 4);
-                        text = bytesToStr(bytes);
+                        var bytes = new Uint8Array(data, 0, data.byteLength);
+
+                        if ('TextDecoder' in window)
+                        {
+                            var utf8Decoder = new TextDecoder();
+                            text = utf8Decoder.decode(bytes);
+                        }
+                        else
+                        {
+                            text = decodeUtf8(bytes);
+                        }
+
                         if (config.getHostType() == config.getHostTypeEnum().RDP)
                         {
                             //dialog.showDebug('message data: ' + text);
@@ -287,7 +297,7 @@ function Websocket(config, dialog, display, network)
                 // remote clipboard
                 else if (text.length >= 10 && text.substr(0, 10) == 'clipboard|')
                 {
-                    showDialogPopup('showDialogPopup', 'ShowDialog.aspx', 'Ctrl+C to copy to local clipboard (Cmd-C on Mac)', text.substr(10, text.length - 10), true);
+                    writeClipboard(text.substr(10, text.length - 10));
                 }
                 // print job
                 else if (text.length >= 9 && text.substr(0, 9) == 'printjob|')
@@ -306,7 +316,7 @@ function Websocket(config, dialog, display, network)
                     }
 
                     // send settings and request a fullscreen update
-                    network.initClient();
+                    base.initClient();
                 }
                 // disconnected session
                 else if (text == 'disconnected')
@@ -317,7 +327,7 @@ function Websocket(config, dialog, display, network)
                         parent.eraseCookie(window.name);
                     }
 
-                    // back to login screen
+                    // back to default page
                     window.location.href = config.getHttpServerUrl();
                 }
                 // server ack
@@ -350,15 +360,15 @@ function Websocket(config, dialog, display, network)
                     }
                     else
                     {
-                        idx = dataView.getUint32(8, true);
-                        posX = dataView.getUint32(12, true);
-                        posY = dataView.getUint32(16, true);
-                        width = dataView.getUint32(20, true);
-                        height = dataView.getUint32(24, true);
-                        format = display.getFormatText(dataView.getUint32(28, true));
-                        quality = dataView.getUint32(32, true);
-                        fullscreen = dataView.getUint32(36, true) == 1;
-                        imgData = new Uint8Array(data, 40, chunkSize - 36);
+                        idx = dataView.getUint32(4, true);
+                        posX = dataView.getUint32(8, true);
+                        posY = dataView.getUint32(12, true);
+                        width = dataView.getUint32(16, true);
+                        height = dataView.getUint32(20, true);
+                        format = display.getFormatText(dataView.getUint32(24, true));
+                        quality = dataView.getUint32(28, true);
+                        fullscreen = dataView.getUint32(32, true) == 1;
+                        imgData = new Uint8Array(data, 36, data.byteLength - 36);
                     }
 
                     // update bandwidth usage
@@ -379,7 +389,7 @@ function Websocket(config, dialog, display, network)
                     {
                         //dialog.showDebug('reached a reasonable number of divs, requesting a fullscreen update');
                         fullscreenPending = true;
-                        network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
+                        network.send(base.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'cleanup');
                     }
                 }
             }
@@ -388,31 +398,5 @@ function Websocket(config, dialog, display, network)
         {
             dialog.showDebug('websocket receive error: ' + exc.message);
         }
-    }
-
-    function strToBytes(str)
-    {
-        var bytes = new ArrayBuffer(str.length);
-        var arr = new Uint8Array(bytes);
-
-        for (var i = 0; i < str.length; i++)
-        {
-            arr[i] = str.charCodeAt(i);
-        }
-
-        return bytes;
-    }
-
-    function bytesToStr(bytes)
-    {
-        var str = '';
-        var arr = new Uint8Array(bytes);
-
-        for (var i = 0; i < bytes.byteLength; i++)
-        {
-            str += String.fromCharCode(arr[i]);
-        }
-
-        return str;
     }
 }

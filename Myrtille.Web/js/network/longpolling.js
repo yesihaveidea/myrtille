@@ -20,7 +20,7 @@
 /*** Long-Polling                                                                                                                                                                                  ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function LongPolling(config, dialog, display, network)
+function LongPolling(base, config, dialog, display, network)
 {
     var lpIFrame = null;
 

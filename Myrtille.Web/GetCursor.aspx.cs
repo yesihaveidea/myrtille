@@ -70,7 +70,7 @@ namespace Myrtille.Web
         }
 
         // create a cursor (CUR) from an image (BMP or PNG); https://en.wikipedia.org/wiki/ICO_%28file_format%29
-        private static void CreateCursorFromImage(int width, int height, int xHotSpot, int yHotSpot, byte[] data, Stream output)
+        private void CreateCursorFromImage(int width, int height, int xHotSpot, int yHotSpot, byte[] data, Stream output)
         {
             try
             {

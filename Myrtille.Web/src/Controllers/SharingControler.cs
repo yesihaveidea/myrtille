@@ -28,7 +28,7 @@ namespace Myrtille.Web
     /// </summary>
     public class SharingController : ApiController
     {
-        private readonly ISharingService _sharingService;
+        private ISharingService _sharingService;
 
         public SharingController(ISharingService sharingService)
         {

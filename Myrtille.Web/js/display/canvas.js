@@ -20,7 +20,7 @@
 /*** Canvas                                                                                                                                                                                        ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function Canvas(config, dialog, display)
+function Canvas(base, config, dialog, display)
 {
     // canvas object
     var canvasObject = null;
@@ -154,7 +154,7 @@ function Canvas(config, dialog, display)
 
                 if (!config.getImageBlobEnabled())
                 {
-                    url = 'data:image/' + format + ';base64,' + display.bytesToBase64(data);
+                    url = 'data:image/' + format + ';base64,' + bytesToBase64(data);
                 }
                 else
                 {

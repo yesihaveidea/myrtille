@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
+using System.Web.Optimization;
 using System.Web.Routing;
 using log4net.Config;
 
@@ -65,6 +66,7 @@ namespace Myrtille.Web
                 Application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()] = new Dictionary<Guid, SharingInfo>();
 
                 // Lame MP3 dlls require the web application bin path to be present into the PATH environment variable
+                // additionally, the application pool must have read access to the bin folder
                 AddBinToPathEnvironment();
 
                 // Web Api
@@ -72,6 +74,9 @@ namespace Myrtille.Web
                     name: "WebApi",
                     routeTemplate: "api/{controller}/{action}/{id}",
                     defaults: new { id = RouteParameter.Optional });
+
+                // scripts/styles bundling
+                BundleConfig.RegisterBundles(BundleTable.Bundles);
             }
             catch (Exception exc)
             {
@@ -81,7 +86,7 @@ namespace Myrtille.Web
         }
 
         // https://github.com/Corey-M/NAudio.Lame/wiki/Using-NAudio.Lame-with-MVC
-        private static void AddBinToPathEnvironment()
+        private void AddBinToPathEnvironment()
         {
             // bin path
             var binPath = Path.Combine(new string[] { AppDomain.CurrentDomain.BaseDirectory, "bin" });

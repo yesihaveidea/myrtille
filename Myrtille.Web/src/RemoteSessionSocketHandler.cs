@@ -28,8 +28,8 @@ namespace Myrtille.Web
 {
     public class RemoteSessionSocketHandler : WebSocketHandler
     {
-        private readonly HttpSessionState _session;
-        private readonly RemoteSession _remoteSession;
+        private HttpSessionState _session;
+        private RemoteSession _remoteSession;
 
         public bool BinaryMode { get; private set; }
 
@@ -150,47 +150,11 @@ namespace Myrtille.Web
                 }
 
                 // acknowledge the message processing with the given timestamp; it will be used by the client to compute the roundtrip time
-                Send("ack," + timestamp);
+                SendMessage(new RemoteSessionMessage { Type = MessageType.Ack, Prefix = "ack,", Text = timestamp.ToString() });
             }
             catch (Exception exc)
             {
                 Trace.TraceError("Failed to process websocket message, remote session {0} ({1})", _remoteSession.Id, exc);
-            }
-        }
-
-        public void ProcessImage(RemoteSessionImage image)
-        {
-            if (!BinaryMode)
-            {
-                Send(GetImageText(image) + ";");
-            }
-            else
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    var bytes = GetImageBytes(image);
-                    memoryStream.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
-                    memoryStream.Write(bytes, 0, bytes.Length);
-                    Send(memoryStream.ToArray());
-                }
-            }
-        }
-
-        public new void Send(string message)
-        {
-            if (!BinaryMode)
-            {
-                base.Send(message);
-            }
-            else
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    var bytes = Encoding.UTF8.GetBytes(message);
-                    memoryStream.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
-                    memoryStream.Write(bytes, 0, bytes.Length);
-                    Send(memoryStream.ToArray());
-                }
             }
         }
 
@@ -229,6 +193,30 @@ namespace Myrtille.Web
                 memoryStream.Write(image.Data, 0, image.Data.Length);
 
                 return memoryStream.ToArray();
+            }
+        }
+
+        public void SendImage(RemoteSessionImage image)
+        {
+            if (!BinaryMode)
+            {
+                Send(GetImageText(image) + ";");
+            }
+            else
+            {
+                Send(GetImageBytes(image));
+            }
+        }
+
+        public void SendMessage(RemoteSessionMessage message)
+        {
+            if (!BinaryMode)
+            {
+                Send(string.Concat(message.Prefix, message.Text));
+            }
+            else
+            {
+                Send(Encoding.UTF8.GetBytes(string.Concat(message.Prefix, message.Text)));
             }
         }
     }

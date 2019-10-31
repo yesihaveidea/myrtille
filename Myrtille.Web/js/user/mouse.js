@@ -20,7 +20,7 @@
 /*** Mouse                                                                                                                                                                                         ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function Mouse(config, dialog, display, network, user)
+function Mouse(base, config, dialog, display, network, user)
 {
     this.init = function()
     {
@@ -136,7 +136,7 @@ function Mouse(config, dialog, display, network, user)
             if (send)
             {
                 user.triggerActivity();
-                sendEvent(network.getCommandEnum().SEND_MOUSE_MOVE.text + mouseX + '-' + mouseY);
+                sendEvent(base.getCommandEnum().SEND_MOUSE_MOVE.text + mouseX + '-' + mouseY);
             }
 
             // update the last mouse position
@@ -177,7 +177,7 @@ function Mouse(config, dialog, display, network, user)
                         if (user.getRightClickButton() != null && user.getRightClickButton().value == 'Right-Click ON')
                         {
                             //dialog.showDebug('emulating mouse right click ' + (down ? 'down' : 'up'));
-                            sendEvent(network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + down + mouseX + '-' + mouseY);
+                            sendEvent(base.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + down + mouseX + '-' + mouseY);
                             if (!down)
                             {
                                 user.toggleRightClick(user.getRightClickButton());
@@ -185,16 +185,16 @@ function Mouse(config, dialog, display, network, user)
                         }
                         else
                         {
-                            sendEvent(network.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + down + mouseX + '-' + mouseY);
+                            sendEvent(base.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + down + mouseX + '-' + mouseY);
                         }
                         break;
                     case 4:
                         //dialog.showDebug('mouse middle click ' + (down ? 'down' : 'up'));
-                        sendEvent(network.getCommandEnum().SEND_MOUSE_MIDDLE_BUTTON.text + down + mouseX + '-' + mouseY);
+                        sendEvent(base.getCommandEnum().SEND_MOUSE_MIDDLE_BUTTON.text + down + mouseX + '-' + mouseY);
                         break;
                     case 2:
                         //dialog.showDebug('mouse right click ' + (down ? 'down' : 'up'));
-                        sendEvent(network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + down + mouseX + '-' + mouseY);
+                        sendEvent(base.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + down + mouseX + '-' + mouseY);
                         break;
                 }
             }
@@ -208,7 +208,7 @@ function Mouse(config, dialog, display, network, user)
                         if (user.getRightClickButton() != null && user.getRightClickButton().value == 'Right-Click ON')
                         {
                             //dialog.showDebug('emulating mouse right click ' + (down ? 'down' : 'up'));
-                            sendEvent(network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + down + mouseX + '-' + mouseY);
+                            sendEvent(base.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + down + mouseX + '-' + mouseY);
                             if (!down)
                             {
                                 user.toggleRightClick(user.getRightClickButton());
@@ -216,16 +216,16 @@ function Mouse(config, dialog, display, network, user)
                         }
                         else
                         {
-                            sendEvent(network.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + down + mouseX + '-' + mouseY);
+                            sendEvent(base.getCommandEnum().SEND_MOUSE_LEFT_BUTTON.text + down + mouseX + '-' + mouseY);
                         }
                         break;
                     case 1:
                         //dialog.showDebug('mouse middle click ' + (down ? 'down' : 'up'));
-                        sendEvent(network.getCommandEnum().SEND_MOUSE_MIDDLE_BUTTON.text + down + mouseX + '-' + mouseY);
+                        sendEvent(base.getCommandEnum().SEND_MOUSE_MIDDLE_BUTTON.text + down + mouseX + '-' + mouseY);
                         break;
                     case 2:
                         //dialog.showDebug('mouse right click ' + (down ? 'down' : 'up'));
-                        sendEvent(network.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + down + mouseX + '-' + mouseY);
+                        sendEvent(base.getCommandEnum().SEND_MOUSE_RIGHT_BUTTON.text + down + mouseX + '-' + mouseY);
                         break;
                 }
             }
@@ -271,12 +271,12 @@ function Mouse(config, dialog, display, network, user)
             if (delta > 0)
             {
                 //dialog.showDebug('mouse scroll up');
-                sendEvent(network.getCommandEnum().SEND_MOUSE_WHEEL_UP.text + mouseX + '-' + mouseY);
+                sendEvent(base.getCommandEnum().SEND_MOUSE_WHEEL_UP.text + mouseX + '-' + mouseY);
             }
             else if (delta < 0)
             {
                 //dialog.showDebug('mouse scroll down');
-                sendEvent(network.getCommandEnum().SEND_MOUSE_WHEEL_DOWN.text + mouseX + '-' + mouseY);
+                sendEvent(base.getCommandEnum().SEND_MOUSE_WHEEL_DOWN.text + mouseX + '-' + mouseY);
             }
         }
         catch (exc)

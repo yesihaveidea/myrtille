@@ -17,6 +17,9 @@
 */
 
 using System;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web.Http;
 using Myrtille.Services.Contracts;
 
@@ -27,7 +30,7 @@ namespace Myrtille.Web
     /// </summary>
     public class CaptureController : ApiController
     {
-        private readonly ICaptureService _captureService;
+        private ICaptureService _captureService;
 
         public CaptureController(ICaptureService captureService)
         {
@@ -83,14 +86,17 @@ namespace Myrtille.Web
         }
 
         [HttpGet]
-        public byte[] TakeScreenshot(Guid connectionId)
+        public HttpResponseMessage TakeScreenshot(Guid connectionId)
         {
             if (connectionId == Guid.Empty)
             {
                 throw new ArgumentException(nameof(connectionId));
             }
 
-            return _captureService.TakeScreenshot(connectionId);
+            var result = new HttpResponseMessage(HttpStatusCode.OK);
+            result.Content = new ByteArrayContent(_captureService.TakeScreenshot(connectionId));
+            result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            return result;
         }
     }
 }

@@ -46,19 +46,12 @@ namespace Myrtille.Web
                 RemoteSession = remoteSession;
 
                 // remote session process client and callback
-                var callback = new RemoteSessionProcessClientCallback(this);
+                var callback = new RemoteSessionProcessClientCallback(this, HttpContext.Current.Application);
                 var callbackContext = new InstanceContext(callback);
                 HostClient = new RemoteSessionProcessClient(this, callbackContext);
 
                 // pipes
                 Pipes = new RemoteSessionPipes(RemoteSession);
-                Pipes.ProcessUpdatesPipeMessage = ProcessUpdatesPipeMessage;
-
-                // audio (RDP only)
-                if (RemoteSession.HostType == HostType.RDP)
-                {
-                    Pipes.ProcessAudioPipeMessage = ProcessAudioPipeMessage;
-                }
 
                 // sockets
                 WebSockets = new List<RemoteSessionSocketHandler>();
@@ -106,7 +99,7 @@ namespace Myrtille.Web
 
         public RemoteSessionPipes Pipes { get; private set; }
 
-        private void ProcessUpdatesPipeMessage(byte[] msg)
+        public void ProcessUpdatesPipeData(byte[] data)
         {
             try
             {
@@ -117,11 +110,13 @@ namespace Myrtille.Web
                 // > info contains the image metadata (idx, posX, posY, etc.)
                 // > data is the image raw data
 
-                var imgTag = BitConverter.ToInt32(msg, 0);
+                var imgTag = BitConverter.ToInt32(data, 0);
 
                 if (imgTag != 0)
                 {
-                    message = Encoding.UTF8.GetString(msg);
+                    // RDP: UTF16-LE, 2 bytes (16 bits) per character
+                    // SSH: UTF-8, 1 byte (8 bits) per character
+                    message = RemoteSession.HostType == HostType.RDP ? Encoding.Unicode.GetString(data) : Encoding.UTF8.GetString(data);
                 }
 
                 // message
@@ -134,9 +129,10 @@ namespace Myrtille.Web
                         SendMessage(new RemoteSessionMessage { Type = MessageType.PageReload, Prefix = "reload" });
                     }
                     // remote clipboard
+                    // truncated above max length
                     else if (message.StartsWith("clipboard|"))
                     {
-                        Trace.TraceInformation("Sending clipboard content {0}, remote session {1}", message, RemoteSession.Id);
+                        Trace.TraceInformation("Sending clipboard content, remote session {0}", RemoteSession.Id);
                         SendMessage(new RemoteSessionMessage { Type = MessageType.RemoteClipboard, Prefix = "clipboard|", Text = message.Remove(0, 10) });
                     }
                     // SSH Terminal data
@@ -170,7 +166,7 @@ namespace Myrtille.Web
                         SendCommand(RemoteSessionCommand.SetScreenshotConfig, string.Format("{0}|{1}|{2}", RemoteSession.ScreenshotIntervalSecs, (int)RemoteSession.ScreenshotFormat, RemoteSession.ScreenshotPath));
                     }
 
-                    ProcessUpdate(msg);
+                    ProcessUpdate(data);
                 }
             }
             catch (Exception exc)
@@ -179,13 +175,13 @@ namespace Myrtille.Web
             }
         }
 
-        private void ProcessAudioPipeMessage(byte[] msg)
+        public void ProcessAudioPipeData(byte[] data)
         {
             try
             {
                 if (RemoteSession.State == RemoteSessionState.Connected)
                 {
-                    ProcessAudio(msg);
+                    ProcessAudio(data);
                 }
             }
             catch (Exception exc)
@@ -229,23 +225,22 @@ namespace Myrtille.Web
 
                     break;
 
-                // browser
+                // browser resize
                 case RemoteSessionCommand.SendBrowserResize:
 
                     if (RemoteSession.State != RemoteSessionState.Connected)
                         return;
 
-                    if (RemoteSession.BrowserResize == BrowserResize.Reconnect)
+                    if (_resizeDelayed)
                     {
-                        if (_reconnectTimeout != null)
+                        if (_resizeTimeout != null)
                         {
-                            _reconnectTimeout.Cancel();
+                            _resizeTimeout.Cancel();
+                            _resizeTimeout.Dispose();
                         }
-                        _reconnectTimeout = new CancellationTokenSource();
-                        Task.Delay(500, _reconnectTimeout.Token).ContinueWith(task =>
+                        _resizeTimeout = new CancellationTokenSource();
+                        Task.Delay(500, _resizeTimeout.Token).ContinueWith(task =>
                         {
-                            RemoteSession.Reconnect = true;
-
                             var resolution = args.Split(new[] { "x" }, StringSplitOptions.None);
                             var width = int.Parse(resolution[0]);
                             var height = int.Parse(resolution[1]);
@@ -253,10 +248,28 @@ namespace Myrtille.Web
                             RemoteSession.ClientWidth = width < 100 ? 100 : width;
                             RemoteSession.ClientHeight = height < 100 ? 100 : height;
 
-                            SendCommand(RemoteSessionCommand.CloseClient);
+                            if (RemoteSession.BrowserResize == BrowserResize.Reconnect)
+                            {
+                                RemoteSession.Reconnect = true;
+                                SendCommand(RemoteSessionCommand.CloseClient);
+                            }
+                            else
+                            {
+                                _resizeDelayed = false;
+                                SendCommand(RemoteSessionCommand.SendBrowserResize, args);
+                            }
                         }, TaskContinuationOptions.NotOnCanceled);
                         return;
                     }
+                    _resizeDelayed = true;
+                    break;
+
+                // browser pulse
+                case RemoteSessionCommand.SendBrowserPulse:
+
+                    if (RemoteSession.State != RemoteSessionState.Connected)
+                        return;
+
                     break;
 
                 // keyboard, mouse
@@ -375,6 +388,7 @@ namespace Myrtille.Web
                     if (_screenshotTimeout != null)
                     {
                         _screenshotTimeout.Cancel();
+                        _screenshotTimeout.Dispose();
                     }
                     _screenshotTimeout = new CancellationTokenSource();
                     SendCommand(RemoteSessionCommand.TakeScreenshot);
@@ -390,6 +404,7 @@ namespace Myrtille.Web
                     if (_screenshotTimeout != null)
                     {
                         _screenshotTimeout.Cancel();
+                        _screenshotTimeout.Dispose();
                     }
                     _screenshotTimeout = null;
 
@@ -404,6 +419,7 @@ namespace Myrtille.Web
                     if (_screenshotTimeout != null)
                     {
                         _screenshotTimeout.Cancel();
+                        _screenshotTimeout.Dispose();
                         _screenshotTimeout = new CancellationTokenSource();
                         Task.Delay(RemoteSession.ScreenshotIntervalSecs * 1000, _screenshotTimeout.Token).ContinueWith(task =>
                         {
@@ -426,12 +442,29 @@ namespace Myrtille.Web
                     Trace.TraceInformation("Requesting fullscreen update, all image(s) will now be discarded while waiting for it, remote session {0}", RemoteSession.Id);
                     break;
 
-                case RemoteSessionCommand.RequestRemoteClipboard:
+                case RemoteSessionCommand.SendLocalClipboard:
 
                     if (RemoteSession.State != RemoteSessionState.Connected)
                         return;
 
-                    Trace.TraceInformation("Requesting remote clipboard, remote session {0}", RemoteSession.Id);
+                    var clipboardText = string.Empty;
+
+                    // read the clipboard text from unicode code points
+                    var charsCodes = args.Split(new[] { "-" }, StringSplitOptions.None);
+                    foreach (var charCode in charsCodes)
+                    {
+                        clipboardText += char.ConvertFromUtf32(int.Parse(charCode));
+                    }
+
+                    // truncated above max length, which was normally already enforced client side; re-checking
+                    if (clipboardText.Length > _clipboardMaxLength)
+                    {
+                        clipboardText = clipboardText.Substring(0, _clipboardMaxLength) + "--- TRUNCATED ---";
+                    }
+
+                    commandWithArgs = string.Concat((string)RemoteSessionCommandMapping.ToPrefix[command], clipboardText);
+
+                    Trace.TraceInformation("Sending local clipboard, remote session {0}", RemoteSession.Id);
                     break;
 
                 case RemoteSessionCommand.ConnectClient:
@@ -458,10 +491,10 @@ namespace Myrtille.Web
 
             try
             {
-                PipeHelper.WritePipeMessage(
+                PipeHelper.WritePipeData(
                     Pipes.InputsPipe,
                     "remotesession_" + RemoteSession.Id + "_inputs",
-                    commandWithArgs + "\t");
+                    commandWithArgs);
             }
             catch (Exception exc)
             {
@@ -493,6 +526,7 @@ namespace Myrtille.Web
                     if (ClientIdleTimeout != null)
                     {
                         ClientIdleTimeout.Cancel();
+                        ClientIdleTimeout.Dispose();
                         ClientIdleTimeout = new CancellationTokenSource();
                         Task.Delay(_clientIdleTimeoutDelay, ClientIdleTimeout.Token).ContinueWith(task =>
                         {
@@ -510,15 +544,11 @@ namespace Myrtille.Web
                 {
                     lock (_guestsIdleTimeoutLock)
                     {
-                        if (!_guestsIdleTimeout.ContainsKey(session.SessionID))
-                        {
-                            _guestsIdleTimeout.Add(session.SessionID, new CancellationTokenSource());
-                        }
-
                         var guestIdleTimeout = _guestsIdleTimeout[session.SessionID];
                         if (guestIdleTimeout != null)
                         {
                             guestIdleTimeout.Cancel();
+                            guestIdleTimeout.Dispose();
                         }
                         guestIdleTimeout = new CancellationTokenSource();
 
@@ -540,7 +570,10 @@ namespace Myrtille.Web
                                 }
                             }
 
-                            _guestsIdleTimeout.Remove(session.SessionID);
+                            if (_guestsIdleTimeout.ContainsKey(session.SessionID))
+                            {
+                                _guestsIdleTimeout.Remove(session.SessionID);
+                            }
                         }, TaskContinuationOptions.NotOnCanceled);
 
                         _guestsIdleTimeout[session.SessionID] = guestIdleTimeout;
@@ -588,7 +621,8 @@ namespace Myrtille.Web
 
         #region Owner
 
-        private CancellationTokenSource _reconnectTimeout;
+        private bool _resizeDelayed = true;
+        private CancellationTokenSource _resizeTimeout;
 
         private int _clientIdleTimeoutDelay = 0;
         public CancellationTokenSource ClientIdleTimeout { get; private set; }
@@ -687,7 +721,7 @@ namespace Myrtille.Web
 
                     foreach (var webSocket in WebSockets)
                     {
-                        webSocket.ProcessImage(image);
+                        webSocket.SendImage(image);
                     }
                 }
 
@@ -790,7 +824,7 @@ namespace Myrtille.Web
             {
                 foreach (var webSocket in WebSockets)
                 {
-                    webSocket.Send(string.Concat(message.Prefix, message.Text));
+                    webSocket.SendMessage(message);
                 }
             }
 
@@ -920,13 +954,20 @@ namespace Myrtille.Web
 
         #endregion
 
+        #region Clipboard
+
+        // the clipboard must be limited in size or otherwise create too much network traffic and slowness; 1MB is usually enough for most copy/paste actions
+        private const int _clipboardMaxLength = 1048576;
+
+        #endregion
+
         #region Cache
 
         // when using polling (long-polling or xhr only), images or audio must be cached for a delayed retrieval; not applicable for websocket
         private Cache _cache;
 
         // cache lifetime (ms); that is, represents the maximal lag possible for a client, before having to drop some images or audio in order to catch up with the remote session (proceed with caution with these values!)
-        private const int _imageCacheDuration = 1000;
+        private const int _imageCacheDuration = 3000;
         private const int _audioCacheDuration = 2000;
 
         #endregion

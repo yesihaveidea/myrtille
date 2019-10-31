@@ -24,8 +24,7 @@ namespace Myrtille.Web
 {
     public partial class EnterpriseChangePassword : Page
     {
-        private static EnterpriseClient _enterpriseClient = new EnterpriseClient();
-
+        private EnterpriseClient _enterpriseClient = new EnterpriseClient();
        
         /// <summary>
         /// page load (postback data is now available)

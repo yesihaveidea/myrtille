@@ -16,6 +16,8 @@
     limitations under the License.
 */
 
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using System.Xml.XPath;
@@ -130,6 +132,48 @@ namespace Myrtille.Helpers
             }
         }
 
+        public static void CommentNode(
+            XmlDocument document,
+            XmlNode parentNode,
+            XmlNode node)
+        {
+            if (node is XmlComment)
+                return;
+
+            try
+            {
+                var commentContent = node.OuterXml;
+                var commentNode = document.CreateComment(commentContent);
+                parentNode.ReplaceChild(commentNode, node);
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to comment xml node ({0}))", exc);
+                throw;
+            }
+        }
+
+        public static void UncommentNode(
+            XmlDocument document,
+            XmlNode parentNode,
+            XmlNode node)
+        {
+            if (!(node is XmlComment))
+                return;
+
+            try
+            {                
+                var nodeReader = XmlReader.Create(new StringReader(node.Value));
+                var uncommentNode = document.ReadNode(nodeReader);
+                parentNode.ReplaceChild(uncommentNode, node);
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to uncomment xml node ({0}))", exc);
+                throw;
+            }
+        }
+
         public static void CommentConfigKey(
             XmlDocument document,
             XmlNode parentNode,
@@ -155,9 +199,7 @@ namespace Myrtille.Helpers
 
                 if (theNode != null)
                 {
-                    var commentContent = theNode.OuterXml;
-                    var commentNode = document.CreateComment(commentContent);
-                    parentNode.ReplaceChild(commentNode, theNode);
+                    CommentNode(document, parentNode, theNode);
                 }
             }
         }
@@ -185,9 +227,7 @@ namespace Myrtille.Helpers
 
                 if (theNode != null)
                 {
-                    var nodeReader = XmlReader.Create(new StringReader(theNode.Value));
-                    var uncommentedNode = document.ReadNode(nodeReader);
-                    parentNode.ReplaceChild(uncommentedNode, theNode);
+                    UncommentNode(document, parentNode, theNode);
                 }
             }
         }

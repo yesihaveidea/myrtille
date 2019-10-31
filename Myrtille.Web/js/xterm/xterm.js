@@ -3342,7 +3342,7 @@ var Terminal = (function (_super) {
     __extends(Terminal, _super);
     // <Myrtille>
     //function Terminal(options) {
-    function Terminal(config, dialog, display, network, user, options) {
+    function Terminal(base, config, dialog, display, network, user, options) {
     // </Myrtille>
         if (options === void 0) { options = {}; }
         var _this = _super.call(this) || this;
@@ -3350,7 +3350,7 @@ var Terminal = (function (_super) {
         _this.options = Clone_1.clone(options);
         // <Myrtille>
         //_this._setup();
-        _this._setup(config, dialog, display, network, user);
+        _this._setup(base, config, dialog, display, network, user);
         // </Myrtille>
         return _this;
     }
@@ -3370,7 +3370,8 @@ var Terminal = (function (_super) {
     };
     // <Myrtille>
     //Terminal.prototype._setup = function () {
-    Terminal.prototype._setup = function (config, dialog, display, network, user) {
+    Terminal.prototype._setup = function (base, config, dialog, display, network, user) {
+        this.base = base;
         this.config = config;
         this.dialog = dialog;
         this.display = display;
@@ -4706,7 +4707,7 @@ var Terminal = (function (_super) {
         // <Myrtille>
         this.user.triggerActivity();
         //this.dialog.showDebug('terminal read: ' + data);
-        var keyEvent = this.network.getCommandEnum().SEND_KEY_UNICODE.text + data;
+        var keyEvent = this.base.getCommandEnum().SEND_KEY_UNICODE.text + data;
         this.network.processUserEvent('keyboard', keyEvent);
         // </Myrtille>
     };

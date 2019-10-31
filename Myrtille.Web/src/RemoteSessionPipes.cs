@@ -48,12 +48,6 @@ namespace Myrtille.Web
         // each audio block is 32768 bytes (32 kb); the audio buffer is up to 6 blocks
         private const int audioBufferSize = 196608;
 
-        public delegate void ProcessUpdatesPipeMessageDelegate(byte[] msg);
-        public ProcessUpdatesPipeMessageDelegate ProcessUpdatesPipeMessage { get; set; }
-
-        public delegate void ProcessAudioPipeMessageDelegate(byte[] msg);
-        public ProcessAudioPipeMessageDelegate ProcessAudioPipeMessage { get; set; }
-
         public RemoteSessionPipes(RemoteSession remoteSession)
         {
             RemoteSession = remoteSession;
@@ -204,12 +198,14 @@ namespace Myrtille.Web
         {
             try
             {
+                byte[] data;
+
                 while (UpdatesPipe != null && UpdatesPipe.IsConnected)
                 {
-                    var msg = PipeHelper.ReadPipeMessage(UpdatesPipe, "remotesession_" + RemoteSession.Id + "_updates");
-                    if (msg != null && msg.Length > 0)
+                    data = PipeHelper.ReadPipeData(UpdatesPipe, "remotesession_" + RemoteSession.Id + "_updates");
+                    if (data != null && data.Length > 0)
                     {
-                        ProcessUpdatesPipeMessage(msg);
+                        RemoteSession.Manager.ProcessUpdatesPipeData(data);
                     }
                 }
             }
@@ -226,12 +222,14 @@ namespace Myrtille.Web
         {
             try
             {
+                byte[] data;
+
                 while (AudioPipe != null && AudioPipe.IsConnected)
                 {
-                    var msg = PipeHelper.ReadPipeMessage(AudioPipe, "remotesession_" + RemoteSession.Id + "_audio", false, audioBufferSize);
-                    if (msg != null && msg.Length > 0)
+                    data = PipeHelper.ReadPipeData(AudioPipe, "remotesession_" + RemoteSession.Id + "_audio", false, audioBufferSize);
+                    if (data != null && data.Length > 0)
                     {
-                        ProcessAudioPipeMessage(msg);
+                        RemoteSession.Manager.ProcessAudioPipeData(data);
                     }
                 }
             }

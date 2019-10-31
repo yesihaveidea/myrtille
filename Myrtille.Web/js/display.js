@@ -20,7 +20,7 @@
 /*** Display                                                                                                                                                                                       ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function Display(config, dialog)
+function Display(base, config, dialog)
 {
     // display div
     var displayDiv = document.getElementById('displayDiv');
@@ -94,14 +94,14 @@ function Display(config, dialog)
                 // canvas support will be checked on init
                 if (config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
                 {
-                    canvas = new Canvas(config, dialog, this);
+                    canvas = new Canvas(base, config, dialog, this);
                     canvas.init();
                 }
 
                 // if not using canvas, use divs
                 if (config.getDisplayMode() == config.getDisplayModeEnum().DIV)
                 {
-                    divs = new Divs(config, dialog, this);
+                    divs = new Divs(base, config, dialog, this);
                     divs.init();
                 }
 
@@ -147,7 +147,7 @@ function Display(config, dialog)
             else
             {
                 // ssh uses xtermjs within a div, regardless of browser compatibility
-                terminalDiv = new TerminalDiv(config, dialog, this);
+                terminalDiv = new TerminalDiv(base, config, dialog, this);
             }
         }
         catch (exc)
@@ -358,7 +358,7 @@ function Display(config, dialog)
             // mouse cursor image
             if (format == 'cur')
             {
-                this.setMouseCursor(idx, config.getImageMode() != config.getImageModeEnum().BINARY ? data : this.bytesToBase64(data), posX, posY);
+                this.setMouseCursor(idx, config.getImageMode() != config.getImageModeEnum().BINARY ? data : bytesToBase64(data), posX, posY);
             }
             // region or fullscreen image
             else
@@ -371,7 +371,7 @@ function Display(config, dialog)
                 // divs
                 else
                 {
-                    divs.addImage(idx, posX, posY, width, height, format, quality, fullscreen, config.getImageMode() != config.getImageModeEnum().BINARY ? data : this.bytesToBase64(data));
+                    divs.addImage(idx, posX, posY, width, height, format, quality, fullscreen, config.getImageMode() != config.getImageModeEnum().BINARY ? data : bytesToBase64(data));
                 }
 
                 // reset or increment image counter
@@ -419,18 +419,5 @@ function Display(config, dialog)
             case 3:
                 return 'webp';
         }
-    };
-
-    this.bytesToBase64 = function(bytes)
-    {
-        var str = '';
-        var arr = new Uint8Array(bytes);
-
-        for (var i = 0; i < bytes.byteLength; i++)
-        {
-            str += String.fromCharCode(arr[i]);
-        }
-
-        return window.btoa(str);
     };
 }

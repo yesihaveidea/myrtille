@@ -56,10 +56,12 @@
     <Compile Include="Enums\RemoteSessionState.cs" />
     <Compile Include="Enums\SecurityProtocol.cs" />
     <Compile Include="ICaptureService.cs" />
+    <Compile Include="IDisconnectionService.cs" />
     <Compile Include="IConnectionService.cs" />
     <Compile Include="IEnterpriseService.cs" />
     <Compile Include="IFileStorage.cs" />
     <Compile Include="IMFAAuthentication.cs" />
+    <Compile Include="IApplicationPoolService.cs" />
     <Compile Include="IPrinterService.cs" />
     <Compile Include="IRemoteSessionProcess.cs" />
     <Compile Include="ISharingService.cs" />

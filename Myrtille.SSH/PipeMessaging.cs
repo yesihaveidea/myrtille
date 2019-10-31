@@ -81,7 +81,7 @@ namespace Myrtille.SSH
         {
             while (_inputsPipe != null && _inputsPipe.IsConnected)
             {
-                var msg = PipeHelper.ReadPipeMessage(_inputsPipe, "remotesession_" + _remotesessionID + "_inputs", false);
+                var msg = PipeHelper.ReadPipeData(_inputsPipe, "remotesession_" + _remotesessionID + "_inputs", false);
                 if (msg != null && msg.Length > 0)
                 {
                     ProcessInputsPipeMessage(msg);
@@ -103,10 +103,11 @@ namespace Myrtille.SSH
 
         public void SendUpdatesPipeMessage(string msg)
         {
-            PipeHelper.WritePipeMessage(
+            PipeHelper.WritePipeData(
                 _updatesPipe,
                 "remotesession_" + _remotesessionID + "_updates",
-                msg);
+                msg,
+                false);
         }
 
         private void ClosePipe(string pipeName, ref NamedPipeClientStream pipe)

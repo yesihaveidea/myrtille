@@ -20,7 +20,7 @@
 /*** User                                                                                                                                                                                          ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function User(config, dialog, display, network)
+function User(base, config, dialog, display, network)
 {
     // adaptive fullscreen update
     var adaptiveFullscreenTimeout = null;
@@ -87,17 +87,20 @@ function User(config, dialog, display, network)
                 // responsive display
                 eventListener('resize', function() { browserResize(); });
 
-                keyboard = new Keyboard(config, dialog, display, network, this);
+                keyboard = new Keyboard(base, config, dialog, display, network, this);
                 keyboard.init();
 
-                mouse = new Mouse(config, dialog, display, network, this);
+                mouse = new Mouse(base, config, dialog, display, network, this);
                 mouse.init();
 
                 // even if possible to detect if the device has touchscreen capabilities, it would only be an assumption; so, implementing it by default, alongside with mouse...
                 // that's anyway the right thing to do, as a device can have both mouse and touchscreen
                 // http://www.stucox.com/blog/you-cant-detect-a-touchscreen/
-                touchscreen = new Touchscreen(config, dialog, display, network, this);
+                touchscreen = new Touchscreen(base, config, dialog, display, network, this);
                 touchscreen.init();
+
+                // clipboard synchronization on window/tab focus
+                eventListener('focus', function() { base.readClipboard(false); });
             }
             else
             {
@@ -172,53 +175,20 @@ function User(config, dialog, display, network)
 
         try
         {
+            // disable the toolbar while resizing
+            disableToolbar();
+
             var width = display.getBrowserWidth();
             var height = display.getBrowserHeight();
 
-            // if scaling display and using a canvas, resize it
-            if (config.getBrowserResize() == config.getBrowserResizeEnum().SCALE && config.getDisplayMode() == config.getDisplayModeEnum().CANVAS)
+            // if using myrtille within an iframe, have the parent window to hide the reconnection process (logon sequence)
+            if (config.getBrowserResize() == config.getBrowserResizeEnum().RECONNECT && config.getDisplayMode() == config.getDisplayModeEnum().CANVAS && parent != null && window.name != '')
             {
-                // in order to avoid flicker when resizing, creates a temporary canvas (same size as the actual canvas)
-                var tempCanvas = document.createElement('canvas');
-                tempCanvas.width = width;
-                tempCanvas.height = height;
-
-                // draw the temporary canvas over the actual canvas
-                var tempContext = tempCanvas.getContext('2d');
-                tempContext.drawImage(display.getCanvas().getCanvasObject(), 0, 0);
-
-                // resize the actual canvas
-                display.getCanvas().getCanvasObject().width = width;
-                display.getCanvas().getCanvasObject().height = height;
-
-                // restore the actual canvas context properties
-                if (config.getImageDebugEnabled())
-                {
-                    display.getCanvas().getCanvasContext().lineWidth = 1;
-                    display.getCanvas().getCanvasContext().strokeStyle = 'red';
-                }
-
-                // switch the canvas
-                display.getCanvas().getCanvasContext().drawImage(tempCanvas, 0, 0);
+                parent.hideIframeContent(window.name, width, height);
             }
-
-            var commands = new Array();
 
             // send the new browser resolution
-            commands.push(network.getCommandEnum().SEND_BROWSER_RESIZE.text + width + 'x' + height);
-
-            if (config.getBrowserResize() == config.getBrowserResizeEnum().SCALE)
-            {
-                //dialog.showDebug('scale fullscreen update');
-                commands.push(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'scale');
-            }
-            else
-            {
-                // disable the toolbar while reconnecting
-                disableToolbar();
-            }
-
-            network.send(commands.toString());
+            network.send(base.getCommandEnum().SEND_BROWSER_RESIZE.text + width + 'x' + height);
         }
         catch (exc)
         {
@@ -244,7 +214,7 @@ function User(config, dialog, display, network)
             adaptiveFullscreenTimeout = window.setTimeout(function()
             {
                 //dialog.showDebug('adaptive fullscreen update');
-                network.send(network.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'adaptive');
+                network.send(base.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'adaptive');
             },
             config.getAdaptiveFullscreenTimeout());
         }

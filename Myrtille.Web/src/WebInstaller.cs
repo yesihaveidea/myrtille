@@ -21,6 +21,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Configuration.Install;
 using System.IO;
+using System.Net;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
@@ -115,7 +116,7 @@ namespace Myrtille.Web
                 if (!string.IsNullOrEmpty(Context.Parameters["SSLCERT"]))
                 {
                     // create a self signed certificate
-                    var cert = CertificateHelper.CreateSelfSignedCertificate(Environment.MachineName, "Myrtille self-signed certificate");
+                    var cert = CertificateHelper.CreateSelfSignedCertificate(Dns.GetHostEntry(Environment.MachineName).HostName, "Myrtille self-signed certificate");
 
                     // bind it to the default website
                     IISHelper.BindCertificate(cert);
@@ -128,8 +129,10 @@ namespace Myrtille.Web
                     XmlTools.WriteConfigKey(appSettings, "AllowPrintDownload", (!string.IsNullOrEmpty(Context.Parameters["PDFPRINTER"])).ToString().ToLower());
                 }
 
-                // connection api
-                if (!string.IsNullOrEmpty(Context.Parameters["CONNECTIONAPI"]))
+                // http session state
+                // the default mode into web.config is cookieless="UseUri"
+                // if this should change, reverse the code below
+                if (string.IsNullOrEmpty(Context.Parameters["SESSIONURL"]))
                 {
                     var systemWeb = XmlTools.GetNode(navigator, "/configuration/system.web");
                     if (systemWeb != null)
@@ -139,33 +142,30 @@ namespace Myrtille.Web
 
                         foreach (XmlNode node in systemWeb.ChildNodes)
                         {
-                            // session state
-                            // the connection api is likely to be used with iframes
-                            // as for multiple connections/tabs, Myrtille must be configured in cookieless mode
-                            if (node is XmlComment && node.Value.StartsWith("<sessionState") && node.Value.Contains("cookieless=\"UseUri\""))
+                            // http session id passed into url
+                            // allows multiple connections/tabs or iframes
+                            if (node is XmlElement && node.Name == "sessionState" && node.OuterXml.Contains("cookieless=\"UseUri\""))
                             {
                                 sessionStateUseUri = node;
                             }
-                            else if (node.Name == "sessionState" && node.OuterXml.Contains("cookieless=\"UseCookies\""))
+                            // http session id stored into a cookie
+                            // same connection for all tabs because a cookie is set for a domain
+                            else if (node is XmlComment && node.Value.StartsWith("<sessionState") && node.Value.Contains("cookieless=\"UseCookies\""))
                             {
                                 sessionStateUseCookies = node;
                             }
                         }
 
-                        // uncomment cookieless="UseUri"
+                        // comment cookieless="UseUri"
                         if (sessionStateUseUri != null)
                         {
-                            var nodeReader = XmlReader.Create(new StringReader(sessionStateUseUri.Value));
-                            var uncommentedNode = config.ReadNode(nodeReader);
-                            systemWeb.ReplaceChild(uncommentedNode, sessionStateUseUri);
+                            XmlTools.CommentNode(config, systemWeb, sessionStateUseUri);
                         }
 
-                        // comment cookieless="UseCookies"
+                        // uncomment cookieless="UseCookies"
                         if (sessionStateUseCookies != null)
                         {
-                            var commentContent = sessionStateUseCookies.OuterXml;
-                            var commentedNode = config.CreateComment(commentContent);
-                            systemWeb.ReplaceChild(commentedNode, sessionStateUseCookies);
+                            XmlTools.UncommentNode(config, systemWeb, sessionStateUseCookies);
                         }
                     }
                 }
@@ -235,7 +235,7 @@ namespace Myrtille.Web
                 // retrieve the myrtille self signed certificate, if exists
                 var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
                 store.Open(OpenFlags.ReadWrite);
-                var certs = store.Certificates.Find(X509FindType.FindByIssuerName, Environment.MachineName, false);
+                var certs = store.Certificates.Find(X509FindType.FindByIssuerName, Dns.GetHostEntry(Environment.MachineName).HostName, false);
                 if (certs.Count > 0)
                 {
                     foreach (var cert in certs)

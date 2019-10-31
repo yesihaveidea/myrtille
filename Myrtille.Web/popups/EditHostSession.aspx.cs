@@ -25,7 +25,7 @@ namespace Myrtille.Web
 {
     public partial class EditHostSession : Page
     {
-        private static EnterpriseClient _enterpriseClient = new EnterpriseClient();
+        private EnterpriseClient _enterpriseClient = new EnterpriseClient();
         private EnterpriseSession _enterpriseSession;
         private long _hostId = 0;
 

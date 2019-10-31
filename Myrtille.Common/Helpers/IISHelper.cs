@@ -176,6 +176,31 @@ namespace Myrtille.Helpers
             }
         }
 
+        /// <summary>
+        /// recycle a IIS application pool
+        /// </summary>
+        /// <param name="poolName"></param>
+        public static void RecycleIISApplicationPool(
+            string poolName)
+        {
+            Trace.TraceInformation("Recycling IIS application pool {0}", poolName);
+
+            try
+            {
+                var serverManager = new ServerManager();
+                var pool = serverManager.ApplicationPools[poolName];
+                if (pool != null)
+                {
+                    pool.Recycle();
+                }
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to recycle IIS application pool {0} ({1})", poolName, exc);
+                throw;
+            }
+        }
+
         #endregion
 
         // the below methods use the default web site; extend if needed

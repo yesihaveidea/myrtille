@@ -1,6 +1,42 @@
-﻿2019-09-23 Version 2.5.5 (patched)
+﻿2019-10-30 Version 2.7.0 (stable)
 	* HOTFIX * fixed a critical issue with FreeRDP (exit code 131085) when using an RD license server configured in "per device" mode, past the 120 days of the RDS grace period
 	updated readme and documentation about the RDS role
+	the browser "heartbeat" (used to detect if the browser window/tab was closed) is now on a different timer than the periodical fullscreen update (config.js; default 10 secs)
+	disabled the alt key capture because it may interfere with the browser alt+key menu
+	keys following the alt+gr modifier are now sent as scancode instead of unicode
+	ability to configure the login url (by default the myrtille login page; web.config)
+	updated the installer for a better display of prerequisites
+	added the option into the installer to choose either to pass the http session ID into url or store it into the default "ASP.NET_SessionId" cookie (the former allows multiple connections/tabs or iframes)
+	the connection API is now out of beta and installed by default (full auto-connect/start program from url syntax is still available)
+	the scale feature now keeps the aspect ratio on browser resize
+	fixed a display refresh issue under chrome + https if the clipboard is empty
+	increased the image cache duration (1 sec -> 3 secs)
+	halved the input buffer duration (based on the roundtrip duration)
+	updated display tweaking
+	improved cleanup on session disconnect into wfreerdp to prevent memory leaks with GDI+
+	improved cleanup on session disconnect into Myrtille to prevent memory leaks on the application pool
+	removed any unnecessary memory allocation and released any disposable object on the application pool
+	the application pool is now automatically recycled when there is no active remote session (configurable into web.config)
+	fixed an issue related to the disconnect callback (which was sometimes not received by the gateway due a WCF deadlock)
+	scripts and styles now have computed hashes to prevent browser caching (in case content is changed); they could also be minified, as needed (see comments in BundleConfig.cs)
+	re-enabled multiple connections/tabs (web.config, read comments about security)
+
+2019-09-02 Version 2.6.0 (stable)
+	resynced FreeRDP (2.0.0-dev5)
+	added a REST API to disconnect a given remote session or all of them (on a gateway)
+	fixed an issue with some network or domain configuration that could delay the start of a connection
+	support of Connection Broker database, in High Availability mode
+	support of RDS API
+	configurable drain of disconnected sessions
+	seamless clipboard synchronization, using the async clipboard API (requires Chrome and HTTPS) with fallback to standard web API (for other browsers and HTTP)
+	now hiding iframe content on browser resize
+	various mockup improvements
+	get focus back on main window after a popup is closed
+	screenshot is now returned as HttpResponseMessage, byte array content
+	clipboard virtual channel comments and check
+	the self-signed certificate (installed by myrtille on install) is now issued with the machine FQDN to prevent ERR_CERT_AUTHORITY_INVALID (Subject Alternative Name Missing) in recent Chrome releases
+	now using a web worker for the periodical fullscreen updates to keep them going even if the main thread is paused (due to inactive window/tab, after focus lost for example)
+	some refactoring
 
 2019-06-01 Version 2.5.5 (stable)
 	added audio support (MP3 (default)/WAV, config.js)

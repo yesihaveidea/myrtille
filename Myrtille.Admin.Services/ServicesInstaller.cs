@@ -53,7 +53,7 @@ namespace Myrtille.Admin.Services
             this.serviceInstaller = new ServiceInstaller();
             this.serviceInstaller.ServiceName = "Myrtille.Admin.Services";
             this.serviceInstaller.Description = "Myrtille Admin API";
-            this.serviceInstaller.StartType = ServiceStartMode.Manual;
+            this.serviceInstaller.StartType = ServiceStartMode.Automatic;
 
             this.Installers.AddRange(new Installer[] {
                 this.serviceProcessInstaller,
@@ -156,10 +156,6 @@ namespace Myrtille.Admin.Services
 
         private void StartService()
         {
-            // the connection api wasn't requested
-            if (string.IsNullOrEmpty(Context.Parameters["CONNECTIONAPI"]))
-                return;
-
             Context.LogMessage("Starting Myrtille.Admin.Services");
 
             // try to start the service
@@ -193,10 +189,6 @@ namespace Myrtille.Admin.Services
 
         private void StopService()
         {
-            // the connection api wasn't requested
-            if (string.IsNullOrEmpty(Context.Parameters["CONNECTIONAPI"]))
-                return;
-
             Context.LogMessage("Stopping Myrtille.Admin.Services");
 
             // if the service is running while uninstall is going on, the user is asked wether to stop it or not

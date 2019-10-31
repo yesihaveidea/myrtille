@@ -20,7 +20,7 @@
 /*** Network                                                                                                                                                                                       ***/
 /*****************************************************************************************************************************************************************************************************/
 
-function Network(config, dialog, display)
+function Network(base, config, dialog, display)
 {
     // xmlhttp
     var xmlhttp = null;
@@ -39,6 +39,10 @@ function Network(config, dialog, display)
 
     // periodical fullscreen update
     var periodicalFullscreenInterval = null;
+
+    // browser pulse
+    var browserPulseInterval = null;
+    var browserPulseWorker = null;
 
     // average roundtrip duration
     var roundtripDurationAvg = null;
@@ -62,61 +66,6 @@ function Network(config, dialog, display)
     var originalImageQuality = config.getImageQuality();
     var originalImageQuantity = config.getImageQuantity();
 
-    /*
-    prefixes (3 chars) are used to serialize commands with strings instead of numbers
-    they make it easier to read log traces to find out which commands are issued
-    they must match the prefixes used server side
-    */
-    var commandEnum =
-    {
-        // connection
-        SEND_SERVER_ADDRESS: { value: 0, text: 'SRV' },
-        SEND_VM_GUID: { value: 1, text: 'VMG' },
-        SEND_USER_DOMAIN: { value: 2, text: 'DOM' },
-        SEND_USER_NAME: { value: 3, text: 'USR' },
-        SEND_USER_PASSWORD: { value: 4, text: 'PWD' },
-        SEND_START_PROGRAM: { value: 5, text: 'PRG' },
-        CONNECT_CLIENT: { value: 6, text: 'CON' },
-
-        // browser
-        SEND_BROWSER_RESIZE: { value: 7, text: 'RSZ' },
-
-        // keyboard
-        SEND_KEY_UNICODE: { value: 8, text: 'KUC' },
-        SEND_KEY_SCANCODE: { value: 9, text: 'KSC' },
-
-        // mouse
-        SEND_MOUSE_MOVE: { value: 10, text: 'MMO' },
-        SEND_MOUSE_LEFT_BUTTON: { value: 11, text: 'MLB' },
-        SEND_MOUSE_MIDDLE_BUTTON: { value: 12, text: 'MMB' },
-        SEND_MOUSE_RIGHT_BUTTON: { value: 13, text: 'MRB' },
-        SEND_MOUSE_WHEEL_UP: { value: 14, text: 'MWU' },
-        SEND_MOUSE_WHEEL_DOWN: { value: 15, text: 'MWD' },
-
-        // control
-        SET_SCALE_DISPLAY: { value: 16, text: 'SCA' },
-        SET_RECONNECT_SESSION: { value: 17, text: 'RCN' },
-        SET_IMAGE_ENCODING: { value: 18, text: 'ECD' },
-        SET_IMAGE_QUALITY: { value: 19, text: 'QLT' },
-        SET_IMAGE_QUANTITY: { value: 20, text: 'QNT' },
-        SET_AUDIO_FORMAT: { value: 21, text: 'AUD' },
-        SET_AUDIO_BITRATE: { value: 22, text: 'BIT' },
-        SET_SCREENSHOT_CONFIG: { value: 23, text: 'SSC' },
-        START_TAKING_SCREENSHOTS: { value: 24, text: 'SS1' },
-        STOP_TAKING_SCREENSHOTS: { value: 25, text: 'SS0' },
-        TAKE_SCREENSHOT: { value: 26, text: 'SCN' },
-        REQUEST_FULLSCREEN_UPDATE: { value: 27, text: 'FSU' },
-        REQUEST_REMOTE_CLIPBOARD: { value: 28, text: 'CLP' },
-        CLOSE_CLIENT: { value: 29, text: 'CLO' }
-    };
-
-    if (Object.freeze)
-    {
-        Object.freeze(commandEnum);
-    }
-
-    this.getCommandEnum = function() { return commandEnum; };
-
     this.init = function()
     {
         try
@@ -128,7 +77,7 @@ function Network(config, dialog, display)
                 ROUNDTRIP
                 display images from raw data
                 the simplest mode. each image is retrieved using a server call
-                pros: reliable (works in all browsers); cons: slower in case of high latency connection (due to the roundrip time)
+                pros: reliable (works in all browsers); cons: slower in case of high latency connection (due to the roundtrip time)
 
                 BASE64
                 display images from base64 data
@@ -189,7 +138,7 @@ function Network(config, dialog, display)
 
             XHR
             XmlHttpRequest is the basic requirement mode. user inputs and display updates are sent/received through the same request/response
-            pros: reliable; cons: slower in case of high latency connection (due to the roundrip time and many requests)
+            pros: reliable; cons: slower in case of high latency connection (due to the roundtrip time and many requests)
 
             LONGPOLLING
             long-polling is a combination of xhr (to send user inputs) and long lived connection (to receive display updates)
@@ -224,14 +173,14 @@ function Network(config, dialog, display)
             }
 
             // xhr support is the minimal network requirement
-            xmlhttp = new XmlHttp(config, dialog, display, this);
+            xmlhttp = new XmlHttp(base, config, dialog, display, this);
             xmlhttp.init();
 
             // use websocket if enabled
             if (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET)
             {
                 // display and notifications
-                websocket = new Websocket(config, dialog, display, this);
+                websocket = new Websocket(base, config, dialog, display, this);
                 websocket.init();
             }
 
@@ -239,7 +188,7 @@ function Network(config, dialog, display)
             if (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && config.getHostType() == config.getHostTypeEnum().RDP)
             {
                 // audio
-                audioWebsocket = new AudioWebsocket(config, dialog, display, this);
+                audioWebsocket = new AudioWebsocket(base, config, dialog, display, this);
                 audioWebsocket.init();
             }
             else
@@ -262,12 +211,20 @@ function Network(config, dialog, display)
                 // otherwise (xhr only), they are returned within the xhr response
                 if (config.getNetworkMode() == config.getNetworkModeEnum().LONGPOLLING)
                 {
-                    longPolling = new LongPolling(config, dialog, display, this);
+                    longPolling = new LongPolling(base, config, dialog, display, this);
                     longPolling.init();
                 }
 
-                // send settings and request a fullscreen update
-                this.initClient();
+                // if connecting, send any command to the gateway to connect the remote server
+                if (config.getConnectionState() == 'CONNECTING')
+                {
+                    doSend(base.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'initial');
+                }
+                // if connected, send the client settings and request a fullscreen update
+                else if (config.getConnectionState() == 'CONNECTED')
+                {
+                    base.initClient();
+                }
             }
             else
             {
@@ -283,7 +240,7 @@ function Network(config, dialog, display)
             config.setBufferEnabled(config.getBufferEnabled() || config.getNetworkMode() == config.getNetworkModeEnum().XHR);
             if (config.getBufferEnabled())
             {
-                buffer = new Buffer(config, dialog, this);
+                buffer = new Buffer(base, config, dialog, this);
                 buffer.init();
             }
 
@@ -298,9 +255,39 @@ function Network(config, dialog, display)
             periodicalFullscreenInterval = window.setInterval(function()
             {
                 //dialog.showDebug('periodical fullscreen update');
-                doSend(commandEnum.REQUEST_FULLSCREEN_UPDATE.text + 'periodical');
+                doSend(base.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'periodical');
             },
             config.getPeriodicalFullscreenInterval());
+
+            // browser pulse
+            // if possible, have the pulse into a web worker in order to keep it going even if the main thread is paused; this can happen if the window/tab is inactive (focus lost, for example)
+            // this is important because the pulse is used by the gateway to check if the browser and the network connection are alive and disconnect the session otherwise (to free a guest slot, for example)
+            if (window.Worker)
+            {
+                browserPulseWorker = createWorker('function(self)\n' +
+                    '{\n' +
+                    '   browserPulseInterval = setInterval(function()\n' +
+                    '   {\n' +
+                    '    self.postMessage(null);\n' +
+                    '   },\n' +
+                    '   ' + config.getBrowserPulseInterval() + ');\n' +
+                    '}\n');
+
+                browserPulseWorker.onmessage = function(e)
+                {
+                    //dialog.showDebug('browser pulse');
+                    doSend(base.getCommandEnum().SEND_BROWSER_PULSE.text);
+                }
+            }
+            else
+            {
+                browserPulseInterval = window.setInterval(function()
+                {
+                    //dialog.showDebug('browser pulse');
+                    doSend(base.getCommandEnum().SEND_BROWSER_PULSE.text);
+                },
+                config.getBrowserPulseInterval());
+            }
 
             // bandwidth usage per second; if the ratio goes up to 100% or above, tweak down the image quality & quantity to maintain a decent performance level
             if (bandwidthUsageInterval != null)
@@ -343,59 +330,6 @@ function Network(config, dialog, display)
         catch (exc)
         {
             dialog.showDebug('network init error: ' + exc.message);
-            throw exc;
-        }
-    };
-
-    this.initClient = function()
-    {
-        try
-        {
-            var commands = new Array();
-
-            if (config.getHostType() == config.getHostTypeEnum().RDP)
-            {
-                //dialog.showDebug('sending display config');
-                commands.push(commandEnum.SET_IMAGE_ENCODING.text + config.getImageEncoding().value);
-                commands.push(commandEnum.SET_IMAGE_QUALITY.text + config.getImageQuality());
-                commands.push(commandEnum.SET_IMAGE_QUANTITY.text + config.getImageQuantity());
-
-                //dialog.showDebug('sending audio config');
-                commands.push(commandEnum.SET_AUDIO_FORMAT.text + config.getAudioFormat().value);
-                if (config.getAudioFormat() != config.getAudioFormatEnum().NONE)
-                {
-                    commands.push(commandEnum.SET_AUDIO_BITRATE.text + config.getAudioBitrate());
-                }
-
-                // set action on browser resize
-                if (config.getBrowserResize() == null)
-                {
-                    switch (config.getDefaultResize())
-                    {
-                        case config.getBrowserResizeEnum().SCALE:
-                            var width = display.getBrowserWidth();
-                            var height = display.getBrowserHeight();
-                            commands.push(commandEnum.SET_SCALE_DISPLAY.text + width + 'x' + height);
-                            break;
-
-                        case config.getBrowserResizeEnum().RECONNECT:
-                            commands.push(commandEnum.SET_RECONNECT_SESSION.text + 1);
-                            break;
-                   
-                        default:
-                            commands.push(commandEnum.SET_RECONNECT_SESSION.text + 0);
-                    }
-                }
-            }
-
-            //dialog.showDebug('initial fullscreen update');
-            commands.push(commandEnum.REQUEST_FULLSCREEN_UPDATE.text + 'initial');
-
-            doSend(commands.toString());
-        }
-        catch (exc)
-        {
-            dialog.showDebug('network initClient error: ' + exc.message);
             throw exc;
         }
     };
@@ -453,11 +387,11 @@ function Network(config, dialog, display)
                 {
                     if (buffer.getSendEmptyBuffer())
                     {
-                        buffer.setBufferDelay(config.getBufferDelayEmpty() + roundtripDurationAvg);
+                        buffer.setBufferDelay(config.getBufferDelayEmpty() + Math.round(roundtripDurationAvg / 2));
                     }
                     else
                     {
-                        buffer.setBufferDelay(config.getBufferDelayBase() + roundtripDurationAvg);
+                        buffer.setBufferDelay(config.getBufferDelayBase() + Math.round(roundtripDurationAvg / 2));
                     }
                     dialog.showStat(dialog.getShowStatEnum().BUFFER, buffer.getBufferDelay());
                 }
@@ -517,9 +451,7 @@ function Network(config, dialog, display)
             var commands = new Array();
 
             /*
-            small bandwidth = lower quality
-            latency shouldn't affect image quality because each update, whatever its size, will be received within the same delay (so better keep the best quality)
-            for example, if latency = 100ms, both a 10KB and 100KB image will be received in 100ms (given the bandwidth is good enough)
+            small bandwidth = lower quality and quantity
             */
 
             var tweak = false;
@@ -533,6 +465,12 @@ function Network(config, dialog, display)
                     config.setImageQuality(10);
                     tweak = true;
                 }
+
+                if (config.getImageQuantity() != 25)
+                {
+                    config.setImageQuantity(25);
+                    tweak = true;
+                }
             }
             else if (bandwidthUsageRatio >= config.getImageTweakBandwidthLowerThreshold() && bandwidthUsageRatio < config.getImageTweakBandwidthHigherThreshold())
             {
@@ -542,69 +480,36 @@ function Network(config, dialog, display)
                     config.setImageQuality(25);
                     tweak = true;
                 }
-            }
-            else if (config.getImageQuality() != originalImageQuality)
-            {
-                config.setImageEncoding(originalImageEncoding);
-                config.setImageQuality(originalImageQuality);
-                tweak = true;
-            }
 
-            if (tweak)
-            {
-                //dialog.showDebug('tweaking image quality: ' + config.getImageEncoding().text + ', ' + config.getImageQuality());
-                commands.push(commandEnum.SET_IMAGE_ENCODING.text + config.getImageEncoding().value);
-                commands.push(commandEnum.SET_IMAGE_QUALITY.text + config.getImageQuality());
-            }
-
-            /*
-            small bandwidth = lower quantity
-            latency is relevant there because each update, whatever its size, is affected by latency
-            sending many updates may result in an increasing lag, so better reduce their number if the latency goes high
-            for example, if latency = 100ms, 10 images will be received in 10 x 100 = 1000ms (1 sec)
-            this is mitigated when using websockets or long-polling, because the connection remains open, but the latency still applies
-
-            that said, it's also important to preserve the user experience as best as possible
-            dropping some updates may help to restrain the lag but it will also disrupt the display, and the user might think its actions aren't processed (!)
-            therefore, updates should only be dropped if their display rate is significant enough
-            */
-
-            // computed latency and display rate may change outside of this function; use snapshot values
-            var latency = roundtripDurationAvg;
-            var ips = display.getLastImgCountPerSec();
-
-            //dialog.showDebug('latency: ' + latency + ', ips: ' + ips);
-
-            tweak = false;
-
-            if (bandwidthUsageRatio >= config.getImageTweakBandwidthHigherThreshold() ||
-               (latency >= config.getImageTweakLatencyHigherThreshold() && ips >= config.getImageTweakLatencyCountPerSec()))
-            {
-                if (config.getImageQuantity() != 25)
-                {
-                    config.setImageQuantity(25);
-                    tweak = true;
-                }
-            }
-            else if ((bandwidthUsageRatio >= config.getImageTweakBandwidthLowerThreshold() && bandwidthUsageRatio < config.getImageTweakBandwidthHigherThreshold()) ||
-                     (latency >= config.getImageTweakLatencyLowerThreshold() && latency < config.getImageTweakLatencyHigherThreshold() && ips >= config.getImageTweakLatencyCountPerSec()))
-            {
                 if (config.getImageQuantity() != 50)
                 {
                     config.setImageQuantity(50);
                     tweak = true;
                 }
             }
-            else if (config.getImageQuantity() != originalImageQuantity)
+            else
             {
-                config.setImageQuantity(originalImageQuantity);
-                tweak = true;
+                if (config.getImageQuality() != originalImageQuality)
+                {
+                    config.setImageEncoding(originalImageEncoding);
+                    config.setImageQuality(originalImageQuality);
+                    tweak = true;
+                }
+
+                if (config.getImageQuantity() != originalImageQuantity)
+                {
+                    config.setImageQuantity(originalImageQuantity);
+                    tweak = true;
+                }
             }
 
             if (tweak)
             {
+                //dialog.showDebug('tweaking image quality: ' + config.getImageEncoding().text + ', ' + config.getImageQuality());
+                commands.push(base.getCommandEnum().SET_IMAGE_ENCODING.text + config.getImageEncoding().value);
+                commands.push(base.getCommandEnum().SET_IMAGE_QUALITY.text + config.getImageQuality());
                 //dialog.showDebug('tweaking image quantity: ' + config.getImageQuantity());
-                commands.push(commandEnum.SET_IMAGE_QUANTITY.text + config.getImageQuantity());
+                commands.push(base.getCommandEnum().SET_IMAGE_QUANTITY.text + config.getImageQuantity());
             }
 
             if (commands.length > 0)

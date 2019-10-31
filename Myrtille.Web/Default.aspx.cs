@@ -36,9 +36,9 @@ namespace Myrtille.Web
 {
     public partial class Default : Page
     {
-        private static MFAAuthenticationClient _mfaAuthClient =  new MFAAuthenticationClient();
-        private static EnterpriseClient _enterpriseClient = new EnterpriseClient();
-        private static ConnectionClient _connectionClient = new ConnectionClient(Settings.Default.ConnectionServiceUrl);
+        private MFAAuthenticationClient _mfaAuthClient =  new MFAAuthenticationClient();
+        private EnterpriseClient _enterpriseClient = new EnterpriseClient();
+        private ConnectionClient _connectionClient = new ConnectionClient(Settings.Default.ConnectionServiceUrl);
 
         private bool _allowRemoteClipboard;
         private bool _allowFileTransfer;
@@ -48,7 +48,8 @@ namespace Myrtille.Web
         private bool _clientIPTracking;
         private bool _toolbarEnabled;
         private bool _loginEnabled;
-        private bool _cookielessSession;
+        private string _loginUrl;
+        private bool _httpSessionUseUri;
 
         private bool _authorizedRequest = true;
 
@@ -106,15 +107,21 @@ namespace Myrtille.Web
                 _toolbarEnabled = true;
             }
 
-            // login screen or url
+            // connect from a login page or url
             if (!bool.TryParse(ConfigurationManager.AppSettings["LoginEnabled"], out _loginEnabled))
             {
                 _loginEnabled = true;
             }
 
+            // if enabled, url of the login page
+            if (_loginEnabled)
+            {
+                _loginUrl = ConfigurationManager.AppSettings["LoginUrl"];
+            }
+
             // cookieless session
             var sessionStateSection = (SessionStateSection)ConfigurationManager.GetSection("system.web/sessionState");
-            _cookielessSession = sessionStateSection.Cookieless == HttpCookieMode.UseUri;
+            _httpSessionUseUri = sessionStateSection.Cookieless == HttpCookieMode.UseUri;
         }
 
         /// <summary>
@@ -144,7 +151,7 @@ namespace Myrtille.Web
             }
 
             // session spoofing protection
-            if (_cookielessSession)
+            if (_httpSessionUseUri)
             {
                 if (Request.Cookies["clientKey"] == null)
                 {
@@ -218,16 +225,24 @@ namespace Myrtille.Web
 
                     if (RemoteSession.State == RemoteSessionState.Disconnected)
                     {
-                        // if connecting from login screen or url, show any connection failure into a dialog box
+                        // if connecting from login page or url, show any connection failure into a dialog box
                         // otherwise, this is delegated to the connection API used and its related UI
                         if (_loginEnabled)
                         {
                             // handle connection failure
-                            ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), string.Format("handleRemoteSessionExit({0});", RemoteSession.ExitCode), true);
+                            var script = string.Format("handleRemoteSessionExit({0});", RemoteSession.ExitCode);
+
+                            // redirect to login page
+                            if (!string.IsNullOrEmpty(_loginUrl))
+                            {
+                                script += string.Format("window.location.href = '{0}';", _loginUrl);
+                            }
+
+                            ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
                         }
 
                         // cleanup
-                        Session[HttpSessionStateVariables.RemoteSession.ToString()] = null;
+                        Session.Remove(HttpSessionStateVariables.RemoteSession.ToString());
                         RemoteSession = null;
                     }
                 }
@@ -261,7 +276,7 @@ namespace Myrtille.Web
                 }
             }
 
-            if (_cookielessSession)
+            if (_httpSessionUseUri)
             {
                 // if running myrtille into an iframe, the iframe url is registered (into a cookie) after the remote session is connected
                 // this is necessary to prevent a new http session from being generated for the iframe if the page is reloaded, due to the missing http session id into the iframe url (!)
@@ -438,7 +453,7 @@ namespace Myrtille.Web
                     if (_enterpriseSession == null || Request["SI"] != null)
                     {
                         // session fixation protection
-                        if (_cookielessSession)
+                        if (_httpSessionUseUri)
                         {
                             // generate a new http session id
                             RemoteSession.OwnerSessionID = HttpSessionHelper.RegenerateSessionId();
@@ -689,7 +704,7 @@ namespace Myrtille.Web
                 Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = _enterpriseSession;
 
                 // session fixation protection
-                if (_cookielessSession)
+                if (_httpSessionUseUri)
                 {
                     // generate a new http session id
                     HttpSessionHelper.RegenerateSessionId();
@@ -729,7 +744,7 @@ namespace Myrtille.Web
                 Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = _enterpriseSession;
 
                 // session fixation protection
-                if (_cookielessSession)
+                if (_httpSessionUseUri)
                 {
                     // generate a new http session id
                     HttpSessionHelper.RegenerateSessionId();

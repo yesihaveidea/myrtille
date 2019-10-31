@@ -67,5 +67,40 @@ namespace Myrtille.Helpers
                 return null;
             }
         }
+
+        public static void SetProcessWorkingSet(
+            int minSize,
+            int maxSize)
+        {
+            try
+            {
+                var process = Process.GetCurrentProcess();
+                process.MinWorkingSet = (IntPtr)minSize;
+                process.MaxWorkingSet = (IntPtr)maxSize;
+
+                Trace.TraceInformation("Set process working set (min size: " + process.MinWorkingSet.ToString() + " bytes, max size: " + process.MaxWorkingSet.ToString() + " bytes)");
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to set the process working set ({0})", exc);
+            }
+        }
+
+        public static void MinimizeProcessWorkingSet()
+        {
+            try
+            {
+                var process = Process.GetCurrentProcess();
+                process.MaxWorkingSet = process.MaxWorkingSet;
+
+                Trace.TraceInformation("Minimize process working set (current size: " + process.WorkingSet64.ToString() + " bytes)");
+
+                process.Dispose();
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to minimize the process working set ({0})", exc);
+            }
+        }
     }
 }

@@ -35,5 +35,6 @@ namespace Myrtille.Services.Contracts
         /// executable path, name and parameters (double quotes must be escaped) (optional)
         /// </summary>
         public string StartProgram { get; set; }
+        public string GatewayUrl { get; set; }
     }
 }

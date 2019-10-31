@@ -32,7 +32,8 @@ namespace Myrtille.Helpers
         /// <param name="pipe"></param>
         /// <param name="pipeName"></param>
         /// <param name="sizeHeader"></param>
-        public static byte[] ReadPipeMessage(
+        /// <param name="bufferSize"></param>
+        public static byte[] ReadPipeData(
             PipeStream pipe,
             string pipeName,
             bool sizeHeader = true,
@@ -50,50 +51,54 @@ namespace Myrtille.Helpers
                 return null;
             }
 
+            byte[] buffer;
+
             try
             {
                 if (pipe.CanRead)
                 {
-                    using (var memoryStream = new MemoryStream())
+                    // byte mode
+                    if (pipe.TransmissionMode == PipeTransmissionMode.Byte)
                     {
-                        byte[] buffer;
-                        var bytesRead = 0;
-
-                        if (pipe.TransmissionMode == PipeTransmissionMode.Byte)
+                        // the first 4 bytes (int32) contains the size of the data buffer
+                        if (sizeHeader)
                         {
-                            // the first 4 bytes (int32) contains the size of the data buffer
-                            if (sizeHeader)
+                            int bytesRead;
+                            var bytesToRead = 4;
+                            buffer = new byte[bytesToRead];
+                            if ((bytesRead = pipe.Read(buffer, 0, bytesToRead)) == bytesToRead)
                             {
-                                buffer = new byte[4];
-                                if ((bytesRead = pipe.Read(buffer, 0, 4)) == 4)
+                                bytesToRead = BitConverter.ToInt32(buffer, 0);
+                                buffer = new byte[bytesToRead];
+                                if ((bytesRead = pipe.Read(buffer, 0, bytesToRead)) == bytesToRead)
                                 {
-                                    var size = BitConverter.ToInt32(buffer, 0);
-                                    buffer = new byte[size];
-                                    if ((bytesRead = pipe.Read(buffer, 0, size)) == size)
-                                    {
-                                        memoryStream.Write(buffer, 0, bytesRead);
-                                    }
+                                    return buffer;
                                 }
                             }
-                            else
-                            {
-                                buffer = new byte[bufferSize];
-                                if ((bytesRead = pipe.Read(buffer, 0, buffer.Length)) > 0)
-                                {
-                                    memoryStream.Write(buffer, 0, bytesRead);
-                                }
-                            }
+                            return null;
                         }
                         else
                         {
                             buffer = new byte[bufferSize];
+                            using (var memoryStream = new MemoryStream())
+                            {
+                                memoryStream.Write(buffer, 0, pipe.Read(buffer, 0, bufferSize));
+                                return memoryStream.ToArray();
+                            }
+                        }
+                    }
+                    // message mode
+                    else
+                    {
+                        buffer = new byte[bufferSize];
+                        using (var memoryStream = new MemoryStream())
+                        {
                             do
                             {
-                                memoryStream.Write(buffer, 0, pipe.Read(buffer, 0, buffer.Length));
+                                memoryStream.Write(buffer, 0, pipe.Read(buffer, 0, bufferSize));
                             } while (pipe != null && pipe.IsConnected && pipe.CanRead && !pipe.IsMessageComplete);
+                            return memoryStream.ToArray();
                         }
-
-                        return memoryStream.ToArray();
                     }
                 }
                 else
@@ -111,6 +116,10 @@ namespace Myrtille.Helpers
                 Trace.TraceError("Failed to read message from pipe {0} ({1})", (string.IsNullOrEmpty(pipeName) ? "<unknown>" : pipeName), exc);
                 throw;
             }
+            finally
+            {
+                buffer = null;
+            }
         }
 
         /// <summary>
@@ -120,11 +129,11 @@ namespace Myrtille.Helpers
         /// <param name="pipeName"></param>
         /// <param name="message"></param>
         /// <param name="sizeHeader"></param>
-        public static void WritePipeMessage(
+        public static void WritePipeData(
             PipeStream pipe,
             string pipeName,
             string message,
-            bool sizeHeader = false)
+            bool sizeHeader = true)
         {
             if (pipe == null)
             {
@@ -138,18 +147,19 @@ namespace Myrtille.Helpers
                 return;
             }
 
+            byte[] buffer;
+
             try
             {
                 if (pipe.CanWrite)
                 {
-                    byte[] buffer;
-
-                    if (sizeHeader)
+                    if (pipe.TransmissionMode == PipeTransmissionMode.Byte && sizeHeader)
                     {
                         using (var memoryStream = new MemoryStream())
                         {
-                            memoryStream.Write(BitConverter.GetBytes(message.Length), 0, 4);
-                            memoryStream.Write(Encoding.UTF8.GetBytes(message), 0, message.Length);
+                            var bytes = Encoding.UTF8.GetBytes(message);
+                            memoryStream.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
+                            memoryStream.Write(bytes, 0, bytes.Length);
                             buffer = memoryStream.ToArray();
                         }
                     }
@@ -175,6 +185,10 @@ namespace Myrtille.Helpers
             {
                 Trace.TraceError("Failed to write message to pipe {0} ({1})", (string.IsNullOrEmpty(pipeName) ? "<unknown>" : pipeName), exc);
                 throw;
+            }
+            finally
+            {
+                buffer = null;
             }
         }
     }

@@ -317,6 +317,8 @@ See the Myrtille.Admin.Web **mockup** to see how to implement Myrtille into your
 
 - in HTML4 mode, data is sent to Myrtille using xhrs; these are limited in size (depends on browser and IIS config), so sending a large block of text with the "keyboard" popup may fail in such a case
 
+- the clipboard synchronization requires Chrome (or async clipboard API support) and HTTPS connection and is limited to text only and 1MB max
+
 ## Troubleshoot
 First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+). Note that IIS must be installed separately, before running the installer (see "Installation").
 
@@ -348,6 +350,9 @@ Also please read notes and limitations above.
 	- Check the RDP (or SSH) server windows event logs.
 	- Check the gateway windows event logs, particulary regarding .NET.
 	- Retry with debug enabled and check logs (into the "log" folder). You can change their verbosity level in config (but be warned it will affect peformance and flood the disk if set too verbose).
+
+- Reconnection on browser resize (toolbar option) doesn't work
+	- this feature requires the RDS disconnection timeout to be set and greater than 5 secs (to give FreeRDP time to reconnect)
 
 - Some characters/keys are not working as expected
 	- Keyboard is mapped to english/US layout by default. Try to add that layout to your server (and select it when connected).

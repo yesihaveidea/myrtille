@@ -78,7 +78,7 @@ namespace Myrtille.Web
                                     // add a slight delay before writing data
                                     // the output stream may not be ready yet if the remote session was just reconnected
                                     Thread.Sleep(2000);
-                                    Response.Write("<script>parent.inject('if (parent != null && window.name != \\'\\') { parent.setCookie(window.name, window.location.href); };network.initClient();');</script>");
+                                    Response.Write("<script>parent.inject('if (parent != null && window.name != \\'\\') { parent.setCookie(window.name, window.location.href); };myrtille.initClient();');</script>");
                                     Response.Flush();
                                     break;
 
@@ -93,7 +93,7 @@ namespace Myrtille.Web
                                     break;
 
                                 case MessageType.RemoteClipboard:
-                                    Response.Write(string.Format("<script>parent.inject('showDialogPopup(\\'showDialogPopup\\', \\'ShowDialog.aspx\\', \\'Ctrl+C to copy to local clipboard (Cmd-C on Mac)\\', \\'{0}\\', true);');</script>", message.Text.Replace(@"\", @"\\\\").Replace("\r", @"\\r").Replace("\n", @"\\n").Replace("'", @"\\\'")));
+                                    Response.Write(string.Format("<script>parent.inject('writeClipboard(\\'{0}\\');');</script>", message.Text.Replace(@"\", @"\\\\").Replace("\r", @"\\r").Replace("\n", @"\\n").Replace("'", @"\\\'")));
                                     Response.Flush();
                                     break;
 

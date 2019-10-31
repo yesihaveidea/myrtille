@@ -19,6 +19,7 @@
 <%@ Page Language="C#" Inherits="Myrtille.Web.Default" Codebehind="Default.aspx.cs" AutoEventWireup="true" Culture="auto" UICulture="auto" %>
 <%@ OutputCache Location="None" %>
 <%@ Import Namespace="System.Globalization" %>
+<%@ Import Namespace="System.Web.Optimization" %>
 <%@ Import Namespace="Myrtille.Web" %>
 <%@ Import Namespace="Myrtille.Services.Contracts" %>
 
@@ -36,34 +37,36 @@
         
         <title>Myrtille</title>
         
-        <link rel="icon" type="image/png" href="img/myrtille.png"/>
-        <link rel="stylesheet" type="text/css" href="css/Default.css"/>
-        <link rel="stylesheet" type="text/css" href="css/xterm.css"/>
+        <link rel="icon" type="image/x-icon" href="favicon.ico"/>
+        <link rel="stylesheet" type="text/css" href="<%=BundleTable.Bundles.ResolveBundleUrl("~/css/Default.css", true)%>"/>
+        <link rel="stylesheet" type="text/css" href="<%=BundleTable.Bundles.ResolveBundleUrl("~/css/xterm.css", true)%>"/>
 
-        <script language="javascript" type="text/javascript" src="js/myrtille.js"></script>
-        <script language="javascript" type="text/javascript" src="js/config.js"></script>
-        <script language="javascript" type="text/javascript" src="js/dialog.js"></script>
-        <script language="javascript" type="text/javascript" src="js/display.js"></script>
-        <script language="javascript" type="text/javascript" src="js/display/canvas.js"></script>
-        <script language="javascript" type="text/javascript" src="js/display/divs.js"></script>
-        <script language="javascript" type="text/javascript" src="js/display/terminaldiv.js"></script>
-        <script language="javascript" type="text/javascript" src="js/network.js"></script>
-        <script language="javascript" type="text/javascript" src="js/network/buffer.js"></script>
-        <script language="javascript" type="text/javascript" src="js/network/longpolling.js"></script>
-        <script language="javascript" type="text/javascript" src="js/network/websocket.js"></script>
-        <script language="javascript" type="text/javascript" src="js/network/xmlhttp.js"></script>
-        <script language="javascript" type="text/javascript" src="js/user.js"></script>
-        <script language="javascript" type="text/javascript" src="js/user/keyboard.js"></script>
-        <script language="javascript" type="text/javascript" src="js/user/mouse.js"></script>
-        <script language="javascript" type="text/javascript" src="js/user/touchscreen.js"></script>
-        <script language="javascript" type="text/javascript" src="js/xterm/xterm.js"></script>
-        <script language="javascript" type="text/javascript" src="js/xterm/addons/fit/fit.js"></script>
-        <script language="javascript" type="text/javascript" src="js/audio/audiowebsocket.js"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/tools/common.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/tools/convert.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/myrtille.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/config.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/dialog.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/display.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/display/canvas.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/display/divs.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/display/terminaldiv.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/network.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/network/buffer.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/network/longpolling.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/network/websocket.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/network/xmlhttp.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/user.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/user/keyboard.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/user/mouse.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/user/touchscreen.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/xterm/xterm.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/xterm/addons/fit/fit.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/js/audio/audiowebsocket.js", true)%>"></script>
 
 	</head>
 	
     <body onload="startMyrtille(
-        <%=(RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected)).ToString(CultureInfo.InvariantCulture).ToLower()%>,
+        <%=(RemoteSession != null ? "'" + RemoteSession.State.ToString().ToUpper() + "'" : "null")%>,
         getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'stat'),
         getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'debug'),
         getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser'),
@@ -257,16 +260,17 @@
                 <input type="button" id="browser" value="HTML5 OFF" onclick="toggleCompatibilityMode();" title="rendering mode"/>
 
                 <!-- scale display -->
-                <input type="button" runat="server" id="scale" value="Scale OFF" onclick="toggleScaleDisplay();" title="scale the remote session to the browser size (aspect ratio is not preserved)" disabled="disabled"/>
+                <input type="button" runat="server" id="scale" value="Scale OFF" onclick="toggleScaleDisplay();" title="scale the remote session to the browser size (keeping aspect ratio)" disabled="disabled"/>
 
                 <!-- reconnect session -->
-                <input type="button" runat="server" id="reconnect" value="Reconnect OFF" onclick="toggleReconnectSession();" title="reconnect the remote session to the browser size (keep aspect ratio)" disabled="disabled"/>
+                <input type="button" runat="server" id="reconnect" value="Reconnect OFF" onclick="toggleReconnectSession();" title="reconnect the remote session to the browser size" disabled="disabled"/>
 
                 <!-- virtual keyboard. on devices without a physical keyboard, forces the device virtual keyboard to pop up -->
-                <input type="button" runat="server" id="keyboard" value="Keyboard" onclick="openPopup('virtualKeyboardPopup', 'VirtualKeyboard.aspx');" title="send text to the remote session (tip: can be used to send the local clipboard content (text only))" disabled="disabled"/>
+                <input type="button" runat="server" id="keyboard" value="Keyboard" onclick="openPopup('virtualKeyboardPopup', 'VirtualKeyboard.aspx');" title="send some text into the remote session" disabled="disabled"/>
 
-                <!-- remote clipboard. display the remote clipboard content and allow to copy it locally (text only) -->
-                <input type="button" runat="server" id="clipboard" value="Clipboard" onclick="requestRemoteClipboard();" title="retrieve the remote clipboard content (text only)" disabled="disabled"/>
+                <!-- clipboard synchronization -->
+                <!-- this is a fallback/manual action if the async clipboard API is not supported/enabled/allowed (requires read/write access and HTTPS) -->
+                <input type="button" runat="server" id="clipboard" value="Clipboard" onclick="openPopup('pasteClipboardPopup', 'PasteClipboard.aspx');" title="send some text into the remote clipboard" disabled="disabled"/>
 
                 <!-- upload/download file(s). only enabled if the connected server is localhost or if a domain is specified (so file(s) can be accessed within the remote session) -->
                 <input type="button" runat="server" id="files" value="Files" onclick="openPopup('fileStoragePopup', 'FileStorage.aspx');" title="upload/download files to/from the user documents folder" disabled="disabled"/>
@@ -463,30 +467,6 @@
                     return false;
 
                 return (value == '1' ? true : false);
-            }
-
-            // http://www.quirksmode.org/js/cookies.html
-            function setCookie(name,value,days) {
-	            var expires = "";
-	            if (days) {
-		            var date = new Date();
-		            date.setTime(date.getTime() + (days*24*60*60*1000));
-		            expires = "; expires=" + date.toUTCString();
-	            }
-	            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-            }
-            function getCookie(name) {
-	            var nameEQ = name + "=";
-	            var ca = document.cookie.split(';');
-	            for(var i=0;i < ca.length;i++) {
-		            var c = ca[i];
-		            while (c.charAt(0)==' ') c = c.substring(1,c.length);
-		            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-	            }
-	            return null;
-            }
-            function eraseCookie(name) {   
-                document.cookie = name + '=; Max-Age=-99999999; path=/';
             }
 
 		</script>

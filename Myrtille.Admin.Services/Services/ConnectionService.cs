@@ -49,7 +49,7 @@ namespace Myrtille.Admin.Services
                 connections.Add(connection.Id, connection);
             }
 
-            Trace.TraceInformation("new connection: {0}, domain={1}, user={2}, host={3}, vm={4}", connection.Id, connection.Info.User.Domain, connection.Info.User.UserName, connection.Info.Host.IPAddress, connection.Info.VM != null ? connection.Info.VM.Guid.ToString() : string.Empty);
+            Trace.TraceInformation("GetConnectionId: {0}, domain={1}, user={2}, host={3}, vm={4}", connection.Id, connection.Info.User.Domain, connection.Info.User.UserName, connection.Info.Host.IPAddress, connection.Info.VM != null ? connection.Info.VM.Guid.ToString() : string.Empty);
 
             return connection.Id;
         }
@@ -61,12 +61,12 @@ namespace Myrtille.Admin.Services
             {
                 if (connection.InfoAccessed)
                 {
-                    Trace.TraceWarning("connection: {0}, info was already accessed, access denied", connection.Id);
+                    Trace.TraceWarning("GetConnectionInfo: {0}, info was already accessed, access denied", connection.Id);
                     return null;
                 }
 
                 connection.InfoAccessed = true;
-                Trace.TraceInformation("connection: {0}, domain={1}, user={2}, host={3}, vm={4}", connection.Id, connection.Info.User.Domain, connection.Info.User.UserName, connection.Info.Host.IPAddress, connection.Info.VM != null ? connection.Info.VM.Guid.ToString() : string.Empty);
+                Trace.TraceInformation("GetConnectionInfo: {0}, domain={1}, user={2}, host={3}, vm={4}", connection.Id, connection.Info.User.Domain, connection.Info.User.UserName, connection.Info.Host.IPAddress, connection.Info.VM != null ? connection.Info.VM.Guid.ToString() : string.Empty);
                 return connection.Info;
             }
             else
@@ -78,13 +78,15 @@ namespace Myrtille.Admin.Services
 
         public bool IsUserAllowedToConnectHost(string domain, string userName, string hostIPAddress, Guid VMGuid)
         {
+            // this method is just an empty shell
+            // have your own implementation to allow or deny user access to a given host
             if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(hostIPAddress))
             {
-                Trace.TraceInformation("access granted: domain={0}, user={1}, host={2}, vm={3}", domain, userName, hostIPAddress, VMGuid != Guid.Empty ? VMGuid.ToString() : string.Empty);
+                Trace.TraceInformation("IsUserAllowedToConnectHost, access granted: domain={0}, user={1}, host={2}, vm={3}", domain, userName, hostIPAddress, VMGuid != Guid.Empty ? VMGuid.ToString() : string.Empty);
                 return true;
             }
 
-            Trace.TraceInformation("access denied: domain={0}, user={1}, host={2}, vm={3}", domain, userName, hostIPAddress, VMGuid != Guid.Empty ? VMGuid.ToString() : string.Empty);
+            Trace.TraceInformation("IsUserAllowedToConnectHost, access denied: domain={0}, user={1}, host={2}, vm={3}", domain, userName, hostIPAddress, VMGuid != Guid.Empty ? VMGuid.ToString() : string.Empty);
             return false;
         }
 
@@ -93,7 +95,7 @@ namespace Myrtille.Admin.Services
             var connection = connections[connectionId] as Connection;
             if (connection != null)
             {
-                Trace.TraceInformation("connection: {0}, ip={1}, vm={2}, state={3}", connectionId, IPAddress, VMGuid != Guid.Empty ? VMGuid.ToString() : string.Empty, state);
+                Trace.TraceInformation("SetConnectionState: {0}, ip={1}, vm={2}, state={3}", connectionId, IPAddress, VMGuid != Guid.Empty ? VMGuid.ToString() : string.Empty, state);
                 connection.State = state;
                 return true;
             }
@@ -107,7 +109,7 @@ namespace Myrtille.Admin.Services
             var connection = connections[connectionId] as Connection;
             if (connection != null)
             {
-                Trace.TraceInformation("connection: {0}, ip={1}, vm={2}, exit code={3}", connectionId, IPAddress, VMGuid != Guid.Empty ? VMGuid.ToString() : string.Empty, exitCode);
+                Trace.TraceInformation("SetConnectionExitCode: {0}, ip={1}, vm={2}, exit code={3}", connectionId, IPAddress, VMGuid != Guid.Empty ? VMGuid.ToString() : string.Empty, exitCode);
                 connection.ExitCode = exitCode;
                 return true;
             }

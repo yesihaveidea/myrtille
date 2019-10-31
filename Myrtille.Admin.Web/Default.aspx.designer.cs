@@ -130,6 +130,15 @@ namespace Myrtille.Admin.Web {
         protected global::System.Web.UI.HtmlControls.HtmlInputButton TakeScreenshotButton;
         
         /// <summary>
+        /// myrtille_1_disconnect control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputButton myrtille_1_disconnect;
+        
+        /// <summary>
         /// myrtille_2 control.
         /// </summary>
         /// <remarks>
@@ -137,5 +146,23 @@ namespace Myrtille.Admin.Web {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlIframe myrtille_2;
+        
+        /// <summary>
+        /// myrtille_2_disconnect control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputButton myrtille_2_disconnect;
+        
+        /// <summary>
+        /// Logout control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputButton Logout;
     }
 }

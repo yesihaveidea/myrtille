@@ -17,6 +17,7 @@
 */
 
 using System;
+using System.Net;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -41,8 +42,6 @@ namespace Myrtille.Admin.Web
     public partial class Default : Page
     {
         private static ConnectionClient connectionClient = new ConnectionClient(Settings.Default.ConnectionServiceUrl);
-        private static CaptureClient captureClient = new CaptureClient(Settings.Default.CaptureServiceUrl);
-        private static SharingClient sharingClient = new SharingClient(Settings.Default.SharingServiceUrl);
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -56,58 +55,127 @@ namespace Myrtille.Admin.Web
             // etc.
             // with "myrtille1" and "myrtille2" being 2 distinct gateways (load balancing scenario)
 
-            // in the example below, the myrtille gateways are the same for 2 iframes
-            // the same connection info (user + host) is also used; you will need the RDS role installed on the target server for that to work, configured to allow multiple sessions per user (GPO config)
-            // use shift + tab to switch focus from one iframe to another
-            LoadMyrtille(myrtille_1, "http://mywebsite.com/Myrtille/", true);
-            LoadMyrtille(myrtille_2, "http://mywebsite.com/Myrtille/", false);
-        }
+            // HTTPS support for REST calls
+            // the line below should work but doesn't with RestSharp (?)
+            // ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+            // disabling ssl certificate validation; this is a mockup, don't do this in production!
+            ServicePointManager.ServerCertificateValidationCallback += (caller, certificate, chain, sslPolicyErrors) => true;
 
-        private void LoadMyrtille(HtmlIframe iframe, string url, bool focus)
-        {
-            // myrtille uses a cookie to store and retrieve the iframe's url once it's set for the iframe's http session
-            // if it was just using the url given in parameter, the iframe's http session would be regenerated each time the portal is reloaded (because it uses "cookieless=UseUri" session state),
-            // which would trigger a new connection
-            if (Request.Cookies[iframe.ClientID] == null)
-            {
-                var connectionInfo = new ConnectionInfo
+            // in the example below, the myrtille gateways are the same for 2 iframes
+            // if the same connection info (user + host) is used, you will need the RDS role installed on the target server for that to work, configured to allow multiple sessions per user (GPO config)
+            // use shift + tab to switch focus from one iframe to another
+            LoadMyrtille(
+                myrtille_1,
+                "https://192.168.1.13/Myrtille_microarea/",
+                new ConnectionInfo
                 {
                     User = new UserInfo
                     {
-                        UserName = "user",
-                        Password = "password"
+                        UserName = "Administrator",
+                        Password = @"/Passw20\"
                     },
                     Host = new HostInfo
                     {
-                        IPAddress = "1.2.3.4",
+                        IPAddress = "192.168.1.25",
                     },
                     AllowRemoteClipboard = true,
                     AllowFileTransfer = false,
                     AllowPrintDownload = true,
                     AllowAudioPlayback = true,
                     MaxActiveGuests = 2
-                };
+                },
+                true);
 
-                var connectionId = connectionClient.GetConnectionId(connectionInfo);
+            LoadMyrtille(
+                myrtille_2,
+                "https://192.168.1.13/Myrtille_microarea/",
+                new ConnectionInfo
+                {
+                    User = new UserInfo
+                    {
+                        Domain = "MYRTLAB",
+                        UserName = "Administrator",
+                        Password = @"/Passw20\"
+                    },
+                    Host = new HostInfo
+                    {
+                        IPAddress = "192.168.1.24",
+                    },
+                    AllowRemoteClipboard = true,
+                    AllowFileTransfer = false,
+                    AllowPrintDownload = true,
+                    AllowAudioPlayback = true,
+                    MaxActiveGuests = 0                 // disable session sharing
+                },
+                false);
 
-                // save the connection id used for the myrtille iframe
-                // it will be needed for any call to the myrtille API (screenshot, etc.)
-                var cookie = new HttpCookie(string.Format("{0}_cid", iframe.ClientID));
-                cookie.Value = connectionId.ToString();
-                cookie.Path = "/";
-                Response.Cookies.Add(cookie);
+            UpdateControls();
+        }
 
-                iframe.Src = url + "?cid=" + connectionId + "&__EVENTTARGET=&__EVENTARGUMENT=&connect=Connect%21";
-            }
-            else
+        private void LoadMyrtille(HtmlIframe iframe, string url, ConnectionInfo connectionInfo, bool focus)
+        {
+            try
             {
-                iframe.Src = Request.Cookies[iframe.ClientID].Value + "?fid=" + iframe.ClientID;
-            }
+                // myrtille uses a cookie to store and retrieve the iframe's url once it's set for the iframe's http session
+                // if it was just using the url given in parameter, the iframe's http session would be regenerated each time the portal is reloaded (because it uses "cookieless=UseUri" session state),
+                // which would trigger a new connection
+                if (Request.Cookies[iframe.ClientID] == null)
+                {
+                    connectionInfo.GatewayUrl = url;
 
-            if (focus)
-            {
-                iframe.Attributes["onload"] = "this.contentWindow.focus();";
+                    var connectionId = connectionClient.GetConnectionId(connectionInfo);
+
+                    // save the connection id used for the myrtille iframe
+                    // it will be needed for any call to the myrtille API (screenshot, etc.)
+                    var cookie = new HttpCookie(string.Format("{0}_cid", iframe.ClientID));
+                    cookie.Value = connectionId.ToString();
+                    cookie.Path = "/";
+                    Response.Cookies.Add(cookie);
+
+                    // also save the gateway url used for the myrtille iframe
+                    // it's stored and thus could be retrieved from the connection info, but GetConnectionInfo is protected against subsequent calls
+                    cookie = new HttpCookie(string.Format("{0}_url", iframe.ClientID));
+                    cookie.Value = url;
+                    cookie.Path = "/";
+                    Response.Cookies.Add(cookie);
+
+                    iframe.Src = url + "?cid=" + connectionId + "&__EVENTTARGET=&__EVENTARGUMENT=&connect=Connect%21";
+                }
+                else
+                {
+                    iframe.Src = Request.Cookies[iframe.ClientID].Value + "?fid=" + iframe.ClientID;
+                }
+
+                if (focus)
+                {
+                    iframe.Attributes["onload"] = "this.contentWindow.focus();";
+                }
             }
+            catch (Exception exc)
+            {
+                System.Diagnostics.Trace.TraceError("failed to load myrtille iframe {0} ({1})", iframe.ClientID, exc);
+            }
+        }
+
+        private void UpdateControls()
+        {
+            // iframe cookies are set/cleared on session connect/disconnect
+
+            AddGuestButton.Disabled = Request.Cookies[myrtille_1.ClientID] == null;
+            GetGuestsButton.Disabled = Request.Cookies[myrtille_1.ClientID] == null;
+            GetGuestButton.Disabled = Request.Cookies[myrtille_1.ClientID] == null;
+            UpdateGuestButton.Disabled = Request.Cookies[myrtille_1.ClientID] == null;
+            RemoveGuestButton.Disabled = Request.Cookies[myrtille_1.ClientID] == null;
+
+            SetScreenshotConfigButton.Disabled = Request.Cookies[myrtille_1.ClientID] == null;
+            StartTakingScreenshotsButton.Disabled = Request.Cookies[myrtille_1.ClientID] == null;
+            StopTakingScreenshotsButton.Disabled = Request.Cookies[myrtille_1.ClientID] == null;
+            TakeScreenshotButton.Disabled = Request.Cookies[myrtille_1.ClientID] == null;
+
+            myrtille_1_disconnect.Disabled = Request.Cookies[myrtille_1.ClientID] == null;
+            myrtille_2_disconnect.Disabled = Request.Cookies[myrtille_2.ClientID] == null;
+
+            Logout.Disabled = Request.Cookies[myrtille_1.ClientID] == null && Request.Cookies[myrtille_2.ClientID] == null;
         }
 
         private Guid GetIFrameConnectionId(string iframeId)
@@ -126,16 +194,37 @@ namespace Myrtille.Admin.Web
             return connectionId;
         }
 
+        private string GetIFrameGatewayUrl(string iframeId)
+        {
+            var url = string.Empty;
+
+            if (!string.IsNullOrEmpty(iframeId))
+            {
+                var cookie = Request.Cookies[string.Format("{0}_url", iframeId)];
+                if (cookie != null)
+                {
+                    url = cookie.Value;
+                }
+            }
+
+            return url;
+        }
+
         #region Screenshot
 
         protected void SetScreenshotConfigButtonClick(
             object sender,
             EventArgs e)
         {
-            var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
-            if (connectionId != Guid.Empty)
+            var gatewayUrl = GetIFrameGatewayUrl((sender as HtmlInputButton).Attributes["data-fid"]);
+            if (!string.IsNullOrEmpty(gatewayUrl))
             {
-                captureClient.SetScreenshotConfig(connectionId, 10, CaptureFormat.PNG, @"C:\path\to\screenshots\");
+                var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
+                if (connectionId != Guid.Empty)
+                {
+                    var captureClient = new CaptureClient(string.Format("{0}/api/Capture/", gatewayUrl));
+                    captureClient.SetScreenshotConfig(connectionId, 10, CaptureFormat.PNG, @"C:\path\to\screenshots\");
+                }
             }
         }
 
@@ -143,10 +232,15 @@ namespace Myrtille.Admin.Web
             object sender,
             EventArgs e)
         {
-            var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
-            if (connectionId != Guid.Empty)
+            var gatewayUrl = GetIFrameGatewayUrl((sender as HtmlInputButton).Attributes["data-fid"]);
+            if (!string.IsNullOrEmpty(gatewayUrl))
             {
-                captureClient.StartTakingScreenshots(connectionId);
+                var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
+                if (connectionId != Guid.Empty)
+                {
+                    var captureClient = new CaptureClient(string.Format("{0}/api/Capture/", gatewayUrl));
+                    captureClient.StartTakingScreenshots(connectionId);
+                }
             }
         }
 
@@ -154,10 +248,15 @@ namespace Myrtille.Admin.Web
             object sender,
             EventArgs e)
         {
-            var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
-            if (connectionId != Guid.Empty)
+            var gatewayUrl = GetIFrameGatewayUrl((sender as HtmlInputButton).Attributes["data-fid"]);
+            if (!string.IsNullOrEmpty(gatewayUrl))
             {
-                captureClient.StopTakingScreenshots(connectionId);
+                var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
+                if (connectionId != Guid.Empty)
+                {
+                    var captureClient = new CaptureClient(string.Format("{0}/api/Capture/", gatewayUrl));
+                    captureClient.StopTakingScreenshots(connectionId);
+                }
             }
         }
 
@@ -165,18 +264,23 @@ namespace Myrtille.Admin.Web
             object sender,
             EventArgs e)
         {
-            var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
-            if (connectionId != Guid.Empty)
+            var gatewayUrl = GetIFrameGatewayUrl((sender as HtmlInputButton).Attributes["data-fid"]);
+            if (!string.IsNullOrEmpty(gatewayUrl))
             {
-                // retrieve screenshot data
-                var screenshotBytes = captureClient.TakeScreenshot(connectionId);
-                if (screenshotBytes != null && screenshotBytes.Length > 0)
+                var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
+                if (connectionId != Guid.Empty)
                 {
-                    // write it into the http response
-                    Response.Headers.Add("ContentType", "image/png");
-                    Response.Headers.Add("Content-Disposition", "attachment; filename=screenshot.png;");
-                    Response.Headers.Add("Content-Length", screenshotBytes.Length.ToString());
-                    Response.OutputStream.Write(screenshotBytes, 0, screenshotBytes.Length);
+                    var captureClient = new CaptureClient(string.Format("{0}/api/Capture/", gatewayUrl));
+                    // retrieve screenshot data
+                    var screenshotBytes = captureClient.TakeScreenshot(connectionId);
+                    if (screenshotBytes != null && screenshotBytes.Length > 0)
+                    {
+                        // write it into the http response
+                        Response.Headers.Add("ContentType", "image/png");
+                        Response.Headers.Add("Content-Disposition", "attachment; filename=screenshot.png;");
+                        Response.Headers.Add("Content-Length", screenshotBytes.Length.ToString());
+                        Response.OutputStream.Write(screenshotBytes, 0, screenshotBytes.Length);
+                    }
                 }
             }
         }
@@ -191,23 +295,28 @@ namespace Myrtille.Admin.Web
             object sender,
             EventArgs e)
         {
-            var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
-            if (connectionId != Guid.Empty && !string.IsNullOrEmpty(_allowControl.Value))
+            var gatewayUrl = GetIFrameGatewayUrl((sender as HtmlInputButton).Attributes["data-fid"]);
+            if (!string.IsNullOrEmpty(gatewayUrl))
             {
-                var allowControl = true;
-                if (bool.TryParse(_allowControl.Value, out allowControl))
+                var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
+                if (connectionId != Guid.Empty && !string.IsNullOrEmpty(_allowControl.Value))
                 {
-                    var script = string.Empty;
-                    var guestId = sharingClient.AddGuest(connectionId, allowControl);
-                    if (guestId == Guid.Empty)
+                    var allowControl = true;
+                    if (bool.TryParse(_allowControl.Value, out allowControl))
                     {
-                        script = "alert('failed to add a guest');";
+                        var script = string.Empty;
+                        var sharingClient = new SharingClient(string.Format("{0}/api/Sharing/", gatewayUrl));
+                        var guestId = sharingClient.AddGuest(connectionId, allowControl);
+                        if (guestId == Guid.Empty)
+                        {
+                            script = "alert('failed to add a guest');";
+                        }
+                        else
+                        {
+                            script = string.Format("prompt('Sharing link (copy & paste into a new browser tab or window):', '{0}');", string.Format("{0}?gid={1}", "http://mywebsite.com/Myrtille/", guestId));
+                        }
+                        ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
                     }
-                    else
-                    {
-                        script = string.Format("prompt('Sharing link (copy & paste into a new browser tab or window):', '{0}');", string.Format("{0}?gid={1}", "http://mywebsite.com/Myrtille/", guestId));
-                    }
-                    ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
                 }
             }
         }
@@ -216,25 +325,30 @@ namespace Myrtille.Admin.Web
             object sender,
             EventArgs e)
         {
-            var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
-            if (connectionId != Guid.Empty)
+            var gatewayUrl = GetIFrameGatewayUrl((sender as HtmlInputButton).Attributes["data-fid"]);
+            if (!string.IsNullOrEmpty(gatewayUrl))
             {
-                var script = string.Empty;
-                var guests = sharingClient.GetGuests(connectionId);
-                if (guests == null)
+                var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
+                if (connectionId != Guid.Empty)
                 {
-                    script = "alert('failed to retrieve the guests list');";
-                }
-                else
-                {
-                    var info = string.Empty;
-                    foreach (var guest in guests)
+                    var script = string.Empty;
+                    var sharingClient = new SharingClient(string.Format("{0}/api/Sharing/", gatewayUrl));
+                    var guests = sharingClient.GetGuests(connectionId);
+                    if (guests == null)
                     {
-                        info += string.Format("guest: {0}, control: {1}, active: {2}, websocket: {3}\\n", guest.Id, guest.Control, guest.Active, guest.Websocket);
+                        script = "alert('failed to retrieve the guests list');";
                     }
-                    script = string.Format("alert('{0}');", info);
+                    else
+                    {
+                        var info = string.Empty;
+                        foreach (var guest in guests)
+                        {
+                            info += string.Format("guest: {0}, control: {1}, active: {2}, websocket: {3}\\n", guest.Id, guest.Control, guest.Active, guest.Websocket);
+                        }
+                        script = string.Format("alert('{0}');", info);
+                    }
+                    ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
                 }
-                ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
             }
         }
 
@@ -242,22 +356,31 @@ namespace Myrtille.Admin.Web
             object sender,
             EventArgs e)
         {
-            if (!string.IsNullOrEmpty(_guestId.Value))
+            var gatewayUrl = GetIFrameGatewayUrl((sender as HtmlInputButton).Attributes["data-fid"]);
+            if (!string.IsNullOrEmpty(gatewayUrl))
             {
-                var guestId = Guid.Empty;
-                if (Guid.TryParse(_guestId.Value, out guestId))
+                var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
+                if (connectionId != Guid.Empty)
                 {
-                    var script = string.Empty;
-                    var guest = sharingClient.GetGuest(guestId);
-                    if (guest == null)
+                    if (!string.IsNullOrEmpty(_guestId.Value))
                     {
-                        script = "alert('guest not found or failed to retrieve guest');";
+                        var guestId = Guid.Empty;
+                        if (Guid.TryParse(_guestId.Value, out guestId))
+                        {
+                            var script = string.Empty;
+                            var sharingClient = new SharingClient(string.Format("{0}/api/Sharing/", gatewayUrl));
+                            var guest = sharingClient.GetGuest(guestId);
+                            if (guest == null)
+                            {
+                                script = "alert('guest not found or failed to retrieve guest');";
+                            }
+                            else
+                            {
+                                script = string.Format("alert('guest: {0}, control: {1}, active: {2}, websocket: {3}');", guest.Id, guest.Control, guest.Active, guest.Websocket);
+                            }
+                            ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
+                        }
                     }
-                    else
-                    {
-                        script = string.Format("alert('guest: {0}, control: {1}, active: {2}, websocket: {3}');", guest.Id, guest.Control, guest.Active, guest.Websocket);
-                    }
-                    ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
                 }
             }
         }
@@ -266,25 +389,34 @@ namespace Myrtille.Admin.Web
             object sender,
             EventArgs e)
         {
-            if (!string.IsNullOrEmpty(_guestId.Value) && !string.IsNullOrEmpty(_allowControl.Value))
+            var gatewayUrl = GetIFrameGatewayUrl((sender as HtmlInputButton).Attributes["data-fid"]);
+            if (!string.IsNullOrEmpty(gatewayUrl))
             {
-                var guestId = Guid.Empty;
-                if (Guid.TryParse(_guestId.Value, out guestId))
+                var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
+                if (connectionId != Guid.Empty)
                 {
-                    var allowControl = true;
-                    if (bool.TryParse(_allowControl.Value, out allowControl))
+                    if (!string.IsNullOrEmpty(_guestId.Value) && !string.IsNullOrEmpty(_allowControl.Value))
                     {
-                        var script = string.Empty;
-                        var guest = sharingClient.UpdateGuest(guestId, allowControl);
-                        if (guest == null)
+                        var guestId = Guid.Empty;
+                        if (Guid.TryParse(_guestId.Value, out guestId))
                         {
-                            script = "alert('guest not found or failed to update guest');";
+                            var allowControl = true;
+                            if (bool.TryParse(_allowControl.Value, out allowControl))
+                            {
+                                var script = string.Empty;
+                                var sharingClient = new SharingClient(string.Format("{0}/api/Sharing/", gatewayUrl));
+                                var guest = sharingClient.UpdateGuest(guestId, allowControl);
+                                if (guest == null)
+                                {
+                                    script = "alert('guest not found or failed to update guest');";
+                                }
+                                else
+                                {
+                                    script = string.Format("alert('updated guest: {0}, control: {1}, active: {2}, websocket: {3}');", guest.Id, guest.Control, guest.Active, guest.Websocket);
+                                }
+                                ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
+                            }
                         }
-                        else
-                        {
-                            script = string.Format("alert('updated guest: {0}, control: {1}, active: {2}, websocket: {3}');", guest.Id, guest.Control, guest.Active, guest.Websocket);
-                        }
-                        ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
                     }
                 }
             }
@@ -294,23 +426,92 @@ namespace Myrtille.Admin.Web
             object sender,
             EventArgs e)
         {
-            if (!string.IsNullOrEmpty(_guestId.Value))
+            var gatewayUrl = GetIFrameGatewayUrl((sender as HtmlInputButton).Attributes["data-fid"]);
+            if (!string.IsNullOrEmpty(gatewayUrl))
             {
-                var guestId = Guid.Empty;
-                if (Guid.TryParse(_guestId.Value, out guestId))
+                var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
+                if (connectionId != Guid.Empty)
                 {
-                    var script = string.Empty;
-                    if (!sharingClient.RemoveGuest(guestId))
+                    if (!string.IsNullOrEmpty(_guestId.Value))
                     {
-                        script = "alert('guest not found or failed to remove guest');";
+                        var guestId = Guid.Empty;
+                        if (Guid.TryParse(_guestId.Value, out guestId))
+                        {
+                            var script = string.Empty;
+                            var sharingClient = new SharingClient(string.Format("{0}/api/Sharing/", gatewayUrl));
+                            if (!sharingClient.RemoveGuest(guestId))
+                            {
+                                script = "alert('guest not found or failed to remove guest');";
+                            }
+                            else
+                            {
+                                script = string.Format("alert('removed guest: {0}');", guestId);
+                            }
+                            ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Disconnect
+
+        protected void DisconnectButtonClick(
+            object sender,
+            EventArgs e)
+        {
+            var gatewayUrl = GetIFrameGatewayUrl((sender as HtmlInputButton).Attributes["data-fid"]);
+            if (!string.IsNullOrEmpty(gatewayUrl))
+            {
+                var connectionId = GetIFrameConnectionId((sender as HtmlInputButton).Attributes["data-fid"]);
+                if (connectionId != Guid.Empty)
+                {
+                    string script;
+                    var disconnectionClient = new DisconnectionClient(string.Format("{0}/api/Disconnection/", gatewayUrl));
+                    if (disconnectionClient.Disconnect(connectionId))
+                    {
+                        script = "alert('the remote session was disconnected successfully. Press OK to open a new connection');";
                     }
                     else
                     {
-                        script = string.Format("alert('removed guest: {0}');", guestId);
+                        script = "alert('failed to disconnect the remote session');";
                     }
                     ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
                 }
             }
+        }
+
+        protected void LogoutButtonClick(
+            object sender,
+            EventArgs e)
+        {
+            var success = true;
+
+            var disconnectionClient = new DisconnectionClient("https://192.168.1.13/Myrtille_microarea/api/Disconnection/");
+            success = disconnectionClient.DisconnectAll();
+
+            // if the page have iframes on different gateways, call DisconnectAll for each of them
+            //if (success)
+            //{
+            //    disconnectionClient = new DisconnectionClient("<another gateway, disconnection api url>");
+            //    success = disconnectionClient.DisconnectAll();
+            //}
+
+            // etc.
+
+            var script = string.Empty;
+            if (success)
+            {
+                script = "alert('all the remote sessions were disconnected successfully');";
+            }
+            else
+            {
+                script = "alert('failed to disconnect all the remote sessions');";
+            }
+            script += "window.location.href = 'logout.aspx'";
+            ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), script, true);
         }
 
         #endregion

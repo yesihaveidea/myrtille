@@ -17,7 +17,6 @@
 */
 
 using System;
-using Newtonsoft.Json;
 using Myrtille.Services.Contracts;
 using RestSharp;
 
@@ -70,7 +69,7 @@ namespace Myrtille.Admin.Web
             {
                 throw new Exception(string.Format("Failed to take screenshot; response status: {0}, code: {1}, message: {2}", restResponse.ResponseStatus, restResponse.StatusCode, restResponse.ErrorMessage));
             }
-            return JsonConvert.DeserializeObject<byte[]>(restResponse.Content);
+            return restResponse.RawBytes;
         }
     }
 }

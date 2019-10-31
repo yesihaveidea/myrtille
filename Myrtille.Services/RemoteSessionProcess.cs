@@ -20,15 +20,87 @@ using System;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.ServiceModel;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using Myrtille.Services.ConnectionBroker;
 using Myrtille.Services.Contracts;
+using Cassia;
 
 namespace Myrtille.Services
 {
     public class RemoteSessionProcess : IRemoteSessionProcess, IDisposable
     {
+        #region Drain
+
+        // CAUTION! the 2 methods below require some permissions to operate; running Myrtille.Services under the (default) "LocalSystem" account may not be sufficient
+        // a domain account with the proper privileges would be best:
+        // to access the connection broker database: https://docs.microsoft.com/en-us/sql/relational-databases/security/permissions-database-engine?view=sql-server-2017
+        // to call the RDS API: https://docs.microsoft.com/en-gb/windows/win32/termserv/terminal-services-permissions
+
+        private static void DrainDisconnectedSessions(
+            string userDomain,
+            string userName,
+            string initialProgram)
+        {
+            try
+            {
+                using (var db = new ConnectionBrokerDbContext())
+                {
+                    var sessions = db.Session.Where(session =>
+                        (string.IsNullOrEmpty(userDomain) ? true : session.UserDomain == userDomain) &&
+                        session.UserName == userName &&
+                        session.InitialProgram == initialProgram &&
+                        session.State == (byte)SessionState.Disconnected &&
+                        session.ProtocolType == (byte)SessionType.RdpTcp).ToList();
+
+                    // 0 disconnected session: a new session will be created
+                    // 1 disconnected session: the disconnected session will be reconnected
+                    // n disconnected sessions: logoff the oldest disconnected session(s) so that the latest one will be reconnected without prompting the user to choose
+                    if (sessions.Count > 1)
+                    {
+                        var sessionsToLogoff = sessions.OrderBy(session => session.DisconnectTime).Take(sessions.Count - 1);
+                        foreach (var session in sessionsToLogoff)
+                        {
+                            LogoffSession(session.Target.Netbios, session.SessionId);
+                        }
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to drain disconnected session(s) for user {0} and application {1} ({2})", string.IsNullOrEmpty(userDomain) ? userName : string.Format("{0}\\{1}", userDomain, userName), initialProgram, exc);
+            }
+        }
+
+        private static void LogoffSession(
+            string serverName,
+            int sessionId)
+        {
+            try
+            {
+                var manager = new TerminalServicesManager();
+                using (var server = manager.GetRemoteServer(serverName))
+                {
+                    server.Open();
+                    var sessionToLogoff = server.GetSessions().Where(session => session.SessionId == sessionId).FirstOrDefault();
+                    if (sessionToLogoff != null)
+                    {
+                        sessionToLogoff.Logoff(true);
+                    }
+                    server.Close();
+                }
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to logoff session id {0} on server {1} ({2})", sessionId, serverName, exc);
+            }
+        }
+
+        #endregion
+
         #region process
 
         private Guid _remoteSessionId;
@@ -66,6 +138,18 @@ namespace Myrtille.Services
                 // the wcf service binding "wsDualHttpBinding" is "perSession" by default (maintain 1 service instance per client)
                 // as there is 1 client per remote session, the remote session id is set for the current service instance
                 _remoteSessionId = remoteSessionId;
+
+                // prevent the user to be prompted for the session to reconnect in case of several disconnected sessions
+                bool drainDisconnectedSessions;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["DrainDisconnectedSessions"], out drainDisconnectedSessions))
+                {
+                    drainDisconnectedSessions = false;
+                }
+
+                if (drainDisconnectedSessions)
+                {
+                    DrainDisconnectedSessions(userDomain, userName, startProgram);
+                }
 
                 _process = new Process();
 
@@ -368,23 +452,27 @@ namespace Myrtille.Services
             {
                 Trace.TraceInformation("Disconnected remote session {0}, exit code {1}", _remoteSessionId, _process.ExitCode);
 
-                try
+                // invoke the callback asynchronously and possibly in a separate thread to avoid any deadlock
+                Task.Factory.StartNew(() =>
                 {
-                    // notify the remote session manager of the process exit
-                    _callback.ProcessExited(_process.ExitCode);
-                }
-                catch (Exception exc)
-                {
-                    Trace.TraceError("Failed to notify the host client process exit (MyrtilleAppPool down?), remote session {0} ({1})", _remoteSessionId, exc);
-                }
-                finally
-                {
-                    if (_process != null)
+                    try
                     {
-                        _process.Dispose();
-                        _process = null;
+                        // notify the remote session manager of the process exit
+                        _callback.ProcessExited(_process.ExitCode);
                     }
-                }
+                    catch (Exception exc)
+                    {
+                        Trace.TraceError("Failed to notify the host client process exit (MyrtilleAppPool down?), remote session {0} ({1})", _remoteSessionId, exc);
+                    }
+                    finally
+                    {
+                        if (_process != null)
+                        {
+                            _process.Dispose();
+                            _process = null;
+                        }
+                    }
+                });
             }
         }
 

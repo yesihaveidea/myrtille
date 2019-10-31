@@ -25,7 +25,7 @@ namespace Myrtille.Web
 {
     public partial class PrintDocument : Page
     {
-        private static PrinterClient _printerClient = new PrinterClient();
+        private PrinterClient _printerClient = new PrinterClient();
         private RemoteSession _remoteSession;
 
         /// <summary>

@@ -30,7 +30,7 @@ namespace Myrtille.Admin.Services
 
         public static void Start()
         {
-            var url = "http://*:" + Settings.Default.WebApiPort + "/Myrtille/";
+            var url = "http://*:" + Settings.Default.WebApiPort + "/MyrtilleAdmin/";
             Console.WriteLine($"{DateTime.UtcNow} - Starting Myrtille Admin API at url: " + url);
 
             try
