@@ -625,7 +625,7 @@ namespace Myrtille.Web
         private CancellationTokenSource _resizeTimeout;
 
         private int _clientIdleTimeoutDelay = 0;
-        public CancellationTokenSource ClientIdleTimeout { get; private set; }
+        public CancellationTokenSource ClientIdleTimeout { get; set; }
 
         #endregion
 

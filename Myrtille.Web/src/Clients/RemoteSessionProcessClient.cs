@@ -180,6 +180,10 @@ namespace Myrtille.Web
                     _remoteSessionManager.RemoteSession.Reconnect = false;
                     _remoteSessionManager.RemoteSession.BrowserResize = null;
                     _remoteSessionManager.HostClient.ProcessStarted = false;
+                    if (_remoteSessionManager.ClientIdleTimeout != null)
+                    {
+                        _remoteSessionManager.ClientIdleTimeout = new CancellationTokenSource();
+                    }
                     _remoteSessionManager.RemoteSession.State = RemoteSessionState.Connecting;
                 }
 
