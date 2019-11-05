@@ -66,17 +66,17 @@ namespace Myrtille.Admin.Web
             // use shift + tab to switch focus from one iframe to another
             LoadMyrtille(
                 myrtille_1,
-                "https://192.168.1.13/Myrtille_microarea/",
+                "https://server/myrtille/",
                 new ConnectionInfo
                 {
                     User = new UserInfo
                     {
-                        UserName = "Administrator",
-                        Password = @"/Passw20\"
+                        UserName = "user",
+                        Password = "password"
                     },
                     Host = new HostInfo
                     {
-                        IPAddress = "192.168.1.25",
+                        IPAddress = "1.2.3.4",
                     },
                     AllowRemoteClipboard = true,
                     AllowFileTransfer = false,
@@ -88,18 +88,18 @@ namespace Myrtille.Admin.Web
 
             LoadMyrtille(
                 myrtille_2,
-                "https://192.168.1.13/Myrtille_microarea/",
+                "https://server/myrtille/",
                 new ConnectionInfo
                 {
                     User = new UserInfo
                     {
-                        Domain = "MYRTLAB",
-                        UserName = "Administrator",
-                        Password = @"/Passw20\"
+                        Domain = "domain",
+                        UserName = "user",
+                        Password = "password"
                     },
                     Host = new HostInfo
                     {
-                        IPAddress = "192.168.1.24",
+                        IPAddress = "1.2.3.4",
                     },
                     AllowRemoteClipboard = true,
                     AllowFileTransfer = false,
@@ -489,7 +489,7 @@ namespace Myrtille.Admin.Web
         {
             var success = true;
 
-            var disconnectionClient = new DisconnectionClient("https://192.168.1.13/Myrtille_microarea/api/Disconnection/");
+            var disconnectionClient = new DisconnectionClient("https://server/myrtille/api/Disconnection/");
             success = disconnectionClient.DisconnectAll();
 
             // if the page have iframes on different gateways, call DisconnectAll for each of them

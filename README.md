@@ -138,6 +138,8 @@ Cedric Coste (cedrozor@gmail.com).
 - ElasticServer (http://www.elasticserver.co/) - print a remote document using the browser print dialog
 - Coduct GmbH (https://www.coduct.com/) - reconnect on browser resize, keeping the display aspect ratio
 - Practice-Labs (https://practice-labs.com/) - audio support, REST APIs, improved iframes integration
+- Schleupen AG (https://www.schleupen.de/) - clipboard synchronization, disconnect API, drain of disconnected sessions
+- Microarea SpA (https://www.microarea.it/) - application pool API, reduced memory usage
 - Your company here (contact me!)
 
 ## Fun
