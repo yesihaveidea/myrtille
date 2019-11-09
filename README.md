@@ -153,3 +153,4 @@ Ever wanted to run Myrtille in your Tesla supercar? :) https://www.youtube.com/w
 - Wiki:		https://github.com/cedrozor/myrtille/wiki
 - Support:	https://groups.google.com/forum/#!forum/myrtille_rdp
 - Demo:		https://www.youtube.com/watch?v=l4CL8h0KfQ8
+- Donate:	https://www.paypal.me/costecedric
