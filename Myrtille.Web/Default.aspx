@@ -35,7 +35,7 @@
         <!-- mobile devices -->
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0"/>
         
-        <title>Myrtille<%=RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected) && !string.IsNullOrEmpty(RemoteSession.ServerAddress) ? " - " + RemoteSession.ServerAddress.ToString() : ""%></title>
+        <title>Myrtille<%=RemoteSession != null && !RemoteSession.ConnectionService && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected) && !string.IsNullOrEmpty(RemoteSession.ServerAddress) ? " - " + RemoteSession.ServerAddress.ToString() : ""%></title>
         
         <link rel="icon" type="image/x-icon" href="favicon.ico"/>
         <link rel="stylesheet" type="text/css" href="<%=BundleTable.Bundles.ResolveBundleUrl("~/css/Default.css", true)%>"/>
