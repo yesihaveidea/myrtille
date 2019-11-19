@@ -228,6 +228,39 @@ namespace Myrtille.Web
                             remoteSessions.Remove(_remoteSessionManager.RemoteSession.Id);
                         }
 
+                        // retrieve the remote session guest(s)
+                        var guests = new List<SharingInfo>();
+                        var sharedSessions = (IDictionary<Guid, SharingInfo>)_application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()];
+                        foreach (var sharingInfo in sharedSessions.Values)
+                        {
+                            if (sharingInfo.RemoteSession.Id.Equals(_remoteSessionManager.RemoteSession.Id))
+                            {
+                                guests.Add(sharingInfo);
+                            }
+                        }
+
+                        // remove them
+                        foreach (var guest in guests)
+                        {
+                            if (guest.GuestInfo.Active && guest.HttpSession != null)
+                            {
+                                if (guest.HttpSession[HttpSessionStateVariables.RemoteSession.ToString()] != null)
+                                {
+                                    guest.HttpSession.Remove(HttpSessionStateVariables.RemoteSession.ToString());
+                                }
+
+                                if (guest.HttpSession[HttpSessionStateVariables.GuestInfo.ToString()] != null)
+                                {
+                                    guest.HttpSession.Remove(HttpSessionStateVariables.GuestInfo.ToString());
+                                }
+
+                                if (guest.RemoteSession.ActiveGuests > 0)
+                                {
+                                    guest.RemoteSession.ActiveGuests--;
+                                }
+                            }
+                            sharedSessions.Remove(guest.GuestInfo.Id);
+                        }
 
                         // recycle the application pool when there is no active remote session
                         bool idleAppPoolRecycling;

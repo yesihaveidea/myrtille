@@ -243,6 +243,10 @@ namespace Myrtille.Web
 
                         // cleanup
                         Session.Remove(HttpSessionStateVariables.RemoteSession.ToString());
+                        if (Session[HttpSessionStateVariables.GuestInfo.ToString()] != null)
+                        {
+                            Session.Remove(HttpSessionStateVariables.GuestInfo.ToString());
+                        }
                         RemoteSession = null;
                     }
                 }

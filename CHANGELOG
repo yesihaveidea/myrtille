@@ -1,4 +1,4 @@
-﻿2019-11-09 Version 2.7.0 (stable)
+﻿2019-11-19 Version 2.7.0 (stable)
 	* HOTFIX * fixed a critical issue with FreeRDP (exit code 131085) when using an RD license server configured in "per device" mode, past the 120 days of the RDS grace period
 	updated readme and documentation about the RDS role
 	the browser "heartbeat" (used to detect if the browser window/tab was closed) is now on a different timer than the periodical fullscreen update (config.js; default 10 secs)

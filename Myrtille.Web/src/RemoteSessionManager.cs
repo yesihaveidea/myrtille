@@ -544,6 +544,11 @@ namespace Myrtille.Web
                 {
                     lock (_guestsIdleTimeoutLock)
                     {
+                        if (!_guestsIdleTimeout.ContainsKey(session.SessionID))
+                        {
+                            _guestsIdleTimeout.Add(session.SessionID, new CancellationTokenSource());
+                        }
+
                         var guestIdleTimeout = _guestsIdleTimeout[session.SessionID];
                         if (guestIdleTimeout != null)
                         {
