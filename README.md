@@ -38,7 +38,7 @@ More information in the DOCUMENTATION.md file.
 - SSH server: any SSH server (tests were made using the built-in Windows 10 OpenSSH server)
 
 ## Resources
-Myrtille does support multiple connections/tabs in cookieless session mode. From version 1.9.0, this mode is disabled by default (OWASP recommendation) but can still be enabled, if required (into web.config, carefully read comments there).
+Myrtille does support multiple connections/tabs (can be disabled into web.config, read comments there).
 
 There is no limitation about the maximal number of concurrent users beside what the rdp (or ssh) server(s) can handle (number of CALs, CPU, RAM?).
 

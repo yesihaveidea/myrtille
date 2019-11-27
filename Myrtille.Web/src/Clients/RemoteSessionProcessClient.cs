@@ -138,6 +138,7 @@ namespace Myrtille.Web
     public class RemoteSessionProcessClientCallback : IRemoteSessionProcessCallback
     {
         private ConnectionClient _connectionClient = new ConnectionClient(Settings.Default.ConnectionServiceUrl);
+        private EnterpriseClient _enterpriseClient = new EnterpriseClient();
         private ApplicationPoolClient _applicationPoolClient = new ApplicationPoolClient();
 
         private RemoteSessionManager _remoteSessionManager;
@@ -185,13 +186,18 @@ namespace Myrtille.Web
                         _remoteSessionManager.ClientIdleTimeout = new CancellationTokenSource();
                     }
                     _remoteSessionManager.RemoteSession.State = RemoteSessionState.Connecting;
+                    _remoteSessionManager.SendMessage(new RemoteSessionMessage { Type = MessageType.Disconnected, Prefix = "disconnected" });
                 }
-
-                // send a disconnect notification to the browser
-                _remoteSessionManager.SendMessage(new RemoteSessionMessage { Type = MessageType.Disconnected, Prefix = "disconnected" });
-
-                if (_remoteSessionManager.RemoteSession.State == RemoteSessionState.Disconnected)
+                // otherwise, redirect to the login page (or the hosts dashboard in enterprise mode)
+                else
                 {
+                    // CAUTION! exit code list is not exhaustive (that's why RemoteSession.ExitCode is an int)
+                    RemoteSessionExitCode _exitCode;
+                    if (!Enum.TryParse(_remoteSessionManager.RemoteSession.ExitCode.ToString(), out _exitCode))
+                    {
+                        _exitCode = RemoteSessionExitCode.Unknown;
+                    }
+
                     // if using a connection service, send the connection state and exit code
                     if (_remoteSessionManager.RemoteSession.ConnectionService)
                     {
@@ -201,13 +207,6 @@ namespace Myrtille.Web
                             GuidHelper.ConvertFromString(_remoteSessionManager.RemoteSession.VMGuid),
                             _remoteSessionManager.RemoteSession.State);
 
-                        // CAUTION! exit code list is not exhaustive (that's why RemoteSession.ExitCode is an int)
-                        RemoteSessionExitCode _exitCode;
-                        if (!Enum.TryParse(_remoteSessionManager.RemoteSession.ExitCode.ToString(), out _exitCode))
-                        {
-                            _exitCode = RemoteSessionExitCode.Unknown;
-                        }
-
                         _connectionClient.SetConnectionExitCode(
                             _remoteSessionManager.RemoteSession.Id,
                             string.IsNullOrEmpty(_remoteSessionManager.RemoteSession.VMAddress) ? _remoteSessionManager.RemoteSession.ServerAddress : _remoteSessionManager.RemoteSession.VMAddress,
@@ -215,103 +214,137 @@ namespace Myrtille.Web
                             _exitCode);
                     }
 
-                    // cleanup
-                    try
-                    {
-                        _application.Lock();
-
-                        // unregister the remote session at the application level
-                        var remoteSessions = (IDictionary<Guid, RemoteSession>)_application[HttpApplicationStateVariables.RemoteSessions.ToString()];
-
-                        if (remoteSessions.ContainsKey(_remoteSessionManager.RemoteSession.Id))
-                        {
-                            remoteSessions.Remove(_remoteSessionManager.RemoteSession.Id);
-                        }
-
-                        // retrieve the remote session guest(s)
-                        var guests = new List<SharingInfo>();
-                        var sharedSessions = (IDictionary<Guid, SharingInfo>)_application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()];
-                        foreach (var sharingInfo in sharedSessions.Values)
-                        {
-                            if (sharingInfo.RemoteSession.Id.Equals(_remoteSessionManager.RemoteSession.Id))
-                            {
-                                guests.Add(sharingInfo);
-                            }
-                        }
-
-                        // remove them
-                        foreach (var guest in guests)
-                        {
-                            if (guest.GuestInfo.Active && guest.HttpSession != null)
-                            {
-                                if (guest.HttpSession[HttpSessionStateVariables.RemoteSession.ToString()] != null)
-                                {
-                                    guest.HttpSession.Remove(HttpSessionStateVariables.RemoteSession.ToString());
-                                }
-
-                                if (guest.HttpSession[HttpSessionStateVariables.GuestInfo.ToString()] != null)
-                                {
-                                    guest.HttpSession.Remove(HttpSessionStateVariables.GuestInfo.ToString());
-                                }
-
-                                if (guest.RemoteSession.ActiveGuests > 0)
-                                {
-                                    guest.RemoteSession.ActiveGuests--;
-                                }
-                            }
-                            sharedSessions.Remove(guest.GuestInfo.Id);
-                        }
-
-                        // recycle the application pool when there is no active remote session
-                        bool idleAppPoolRecycling;
-                        if (!bool.TryParse(ConfigurationManager.AppSettings["IdleAppPoolRecycling"], out idleAppPoolRecycling))
-                        {
-                            idleAppPoolRecycling = true;
-                        }
-
-                        /*
-
-                        it may seem a bit extreme, but the garbage collector doesn't return the freed memory to the operating system
-                        instead, it makes it available to the memory workspace of the application pool process, which in turn uses it for faster memory allocation later
-                        while this is fine for most usage, this becomes critical when the OS is under memory pressure
-                        if that occurs, the process is meant to return its unused memory to the OS
-                        in reality, this is not always true; so the system becomes slow (hdd swap) and unstable
-
-                        memory usage of a process under Windows: https://dzone.com/articles/windows-process-memory-usage-demystified
-                        tool: https://technet.microsoft.com/en-us/sysinternals/vmmap.aspx
-                        garbage collector: https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals
-                        reallocation of freed memory: https://stackoverflow.com/questions/28614210/why-doesnt-net-release-unused-memory-back-to-os-when-physical-95
-
-                        */
-
-                        if (idleAppPoolRecycling && remoteSessions.Count == 0)
-                        {
-                            // give time for the browser to receive the disconnect notification and get back to the login page
-                            // the browser window/tab may also be closed, but there is no way to know it at this step
-                            Thread.Sleep(2000);
-
-                            // the gateway doesn't have enough rights to recycle the application pool, this is delegated to the myrtille services
-                            _applicationPoolClient.RecycleApplicationPool(Environment.UserName);
-                        }
-                    }
-                    catch (Exception exc)
-                    {
-                        Trace.TraceError("Failed to delete remote session ({0})", exc);
-                    }
-                    finally
-                    {
-                        _application.UnLock();
-                    }
-
-                    // the remote session is still bound to an http session
-                    // if the related page is still active, the page will end the cleanup (unbind the remote session from the http session)
-                    // otherwise (the browser window/tab was closed), the cleanup will be done automatically when the http session expires
+                    CleanupDisconnectedSession(_exitCode);
                 }
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to handle session disconnect, remote session {0} ({1})", _remoteSessionManager.RemoteSession.Id, exc);
+                throw;
+            }
+        }
+
+        private void CleanupDisconnectedSession(RemoteSessionExitCode exitCode)
+        {
+            try
+            {
+                _application.Lock();
+
+                #region session
+
+                // unregister the remote session at the application level
+                var remoteSessions = (IDictionary<Guid, RemoteSession>)_application[HttpApplicationStateVariables.RemoteSessions.ToString()];
+                if (remoteSessions.ContainsKey(_remoteSessionManager.RemoteSession.Id))
+                {
+                    remoteSessions.Remove(_remoteSessionManager.RemoteSession.Id);
+                }
+
+                #endregion
+
+                #region session sharing
+
+                // remove the remote session guest(s)
+                var guests = new List<SharingInfo>();
+                var sharedSessions = (IDictionary<Guid, SharingInfo>)_application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()];
+                foreach (var sharingInfo in sharedSessions.Values)
+                {
+                    if (sharingInfo.RemoteSession.Id.Equals(_remoteSessionManager.RemoteSession.Id))
+                    {
+                        guests.Add(sharingInfo);
+                    }
+                }
+
+                foreach (var guest in guests)
+                {
+                    sharedSessions.Remove(guest.GuestInfo.Id);
+                }
+
+                #endregion
+
+                #region application pool recycling
+
+                /*
+                application pool recycling may seem a bit extreme, but the garbage collector doesn't return the freed memory to the operating system
+                instead, it makes it available to the memory workspace of the application pool process, which in turn uses it for faster memory allocation later
+                while this is fine for most usage, this becomes critical when the OS is under memory pressure
+                if that occurs, the process is meant to return its unused memory to the OS
+                in reality, this is not always true; so the system becomes slow (hdd swap) and unstable
+
+                memory usage of a process under Windows: https://dzone.com/articles/windows-process-memory-usage-demystified
+                tool: https://technet.microsoft.com/en-us/sysinternals/vmmap.aspx
+                garbage collector: https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals
+                reallocation of freed memory: https://stackoverflow.com/questions/28614210/why-doesnt-net-release-unused-memory-back-to-os-when-physical-95
+                */
+                bool idleAppPoolRecycling;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["IdleAppPoolRecycling"], out idleAppPoolRecycling))
+                {
+                    idleAppPoolRecycling = false;
+                }
+
+                // connect from a login page or url
+                bool loginEnabled;
+                if (!bool.TryParse(ConfigurationManager.AppSettings["LoginEnabled"], out loginEnabled))
+                {
+                    loginEnabled = true;
+                }
+
+                // if enabled, url of the login page
+                var loginUrl = string.Empty;
+                if (loginEnabled)
+                {
+                    loginUrl = ConfigurationManager.AppSettings["LoginUrl"];
+                }
+
+                // recycle only if enabled and when there is no active remote session
+                // don't recycle if using the enterprise mode (if there are enterprise sessions, they musn't be dropped!)
+                // don't recycle in case of connection failure, so that the page can handle it (show the related error dialog)
+                if (idleAppPoolRecycling &&
+                    remoteSessions.Count == 0 &&
+                    !_enterpriseClient.GetState() &&
+                    (exitCode == RemoteSessionExitCode.Success || exitCode == RemoteSessionExitCode.SessionDisconnectFromMenu || exitCode == RemoteSessionExitCode.SessionLogoutFromMenu))
+                {
+                    // if using a custom login page, the application pool must be recycled after the redirect
+                    if (!string.IsNullOrEmpty(loginUrl))
+                    {
+                        // redirect to the custom login page
+                        _remoteSessionManager.SendMessage(new RemoteSessionMessage { Type = MessageType.Disconnected, Prefix = "disconnected" });
+
+                        // give some time for the redirection
+                        Thread.Sleep(2000);
+
+                        // the gateway doesn't have enough rights to recycle the application pool, this is delegated to the myrtille services
+                        _applicationPoolClient.RecycleApplicationPool(Environment.UserName);
+                    }
+                    // otherwise, the application pool must be recycled before the redirect
+                    // the browser will acquire a new http session
+                    else
+                    {
+                        // the gateway doesn't have enough rights to recycle the application pool, this is delegated to the myrtille services
+                        _applicationPoolClient.RecycleApplicationPool(Environment.UserName);
+
+                        // give some time for the recycling
+                        Thread.Sleep(2000);
+
+                        // redirect to the default login page (empty if login is not enabled)
+                        _remoteSessionManager.SendMessage(new RemoteSessionMessage { Type = MessageType.Disconnected, Prefix = "disconnected" });
+                    }
+                }
+                else
+                {
+                    // redirect to the login page (or the hosts dashboard in enterprise mode)
+                    _remoteSessionManager.SendMessage(new RemoteSessionMessage { Type = MessageType.Disconnected, Prefix = "disconnected" });
+                }
+
+                #endregion
             }
             catch (Exception exc)
             {
                 Trace.TraceError("Failed to cleanup disconnected session, remote session {0} ({1})", _remoteSessionManager.RemoteSession.Id, exc);
                 throw;
+            }
+            finally
+            {
+                _application.UnLock();
             }
         }
     }

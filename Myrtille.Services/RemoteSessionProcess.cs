@@ -452,27 +452,40 @@ namespace Myrtille.Services
             {
                 Trace.TraceInformation("Disconnected remote session {0}, exit code {1}", _remoteSessionId, _process.ExitCode);
 
-                // invoke the callback asynchronously and possibly in a separate thread to avoid any deadlock
-                Task.Factory.StartNew(() =>
+                try
                 {
-                    try
+                    // invoke the callback asynchronously and possibly in a separate thread to avoid any deadlock
+                    Task.Factory.StartNew(() =>
                     {
-                        // notify the remote session manager of the process exit
-                        _callback.ProcessExited(_process.ExitCode);
-                    }
-                    catch (Exception exc)
-                    {
-                        Trace.TraceError("Failed to notify the host client process exit (MyrtilleAppPool down?), remote session {0} ({1})", _remoteSessionId, exc);
-                    }
-                    finally
-                    {
-                        if (_process != null)
-                        {
-                            _process.Dispose();
-                            _process = null;
-                        }
-                    }
-                });
+                        ProcessExitedCallback();
+                    });
+                }
+                catch (Exception exc)
+                {
+                    Trace.TraceError("Failed to invoke the process exited callback asynchronously, trying synchronously, remote session {0} ({1})", _remoteSessionId, exc);
+                    ProcessExitedCallback();
+                }
+            }
+        }
+
+        private void ProcessExitedCallback()
+        {
+            try
+            {
+                // notify the remote session manager of the process exit
+                _callback.ProcessExited(_process.ExitCode);
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to notify the host client process exit (MyrtilleAppPool down?), remote session {0} ({1})", _remoteSessionId, exc);
+            }
+            finally
+            {
+                if (_process != null)
+                {
+                    _process.Dispose();
+                    _process = null;
+                }
             }
         }
 

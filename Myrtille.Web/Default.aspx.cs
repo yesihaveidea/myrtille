@@ -225,7 +225,7 @@ namespace Myrtille.Web
 
                     if (RemoteSession.State == RemoteSessionState.Disconnected)
                     {
-                        // if connecting from login page or url, show any connection failure into a dialog box
+                        // if connecting from a login page or url, show any connection failure into a dialog box
                         // otherwise, this is delegated to the connection API used and its related UI
                         if (_loginEnabled)
                         {
@@ -242,10 +242,10 @@ namespace Myrtille.Web
                         }
 
                         // cleanup
-                        Session.Remove(HttpSessionStateVariables.RemoteSession.ToString());
+                        Session[HttpSessionStateVariables.RemoteSession.ToString()] = null;
                         if (Session[HttpSessionStateVariables.GuestInfo.ToString()] != null)
                         {
-                            Session.Remove(HttpSessionStateVariables.GuestInfo.ToString());
+                            Session[HttpSessionStateVariables.GuestInfo.ToString()] = null;
                         }
                         RemoteSession = null;
                     }
