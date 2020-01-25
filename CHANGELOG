@@ -1,4 +1,4 @@
-﻿2020-01-24 Version 2.8.0 (stable)
+﻿2020-01-25 Version 2.8.0 (stable)
 	myrtille is now available as a docker image (see DOCUMENTATION.MD)
 	resynced FreeRDP (among many things, fixes some issues related to the clipboard and audio)
 	fixed session disconnect occuring under some circumstances on clipboard paste

@@ -58,8 +58,15 @@ See DOCUMENTATION.md for more details.
 
 From version 2.8.0, Myrtille is available as a docker image.
 
-You can pull it from Docker Hub with the following command (use a tag for a specific version, or latest otherwise):
+You can pull it from Docker Hub with the following command (use a tag for a specific version, or latest otherwise)<br/>
+```
 docker pull cedrozor/myrtille(:tag)
+```
+
+Run the image in detached mode (optionally provide the resulting container a network adapter able to connect your hosts)<br/>
+```
+docker run -d (--network="<network adapter>") cedrozor/myrtille(:tag)
+```
 
 See DOCUMENTATION.md for more details.
 

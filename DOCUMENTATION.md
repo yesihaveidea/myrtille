@@ -62,24 +62,36 @@ No installation is required, you just need Docker Desktop or Toolbox for Windows
 
 Myrtille is fully functional as a container, but there are also some limitations (inherent to Windows containers): print and audio redirection (through RDP) is not supported at the moment (this may change into a future version).
 
-You can pull it from Docker Hub with the following command (use a tag for a specific version, or latest otherwise):
+You can pull it from Docker Hub with the following command (use a tag for a specific version, or latest otherwise)<br/>
+```
 docker pull cedrozor/myrtille(:tag)
+```
 
-To list the network adapters available to Docker:
+To list the network adapters available to Docker<br/>
+```
 docker network ls
+```
 
-Run the image (in detached mode) and provide the resulting container a network adapter able to connect your hosts:
-docker run -d --network="<network adapter>" cedrozor/myrtille(:tag)
+Run the image in detached mode (optionally provide the resulting container a network adapter able to connect your hosts)<br/>
+```
+docker run -d (--network="<network adapter>") cedrozor/myrtille(:tag)
+```
 
-To list the containers:
+To list the containers<br/>
+```
 docker ps -a
+```
 
-To open a shell into a container (and be able to explore it, check its **ip address**, logs, etc.):
+To open a shell into a container (and be able to explore it, check its **ip address**, logs, etc.)<br/>
+```
 docker exec -it <container ID> cmd
 docker exec -it <container ID> powershell
+```
 
-To stop a container
+To stop a container<br/>
+```
 docker stop <container ID>
+```
 
 If you intend to have custom settings, manage your hosts or keep track of the logs, you will need to perform additional steps (**data persistence**).
 
