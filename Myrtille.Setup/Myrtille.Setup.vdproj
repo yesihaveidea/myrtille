@@ -111,6 +111,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_4DC4B19F60F54051AAEDCF0871DCFE0B"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_4ECBD3B5DDB248AC8B7040022826CC07"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -1496,6 +1502,26 @@
             {
             "SourcePath" = "8:..\\DOCUMENTATION.md"
             "TargetName" = "8:DOCUMENTATION.md"
+            "Tag" = "8:"
+            "Folder" = "8:_B8E8F5F7726243109EBB878F4275F26E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4DC4B19F60F54051AAEDCF0871DCFE0B"
+            {
+            "SourcePath" = "8:..\\Dockerfile"
+            "TargetName" = "8:Dockerfile"
             "Tag" = "8:"
             "Folder" = "8:_B8E8F5F7726243109EBB878F4275F26E"
             "Condition" = "8:"
@@ -2961,7 +2987,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Myrtille"
         "ProductCode" = "8:{F948238B-9510-4952-9102-8D0BECD55BA8}"
-        "PackageCode" = "8:{C24FF62F-8A40-4E47-A95A-44DA0CDF4978}"
+        "PackageCode" = "8:{003B844D-BB6F-4CB9-A647-B1C7E1EA09CD}"
         "UpgradeCode" = "8:{86A6145E-11DB-4EE7-9CE0-53F997050716}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
