@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ namespace Myrtille.Web
         public Guid Id;
         public RemoteSessionState State;
         public string HostName;
-        public HostType HostType;                   // RDP or SSH
+        public HostType HostType;                       // RDP or SSH
         public SecurityProtocol SecurityProtocol;
         public string ServerAddress;                    // :port, if specified
         public string VMGuid;                           // RDP over VM bus (Hyper-V)
@@ -67,6 +67,7 @@ namespace Myrtille.Web
         public int ExitCode;
         public bool Reconnect;
         public bool ConnectionService;
+        public string ClipboardText;                    // clipboard text
 
         public RemoteSession(
             Guid id,

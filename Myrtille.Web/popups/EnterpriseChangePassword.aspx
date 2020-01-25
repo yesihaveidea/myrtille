@@ -1,7 +1,7 @@
 ﻿<%--
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -55,11 +55,11 @@
                     <h5><label id="confirmPasswordLabel" for="confirmPassword">Confirm Password</label></h5>
                     <input type="password" runat="server" id="confirmPassword" title="confirm password"/>
                 </div>
-                <label runat="server" id="changeError" class="changeError">&nbsp;</label>
+                <label runat="server" id="changeError" class="changeError"></label>
                 <br/>
                 <br />
                 <div class="changePasswordPopupInput">
-                    <input type="button" runat="server" id="changePassword" value="Change Password" onserverclick="ChangePasswordButtonClick"/>
+                    <input type="submit" runat="server" id="changePassword" value="Change Password" onserverclick="ChangePasswordButtonClick"/>
                     <input type="button" id="closePopupButton" value="Close" onclick="parent.closePopup();"/>
                 </div>
             </div>

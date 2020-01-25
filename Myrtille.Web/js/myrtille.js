@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -223,16 +223,18 @@ function Myrtille(httpServerUrl, connectionState, statEnabled, debugEnabled, com
                         case config.getBrowserResizeEnum().SCALE:
                             var width = display.getBrowserWidth();
                             var height = display.getBrowserHeight();
-                            commands.push(commandEnum.SET_SCALE_DISPLAY.text + width + 'x' + height);
+                            commands.push(commandEnum.SET_SCALE_DISPLAY.text + (config.getKeepAspectRatio() ? '1' : '0') + '|' + width + 'x' + height);
                             break;
 
                         case config.getBrowserResizeEnum().RECONNECT:
-                            commands.push(commandEnum.SET_RECONNECT_SESSION.text + 1);
+                            commands.push(commandEnum.SET_RECONNECT_SESSION.text + 1 + '|' + 0);
                             break;
 
                         default:
-                            commands.push(commandEnum.SET_RECONNECT_SESSION.text + 0);
+                            commands.push(commandEnum.SET_RECONNECT_SESSION.text + 0 + '|' + 0);
                     }
+
+                    config.setBrowserResize(config.getDefaultResize().text);
                 }
 
                 // initial clipboard synchronization
@@ -421,7 +423,7 @@ function toggleScaleDisplay()
         var height = display.getBrowserHeight();
 
         // send resolution while enabling display scaling
-        network.send(myrtille.getCommandEnum().SET_SCALE_DISPLAY.text + (config.getBrowserResize() == config.getBrowserResizeEnum().SCALE ? 0 : (width + 'x' + height)));
+        network.send(myrtille.getCommandEnum().SET_SCALE_DISPLAY.text + (config.getBrowserResize() == config.getBrowserResizeEnum().SCALE ? 0 : ((config.getKeepAspectRatio() ? '1' : '0') + '|' + width + 'x' + height)));
     }
     catch (exc)
     {
@@ -434,7 +436,7 @@ function toggleReconnectSession()
     try
     {
         disableToolbar();
-        network.send(myrtille.getCommandEnum().SET_RECONNECT_SESSION.text + (config.getBrowserResize() == config.getBrowserResizeEnum().RECONNECT ? 0 : 1));
+        network.send(myrtille.getCommandEnum().SET_RECONNECT_SESSION.text + (config.getBrowserResize() == config.getBrowserResizeEnum().RECONNECT ? 0 : 1) + '|' + 1);
     }
     catch (exc)
     {
@@ -697,6 +699,10 @@ function handleRemoteSessionExit(exitCode)
             alert('The remote connection failed due to invalid server address or security protocol');
             break;
 
+        // invalid username (Hyper-V host)
+        case 131081:
+        // invalid password (Hyper-V host)
+        case 131082:
         // missing username
         case 131083:
         // missing password

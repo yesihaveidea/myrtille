@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -59,6 +59,16 @@ namespace Myrtille.Web
             _remoteSession.Manager.WebSockets.Add(this);
 
             base.OnOpen();
+
+            // unregister the message queue for the current http session, if exists
+            // the http client is now using HTML5 mode
+            lock (_remoteSession.Manager.MessageQueues.SyncRoot)
+            {
+                if (_remoteSession.Manager.MessageQueues.ContainsKey(_session.SessionID))
+                {
+                    _remoteSession.Manager.MessageQueues.Remove(_session.SessionID);
+                }
+            }
 
             // update guest information
             if (!_session.SessionID.Equals(_remoteSession.OwnerSessionID))

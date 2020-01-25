@@ -1,7 +1,7 @@
 ﻿<%--
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -189,6 +189,13 @@
                     </span>
                 </div>
 
+                <!-- hosts management -->
+                <div runat="server" id="adminDiv" visible="false">
+                    <a runat="server" id="adminUrl" href="?mode=admin">
+                        <span runat="server" id="adminText">Hosts management</span>
+                    </a>
+                </div>
+
                 <!-- connect error -->
                 <div id="errorDiv">
                     <span runat="server" id="connectError"></span>
@@ -260,7 +267,7 @@
                 <input type="button" id="browser" value="HTML5 OFF" onclick="toggleCompatibilityMode();" title="rendering mode"/>
 
                 <!-- scale display -->
-                <input type="button" runat="server" id="scale" value="Scale OFF" onclick="toggleScaleDisplay();" title="scale the remote session to the browser size (keeping aspect ratio)" disabled="disabled"/>
+                <input type="button" runat="server" id="scale" value="Scale OFF" onclick="toggleScaleDisplay();" title="scale the remote session to the browser size" disabled="disabled"/>
 
                 <!-- reconnect session -->
                 <input type="button" runat="server" id="reconnect" value="Reconnect OFF" onclick="toggleReconnectSession();" title="reconnect the remote session to the browser size" disabled="disabled"/>
@@ -342,31 +349,27 @@
                     // detect the browser width & height
                     setClientResolution(display);
 
-                    // the toolbar may be disabled from web.config
-                    if (document.getElementById('<%=toolbar.ClientID%>') == null)
+                    // remote session toolbar
+                    if (<%=(RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected)).ToString(CultureInfo.InvariantCulture).ToLower()%>)
                     {
-                        // disable the cookies related to the toolbar
-                        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'toolbar', 0);
-                        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'stat', 0);
-                        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'debug', 0);
-                        setCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser', 0);
-                        return;
+                        // the toolbar is enabled (web.config)
+                        if (document.getElementById('<%=toolbar.ClientID%>') != null)
+                        {
+                            // resume the saved toolbar state
+                            if (getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'toolbar'))
+                            {
+                                toggleToolbar();
+                            }
+
+                            // in addition to having their states also saved into a cookie, stat, debug and compatibility buttons are always available into the toolbar (even for guest(s) if the remote session is shared)
+                            document.getElementById('stat').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'stat') ? 'Stat ON' : 'Stat OFF';
+                            document.getElementById('debug').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'debug') ? 'Debug ON' : 'Debug OFF';
+                            document.getElementById('browser').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser') ? 'HTML5 OFF' : 'HTML5 ON';
+
+                            // swipe is disabled on IE/Edge because it emulates mouse events by default (experimental)
+                            document.getElementById('<%=vswipe.ClientID%>').disabled = document.getElementById('<%=vswipe.ClientID%>').disabled || display.isIEBrowser();
+                        }
                     }
-
-                    // toolbar state is saved into a cookie to persist across page reload(s)
-                    if (<%=(RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected)).ToString(CultureInfo.InvariantCulture).ToLower()%> &&
-                        getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'toolbar'))
-                    {
-                        toggleToolbar();
-                    }
-
-                    // in addition to having their states also saved into a cookie, stat, debug and compatibility buttons are always available into the toolbar (even for guest(s) if the remote session is shared)
-                    document.getElementById('stat').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'stat') ? 'Stat ON' : 'Stat OFF';
-                    document.getElementById('debug').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'debug') ? 'Debug ON' : 'Debug OFF';
-                    document.getElementById('browser').value = getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser') ? 'HTML5 OFF' : 'HTML5 ON';
-
-                    // swipe is disabled on IE/Edge because it emulates mouse events by default (experimental)
-                    document.getElementById('<%=vswipe.ClientID%>').disabled = document.getElementById('<%=vswipe.ClientID%>').disabled || display.isIEBrowser();
                 }
                 catch (exc)
                 {
@@ -379,8 +382,8 @@
                 var securityProtocolDiv = document.getElementById('securityProtocolDiv');
                 if (securityProtocolDiv != null)
                 {
-                    securityProtocolDiv.style.visibility = (hostType.selectedIndex == 0 ? 'visible' : 'hidden');
-                    securityProtocolDiv.style.display = (hostType.selectedIndex == 0 ? 'block' : 'none');
+                    securityProtocolDiv.style.visibility = (hostType.selectedIndex == 0 || hostType.selectedIndex == 1 ? 'visible' : 'hidden');
+                    securityProtocolDiv.style.display = (hostType.selectedIndex == 0 || hostType.selectedIndex == 1 ? 'block' : 'none');
                 }
 
                 var vmDiv = document.getElementById('vmDiv');
@@ -388,13 +391,6 @@
                 {
                     vmDiv.style.visibility = (hostType.selectedIndex == 1 ? 'visible' : 'hidden');
                     vmDiv.style.display = (hostType.selectedIndex == 1 ? 'block' : 'none');
-                }
-
-                var domainDiv = document.getElementById('domainDiv');
-                if (domainDiv != null)
-                {
-                    domainDiv.style.visibility = (hostType.selectedIndex == 0 ? 'visible' : 'hidden');
-                    domainDiv.style.display = (hostType.selectedIndex == 0 ? 'block' : 'none');
                 }
             }
 

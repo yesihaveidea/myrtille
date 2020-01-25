@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ namespace Myrtille.Web
     public partial class EnterpriseChangePassword : Page
     {
         private EnterpriseClient _enterpriseClient = new EnterpriseClient();
-       
+
+        private bool _localAdmin;
+
         /// <summary>
         /// page load (postback data is now available)
         /// </summary>
@@ -43,6 +45,12 @@ namespace Myrtille.Web
             else
             {
                 changePassword.Disabled = true;
+            }
+
+            // local admin
+            if (!string.IsNullOrEmpty(Request["mode"]) && Request["mode"].Equals("admin"))
+            {
+                _localAdmin = true;
             }
         }
 
@@ -68,7 +76,21 @@ namespace Myrtille.Web
                 {
                     changeError.InnerText = "New and confirmed passwords do not match";
                 }
-                else
+                // ensure password change for local admin
+                // for the enterprise domain, this is delegated to the domain policy (whether to accept an empty password, same as the old one, on change)
+                else if (_localAdmin)
+                {
+                    if (string.IsNullOrEmpty(newPassword.Value))
+                    {
+                        changeError.InnerText = "New password must be specified";
+                    }
+                    else if (string.Equals(oldPassword.Value, newPassword.Value))
+                    {
+                        changeError.InnerText = "Old and new passwords must be different";
+                    }
+                }
+
+                if (string.IsNullOrEmpty(changeError.InnerText))
                 {
                     if (_enterpriseClient.ChangeUserPassword(userName.Value, oldPassword.Value, newPassword.Value))
                     {

@@ -1,4 +1,22 @@
-﻿2019-11-27 Version 2.7.1 (stable)
+﻿2020-01-24 Version 2.8.0 (stable)
+	myrtille is now available as a docker image (see DOCUMENTATION.MD)
+	resynced FreeRDP (among many things, fixes some issues related to the clipboard and audio)
+	fixed session disconnect occuring under some circumstances on clipboard paste
+	fixed an issue where only the first letter of the clipboard content was displayed on clipboard paste
+	simplified hosts management (no domain or enterprise mode required); default login: admin/admin (changed upon first login)
+	updated the enterprise mode so that a member of "EnterpriseAdminGroup" can connect an host whatever the allowed groups or users defined on it (thanks dgcom)
+	fixed an issue with the enterprise mode, which prompted to change the password due to expiration whereas the expiration date was just not set (thanks dgcom)
+	the installer is now shipped without bootstraper (Setup.exe); open Myrtille.msi directly instead
+	the installer now installs the myrtille pre-requisites automatically (roles and features); the related script (Myrtille.Web\Install.ps1) can also be run manually from outside the installer, if needed
+	the installer now supports upgrading (thanks to Orca, which allows finer control over msi files), removing the need to uninstall a previous version first
+	security protocol is now configurable for RDP over VM bus
+	user domain is now configurable whatever the protocol and displayed into the toolbar, if defined
+	updated comments to drain disconnected sessions when using a connection broker in HA mode (myrtille services config)
+	starting with Windows Server 2019 (or Windows 10 release 1903), RDS introduces changes with NLA and the way disconnected sessions are handled (see DOCUMENTATION.MD); myrtille now default to scale instead of reconnect
+	if scaling the display on browser resize, you can choose whether to preserve or not the aspect ratio (config.js, default = don't keep)
+	various minor fixes
+
+2019-11-27 Version 2.7.1 (stable)
 	* HOTFIX * fixed a potential crash of myrtille services when sending a disconnect notification (https://github.com/cedrozor/myrtille/issues/187, thanks gtmsew)
 	the automatic application pool recycling is now disabled by default, and is not applicable if using the enterprise mode (this prevents enterprise sessions to be dropped unexpectedly!)
 	if recycling is enabled, a new http session is now acquired on disconnect; this prevents a subsequent login failure (due to the old http session being invalid) without any error message

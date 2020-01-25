@@ -1,7 +1,7 @@
 ﻿<%--
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -38,11 +38,15 @@
                 </span>
                 <br/>
                 <div class="editHostSessionPopupInput">
-                    <h5><label id="userNameLabel" for="userName">User name</label></h5>
+                    <h5><label id="userDomainLabel" for="userDomain">Domain (optional)</label></h5>
+                    <input type="text" runat="server" id="userDomain" title="user domain" />
+                </div>
+                <div class="editHostSessionPopupInput">
+                    <h5><label id="userNameLabel" for="userName">Username</label></h5>
                     <input type="text" runat="server" id="userName" title="user name" />
                 </div>
                 <div class="editHostSessionPopupInput">
-                    <h5><label id="userPasswordLabel" for="userPassword">User password</label></h5>
+                    <h5><label id="userPasswordLabel" for="userPassword">Password</label></h5>
                     <input type="password" runat="server" id="userPassword" title="user password" />
                 </div>
                 <div class="editHostSessionPopupInput">

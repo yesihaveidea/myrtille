@@ -1,7 +1,7 @@
 ﻿<%--
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -55,9 +55,9 @@
                     <h5><label id="vmEnhancedModeLabel" for="vmEnhancedMode">VM Enhanced Mode (if supported by the VM)</label></h5>
                     <input type="checkbox" runat="server" id="vmEnhancedMode" title="faster display and clipboard/printer redirection, if supported by the guest VM" />
                 </div>
-                <div class="editHostPopupInput">
-                    <h5><label id="groupsAccessLabel" for="groupsAccess">Domain Groups Allowed (comma separated)</label></h5>
-                    <input type="text" runat="server" id="groupsAccess" title="groups access"/>
+                <div class="editHostPopupInput" runat="server" id="groupsAccessInput">
+                    <h5><label id="groupsAccessLabel" for="groupsAccess">Domain Groups or Users Allowed (comma separated)</label></h5>
+                    <input type="text" runat="server" id="groupsAccess" title="access restrictions"/>
                 </div>
                 <div class="editHostPopupInput" runat="server" id="rdpSecurityInput">
                     <h5><label id="securityProtocolLabel" for="securityProtocol">RDP Security Protocol</label></h5>
@@ -75,7 +75,7 @@
                 </div>
                 <div class="editHostPopupInput">
                     <h5><label id="promptCredentialsLabel" for="promptCredentials">Prompt for Credentials</label></h5>
-                    <input type="checkbox" runat="server" id="promptCredentials" title="prompt for credentials"/>
+                    <input type="checkbox" runat="server" id="promptCredentials" title="prompt for credentials (or use the logged in user otherwise)"/>
                 </div>
 
                 <br/>

@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,14 +18,17 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Myrtille.Helpers
 {
-    public static class RDPCryptoHelper
+    public static class CryptoHelper
     {
+        #region RDP
+
         /*
         adapted from https://gallery.technet.microsoft.com/scriptcenter/Password-Text-String-34711a5e
         original script by Ken Sweet
@@ -50,7 +53,7 @@ namespace Myrtille.Helpers
         full remoteapp walkthrough: https://mizitechinfo.wordpress.com/2013/07/26/fast-and-easy-how-to-deploy-remoteapp-on-windows-server-2012/
         */
 
-        public static string EncryptPassword(string password)
+        public static string RDP_Encrypt(string password)
         {
             try
             {
@@ -71,7 +74,7 @@ namespace Myrtille.Helpers
             }
         }
 
-        public static string DecryptPassword(string passwordHash)
+        public static string RDP_Decrypt(string passwordHash)
         {
             try
             {
@@ -91,5 +94,79 @@ namespace Myrtille.Helpers
                 throw;
             }
         }
+
+        #endregion
+
+        #region AES
+
+        public static string AES_Encrypt(string stringToBeEncrypted, string passwordString)
+        {
+            string encrypted;
+            var passwordBytes = Encoding.UTF8.GetBytes(passwordString);
+            var bytesToBeEncrypted = Encoding.UTF8.GetBytes(stringToBeEncrypted);
+
+            var saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+            using (var ms = new MemoryStream())
+            {
+                using (var AES = new RijndaelManaged())
+                {
+                    AES.KeySize = 256;
+                    AES.BlockSize = 128;
+
+                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
+                    AES.Key = key.GetBytes(AES.KeySize / 8);
+                    AES.IV = key.GetBytes(AES.BlockSize / 8);
+
+                    AES.Mode = CipherMode.CBC;
+
+                    using (var cs = new CryptoStream(ms, AES.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(bytesToBeEncrypted, 0, bytesToBeEncrypted.Length);
+                        cs.Close();
+                    }
+                    encrypted = Convert.ToBase64String(ms.ToArray());
+                }
+            }
+
+            return encrypted;
+        }
+
+        public static string AES_Decrypt(string stringToBeDecrypted, string passwordString)
+        {
+            string decrypted;
+            var bytesToBeDecrypted = Convert.FromBase64String(stringToBeDecrypted);
+            var passwordBytes = Encoding.UTF8.GetBytes(passwordString);
+
+            // Set your salt here, change it to meet your flavor:
+            // The salt bytes must be at least 8 bytes.
+            var saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+            using (var ms = new MemoryStream())
+            {
+                using (var AES = new RijndaelManaged())
+                {
+                    AES.KeySize = 256;
+                    AES.BlockSize = 128;
+
+                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
+                    AES.Key = key.GetBytes(AES.KeySize / 8);
+                    AES.IV = key.GetBytes(AES.BlockSize / 8);
+
+                    AES.Mode = CipherMode.CBC;
+
+                    using (var cs = new CryptoStream(ms, AES.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(bytesToBeDecrypted, 0, bytesToBeDecrypted.Length);
+                        cs.Close();
+                    }
+                    decrypted = Encoding.UTF8.GetString(ms.ToArray());
+                }
+            }
+
+            return decrypted;
+        }
+
+        #endregion
     }
 }

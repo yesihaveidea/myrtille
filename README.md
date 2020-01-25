@@ -54,16 +54,21 @@ All releases here: https://github.com/cedrozor/myrtille/releases
 
 See DOCUMENTATION.md for more details.
 
+## Docker
+
+From version 2.8.0, Myrtille is available as a docker image.
+
+You can pull it from Docker Hub with the following command (use a tag for a specific version, or latest otherwise):
+docker pull cedrozor/myrtille(:tag)
+
+See DOCUMENTATION.md for more details.
+
 ## Remote Desktop Services
 
-**For best experience**, and be able to go over the default limit of 2 concurrent users, you will need to install the [RDS role](https://www.exitthefastlane.com/2016/05/native-rds-in-server2016-part-1-basics.html) on your remote server(s). Optionally, you can install the [RD Connection Broker](https://www.tech-coffee.net/rds-2016-farm-deploy-the-farm-in-azure/) feature to allow load-balancing across an RDS farm (possibly hosted on Azure) and manage the applications allowed to run (and with which parameters) on session start.
-
-You will also need to enable [multiple sessions per user](https://portal.databasemart.com/kb/a220/how-to-enable-multiple-single-remote-desktop-sessions-in-windows-server-2012.aspx) if you don't want your users to be limited to 1 session only (if you have several users sharing the same account, they will otherwise disconnect each others).
-
-The RDS role offers you a **grace period of 120 days** after which you will need to use an [RD License Server](https://www.exitthefastlane.com/2016/06/native-rds-in-server2016-part-3-rdsh.html) with proper licenses (CALs) to suit your licensing mode ("Per Device" or "Per User").
+This is the primary requirement for RDP connections. Please read DOCUMENTATION.md for more information about the RDS role and features, and how to configure it for the best experience with Myrtille.
 
 ## Usage
-Once Myrtille is installed on your server, you can use it at http://myserver/myrtille. Set the rdp (or ssh) server address, user domain (if any, for rdp), name and password then click "Connect!" to log in. "Disconnect" to log out.
+Once Myrtille is installed on your server, you can use it at http://myserver/myrtille. Set the rdp (or ssh) server address, user domain (if any, for rdp), name and password then click "Connect!" to log in. "Disconnect" to log out. A simplified hosts management dashboard is also available to pre-configure connections with a 1 click access.
 
 Multifactor Authentication and Active Directory integration (Enterprise Mode) are disabled by default. Please read documentation for activation of these features.
 

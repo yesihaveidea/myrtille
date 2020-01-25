@@ -51,6 +51,7 @@
     <Compile Include="Adapters\IEnterpriseAdapter.cs" />
     <Compile Include="Adapters\IMultifactorAuthenticationAdapter.cs" />
     <Compile Include="Enums\CaptureFormat.cs" />
+    <Compile Include="Enums\EnterpriseMode.cs" />
     <Compile Include="Enums\HostType.cs" />
     <Compile Include="Enums\RemoteSessionExitCode.cs" />
     <Compile Include="Enums\RemoteSessionState.cs" />

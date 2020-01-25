@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Configuration.Install;
+using System.Diagnostics;
 using System.IO;
-using System.ServiceProcess;
 using System.Windows.Forms;
 using System.Xml;
 using Myrtille.Helpers;
@@ -31,43 +31,6 @@ namespace Myrtille.Admin.Services
     [RunInstaller(true)]
     public class ServicesInstaller : Installer
 	{
-        // required designer variable
-        private Container components = null;
-        
-        private ServiceProcessInstaller serviceProcessInstaller;
-		private ServiceInstaller serviceInstaller;
-
-        #region Component Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.serviceProcessInstaller = new ServiceProcessInstaller();
-            this.serviceProcessInstaller.Account = ServiceAccount.LocalSystem;
-            this.serviceProcessInstaller.Password = null;
-            this.serviceProcessInstaller.Username = null;
-
-            this.serviceInstaller = new ServiceInstaller();
-            this.serviceInstaller.ServiceName = "Myrtille.Admin.Services";
-            this.serviceInstaller.Description = "Myrtille Admin API";
-            this.serviceInstaller.StartType = ServiceStartMode.Automatic;
-
-            this.Installers.AddRange(new Installer[] {
-                this.serviceProcessInstaller,
-                this.serviceInstaller});
-        }
-
-        #endregion
-
-        public ServicesInstaller()
-        {
-            // This call is required by the Designer.
-            InitializeComponent();
-        }
-
         public override void Install(
             IDictionary stateSaver)
         {
@@ -95,6 +58,31 @@ namespace Myrtille.Admin.Services
 
             try
             {
+                var process = new Process();
+
+                bool debug = true;
+
+                #if !DEBUG
+                    debug = false;
+                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                #endif
+
+                process.StartInfo.FileName = string.Format(@"{0}\WindowsPowerShell\v1.0\powershell.exe", Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess ? Environment.SystemDirectory.ToLower().Replace("system32", "sysnative") : Environment.SystemDirectory);
+                process.StartInfo.Arguments = "-ExecutionPolicy Bypass" +
+                    " -Command \"& '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Admin.Services.Install.ps1") + "'" +
+                    " -BinaryPath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Admin.Services.exe") + "'" +
+                    " -DebugMode " + (debug ? "1" : "0") +
+                    " 3>&1 2>&1 | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Admin.Services.Install.log") + "'" + "\"";
+
+                process.Start();
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(string.Format("An error occured while running {0}. See {1} for more information.",
+                        Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Admin.Services.Install.ps1"),
+                        Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Admin.Services.Install.log")));
+                }
+
                 // load config
                 var config = new XmlDocument();
                 var configPath = Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Admin.Services.exe.config");
@@ -135,13 +123,12 @@ namespace Myrtille.Admin.Services
             IDictionary savedState)
         {
             base.Commit(savedState);
-            StartService();
+            // insert code as needed
         }
 
         public override void Rollback(
             IDictionary savedState)
         {
-            StopService();
             base.Rollback(savedState);
             DoUninstall();
         }
@@ -149,69 +136,8 @@ namespace Myrtille.Admin.Services
         public override void Uninstall(
             IDictionary savedState)
         {
-            StopService();
             base.Uninstall(savedState);
             DoUninstall();
-        }
-
-        private void StartService()
-        {
-            Context.LogMessage("Starting Myrtille.Admin.Services");
-
-            // try to start the service
-            // in case of failure, ask for a manual start after install
-
-            try
-            {
-                var sc = new ServiceController(serviceInstaller.ServiceName);
-                if (sc.Status == ServiceControllerStatus.Stopped)
-                {
-                    sc.Start();
-                    Context.LogMessage("Started Myrtille.Admin.Services");
-                }
-                else
-                {
-                    Context.LogMessage(string.Format("Myrtille.Admin.Services is not stopped (status: {0})", sc.Status));
-                }
-            }
-            catch (Exception exc)
-            {
-                MessageBox.Show(
-                    ActiveWindow.Active,
-                    serviceInstaller.ServiceName + " windows service could not be started by this installer. Please do it manually once the installation is complete",
-                    serviceInstaller.ServiceName,
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-
-                Context.LogMessage(string.Format("Failed to start Myrtille.Admin.Services ({0})", exc));
-            }
-        }
-
-        private void StopService()
-        {
-            Context.LogMessage("Stopping Myrtille.Admin.Services");
-
-            // if the service is running while uninstall is going on, the user is asked wether to stop it or not
-            // problem is, if the user choose "no", the service is not stopped thus won't be removed
-            // force stop it at this step, if not already done
-
-            try
-            {
-                var sc = new ServiceController(serviceInstaller.ServiceName);
-                if (sc.Status == ServiceControllerStatus.Running)
-                {
-                    sc.Stop();
-                    Context.LogMessage("Stopped Myrtille.Admin.Services");
-                }
-                else
-                {
-                    Context.LogMessage(string.Format("Myrtille.Admin.Services is not running (status: {0})", sc.Status));
-                }
-            }
-            catch (Exception exc)
-            {
-                Context.LogMessage(string.Format("Failed to stop Myrtille.Admin.Services ({0})", exc));
-            }
         }
 
         private void DoUninstall()
@@ -223,7 +149,31 @@ namespace Myrtille.Admin.Services
 
             try
             {
-                // if needed
+                var process = new Process();
+
+                bool debug = true;
+
+                #if !DEBUG
+                    debug = false;
+                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                #endif
+
+                process.StartInfo.FileName = string.Format(@"{0}\WindowsPowerShell\v1.0\powershell.exe", Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess ? Environment.SystemDirectory.ToLower().Replace("system32", "sysnative") : Environment.SystemDirectory);
+                process.StartInfo.Arguments = "-ExecutionPolicy Bypass" +
+                    " -Command \"& '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Admin.Services.Uninstall.ps1") + "'" +
+                    " -DebugMode " + (debug ? "1" : "0") +
+                    " 3>&1 2>&1 | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Admin.Services.Uninstall.log") + "'" + "\"";
+
+                process.Start();
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new Exception(string.Format("An error occured while running {0}. See {1} for more information.",
+                        Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Admin.Services.Uninstall.ps1"),
+                        Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Admin.Services.Uninstall.log")));
+                }
+
+                Context.LogMessage("Uninstalled Myrtille.Admin.Services");
             }
             catch (Exception exc)
             {
@@ -231,21 +181,5 @@ namespace Myrtille.Admin.Services
                 throw;
             }
         }
-
-        /// <summary> 
-        /// Clean up any resources being used.
-        /// </summary>
-        protected override void Dispose(
-            bool disposing)
-		{
-            if (disposing)
-			{
-                if (components != null)
-				{
-					components.Dispose();
-				}
-			}
-            base.Dispose(disposing);
-		}        
 	}
 }

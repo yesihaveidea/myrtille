@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,16 +26,16 @@ namespace Myrtille.Web
 {
     public class EnterpriseClient : ClientBase<IEnterpriseService>, IEnterpriseService
     {
-        public bool GetState()
+        public EnterpriseMode GetMode()
         {
             try
             {
-                return Channel.GetState();
+                return Channel.GetMode();
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to get enterprise adapter state ({0})", exc);
-                return false;
+                Trace.TraceError("Failed to get enterprise adapter mode ({0})", exc);
+                return EnterpriseMode.None;
             }
         }
 
@@ -143,11 +143,11 @@ namespace Myrtille.Web
             }
         }
 
-        public string CreateUserSession(string sessionID, long hostID, string username, string password)
+        public string CreateUserSession(string sessionID, long hostID, string username, string password, string domain)
         {
             try
             {
-                return Channel.CreateUserSession(sessionID,hostID,username,password);
+                return Channel.CreateUserSession(sessionID, hostID, username, password, domain);
             }
             catch (Exception exc)
             {

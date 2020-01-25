@@ -326,6 +326,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Myrtille.Admin.Web", "Myrti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Myrtille.Admin.Services", "Myrtille.Admin.Services\Myrtille.Admin.Services.csproj", "{2705B2A1-B47A-4E4D-96F9-BACE48F9A807}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Myrtille.Docker", "Myrtille.Docker", "{F5B06DC6-B8A1-40FC-94E4-CEC3BCD3F8B4}"
+	ProjectSection(SolutionItems) = preProject
+		Dockerfile = Dockerfile
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|.NET = Debug|.NET

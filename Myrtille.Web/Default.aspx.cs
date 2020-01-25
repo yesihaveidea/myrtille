@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -52,6 +52,8 @@ namespace Myrtille.Web
         private bool _httpSessionUseUri;
 
         private bool _authorizedRequest = true;
+
+        private bool _localAdmin;
 
         private EnterpriseSession _enterpriseSession;
         protected RemoteSession RemoteSession;
@@ -207,16 +209,6 @@ namespace Myrtille.Web
                 {
                     RemoteSession = (RemoteSession)Session[HttpSessionStateVariables.RemoteSession.ToString()];
 
-                    // register a message queue for the current http session, if not already done
-                    // used for HTML4 client(s); pushing notifications on websocket(s) otherwise
-                    lock (RemoteSession.Manager.MessageQueues.SyncRoot)
-                    {
-                        if (!RemoteSession.Manager.MessageQueues.ContainsKey(Session.SessionID))
-                        {
-                            RemoteSession.Manager.MessageQueues.Add(Session.SessionID, new List<RemoteSessionMessage>());
-                        }
-                    }
-
                     // if using a connection service, send the connection state
                     if (Session.SessionID.Equals(RemoteSession.OwnerSessionID) && RemoteSession.ConnectionService)
                     {
@@ -303,6 +295,12 @@ namespace Myrtille.Web
                 }
             }
 
+            // local admin
+            if (_enterpriseSession == null && RemoteSession == null && _enterpriseClient.GetMode() == EnterpriseMode.Local && !string.IsNullOrEmpty(Request["mode"]) && Request["mode"].Equals("admin"))
+            {
+                _localAdmin = true;
+            }
+
             // postback events may redirect after execution; UI is updated from there
             if (!IsPostBack)
             {
@@ -341,21 +339,24 @@ namespace Myrtille.Web
             {
                 if (_toolbarEnabled)
                 {
+                    // interacting with the remote session is available to guests with control access, but only the remote session owner should have control on the remote session itself
+                    var controlEnabled = Session.SessionID.Equals(RemoteSession.OwnerSessionID) || (Session[HttpSessionStateVariables.GuestInfo.ToString()] != null && ((GuestInfo)Session[HttpSessionStateVariables.GuestInfo.ToString()]).Control);
+
                     toolbar.Visible = true;
                     toolbarToggle.Visible = true;
                     serverInfo.Value = !string.IsNullOrEmpty(RemoteSession.VMGuid) ? RemoteSession.VMGuid : (!string.IsNullOrEmpty(RemoteSession.HostName) ? RemoteSession.HostName : RemoteSession.ServerAddress);
-                    userInfo.Value = !string.IsNullOrEmpty(RemoteSession.VMGuid) || RemoteSession.SecurityProtocol == SecurityProtocol.rdp ? string.Empty : RemoteSession.UserName;
+                    userInfo.Value = !string.IsNullOrEmpty(RemoteSession.VMGuid) || RemoteSession.SecurityProtocol == SecurityProtocol.rdp ? string.Empty : (string.IsNullOrEmpty(RemoteSession.UserDomain) ? RemoteSession.UserName : string.Format("{0}\\{1}", RemoteSession.UserDomain, RemoteSession.UserName));
                     userInfo.Visible = !string.IsNullOrEmpty(userInfo.Value);
                     scale.Value = RemoteSession.BrowserResize == BrowserResize.Scale ? "Scale ON" : "Scale OFF";
                     scale.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
                     reconnect.Value = RemoteSession.BrowserResize == BrowserResize.Reconnect ? "Reconnect ON" : "Reconnect OFF";
                     reconnect.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
-                    keyboard.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
-                    clipboard.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH || !RemoteSession.AllowRemoteClipboard || (!string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode);
+                    keyboard.Disabled = !controlEnabled;
+                    clipboard.Disabled = !controlEnabled || RemoteSession.HostType == HostType.SSH || !RemoteSession.AllowRemoteClipboard || (!string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode);
                     files.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH || !RemoteSession.AllowFileTransfer || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain)) || !string.IsNullOrEmpty(RemoteSession.VMGuid);
-                    cad.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
-                    mrc.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
-                    vswipe.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
+                    cad.Disabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
+                    mrc.Disabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
+                    vswipe.Disabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
                     share.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || !RemoteSession.AllowSessionSharing;
                     disconnect.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
                 }
@@ -364,7 +365,7 @@ namespace Myrtille.Web
             else if (_enterpriseSession != null && _enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.NONE)
             {
                 hosts.Visible = true;
-                enterpriseUserInfo.Value = _enterpriseSession.UserName;
+                enterpriseUserInfo.Value = string.IsNullOrEmpty(_enterpriseSession.Domain) ? _enterpriseSession.UserName : string.Format("{0}\\{1}", _enterpriseSession.Domain, _enterpriseSession.UserName);
                 enterpriseUserInfo.Visible = !string.IsNullOrEmpty(enterpriseUserInfo.Value);
                 newRDPHost.Visible = _enterpriseSession.IsAdmin;
                 newSSHHost.Visible = _enterpriseSession.IsAdmin;
@@ -386,14 +387,21 @@ namespace Myrtille.Web
                 }
 
                 // enterprise mode
-                if (_enterpriseClient.GetState())
+                if (_enterpriseClient.GetMode() == EnterpriseMode.Domain || _localAdmin)
                 {
                     hostConnectDiv.Visible = false;
+                    adminDiv.Visible = _localAdmin;
+                    if (adminDiv.Visible)
+                    {
+                        adminText.InnerText = "Home";
+                        adminUrl.HRef = "~/";
+                    }
                 }
                 // standard mode
                 else
                 {
                     connect.Attributes["onclick"] = "initDisplay();";
+                    adminDiv.Visible = _enterpriseClient.GetMode() == EnterpriseMode.Local;
                 }
             }
         }
@@ -432,7 +440,7 @@ namespace Myrtille.Web
             }
 
             // enterprise mode from login
-            if (_enterpriseSession == null && _enterpriseClient.GetState())
+            if (_enterpriseSession == null && (_enterpriseClient.GetMode() == EnterpriseMode.Domain || _localAdmin))
             {
                 CreateEnterpriseSessionFromLogin();
             }
@@ -508,7 +516,7 @@ namespace Myrtille.Web
             var loginVMEnhancedMode = vmEnhancedMode.Checked;
             var loginDomain = domain.Value;
             var loginUser = user.Value;
-            var loginPassword = string.IsNullOrEmpty(passwordHash.Value) ? password.Value : RDPCryptoHelper.DecryptPassword(passwordHash.Value);
+            var loginPassword = string.IsNullOrEmpty(passwordHash.Value) ? password.Value : CryptoHelper.RDP_Decrypt(passwordHash.Value);
             var startProgram = program.Value;
 
             // allowed features
@@ -550,7 +558,7 @@ namespace Myrtille.Web
                     loginVMEnhancedMode = connection.VMEnhancedMode;
                     loginDomain = connection.Domain;
                     loginUser = connection.Username;
-                    loginPassword = RDPCryptoHelper.DecryptPassword(connection.Password);
+                    loginPassword = CryptoHelper.RDP_Decrypt(connection.Password);
                     startProgram = connection.StartRemoteProgram;
                 }
                 catch (Exception exc)
@@ -727,14 +735,18 @@ namespace Myrtille.Web
         {
             try
             {
-                // authenticate the user against the enterprise active directory
+                // authenticate the user
                 _enterpriseSession = _enterpriseClient.Authenticate(user.Value, password.Value);
 
-                if (_enterpriseSession.AuthenticationErrorCode != EnterpriseAuthenticationErrorCode.NONE)
+                if (_enterpriseSession == null || _enterpriseSession.AuthenticationErrorCode != EnterpriseAuthenticationErrorCode.NONE)
                 {
-                    if (_enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.PASSWORD_EXPIRED)
+                    if (_enterpriseSession == null)
                     {
-                        ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), string.Format("openPopup('changePasswordPopup', 'EnterpriseChangePassword.aspx?userName={0}');", user.Value), true);
+                        connectError.InnerText = EnterpriseAuthenticationErrorHelper.GetErrorDescription(EnterpriseAuthenticationErrorCode.UNKNOWN_ERROR);
+                    }
+                    else if (_enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.PASSWORD_EXPIRED)
+                    {
+                        ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), string.Format("openPopup('changePasswordPopup', 'EnterpriseChangePassword.aspx?userName={0}" + (_localAdmin ? "&mode=admin');" : "');"), user.Value), true);
                     }
                     else
                     {
@@ -780,7 +792,7 @@ namespace Myrtille.Web
             {
                 var host = e.Item.DataItem as EnterpriseHost;
 
-                if (host.PromptForCredentials)
+                if (host.PromptForCredentials || string.IsNullOrEmpty(_enterpriseSession.Domain))
                 {
                     var hostLink = e.Item.FindControl("hostLink") as HtmlAnchor;
                     hostLink.HRef = null;

@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -119,7 +119,8 @@ function Config(
     var keyboardHelperTimeout = 3000;                               // duration (ms) before removing the keyboard helper
 
     // display
-    var defaultResize = browserResizeEnum.RECONNECT;                // default action on browser resize (RDP host only)
+    var defaultResize = browserResizeEnum.SCALE;                    // default action on browser resize (RDP host only)
+    var keepAspectRatio = false;                                    // if scaling the display, preservation of the aspect ratio
     var displayMode = displayModeEnum.AUTO;                         // display mode
     var imageEncoding = imageEncodingEnum.PNG;                      // image encoding
     var imageQuality = 100;                                         // image quality (%) higher = better; not applicable for PNG (lossless); tweaked dynamically to fit the available bandwidth if using JPEG, AUTO or WEBP encoding. for best user experience, fullscreen updates are always done in higher quality (75%), regardless of this setting and bandwidth
@@ -186,7 +187,9 @@ function Config(
     this.getCompatibilityMode = function() { return compatibilityMode; };
     this.getBrowserResizeEnum = function() { return browserResizeEnum; };
     this.getBrowserResize = function() { return (browserResize == null ? null : (browserResize == 'SCALE' ? browserResizeEnum.SCALE : (browserResize == 'RECONNECT' ? browserResizeEnum.RECONNECT : browserResizeEnum.NONE))); };
+    this.setBrowserResize = function(action) { browserResize = action; };
     this.getDefaultResize = function() { return defaultResize; };
+    this.getKeepAspectRatio = function() { return keepAspectRatio; };
     this.getDisplayWidth = function() { return displayWidth; };
     this.getDisplayHeight = function() { return displayHeight; };
     this.getDisplayModeEnum = function() { return displayModeEnum; };

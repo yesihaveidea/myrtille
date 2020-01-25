@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
     Copyright(c) 2018 Paul Oliver (Olive Innovations)
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,31 +19,25 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
-using System.Net;
+using Myrtille.Enterprise;
 using Myrtille.Services.Contracts;
 
 namespace Myrtille.Services
 {
     public class EnterpriseService : IEnterpriseService
     {
-        public bool GetState()
+        public EnterpriseMode GetMode()
         {
-            return Program._enterpriseAdapter != null;
+            return Program._enterpriseAdapter == null ? EnterpriseMode.None : (Program._enterpriseAdapter is LocalAdmin ? EnterpriseMode.Local : EnterpriseMode.Domain);
         }
 
         public EnterpriseSession Authenticate(string username, string password)
         {
             try
             {
-                Trace.TraceInformation("Requesting authentication of user {0}", username);
-                var result = Program._enterpriseAdapter.Authenticate(username, password, Program._adminGroup, Program._enterpriseDomain);
-                if (result != null)
-                {
-                    result.UserName = username;
-                }
-                return result;
+                Trace.TraceInformation("Requesting authentication of user {0}", string.IsNullOrEmpty(Program._enterpriseNetbiosDomain) ? username : string.Format("{0}\\{1}", Program._enterpriseNetbiosDomain, username));
+                return Program._enterpriseAdapter.Authenticate(username, password, Program._enterpriseAdminGroup, Program._enterpriseDomain, Program._enterpriseNetbiosDomain);
             }
             catch (Exception ex)
             {
@@ -138,22 +132,7 @@ namespace Myrtille.Services
             try
             {
                 Trace.TraceInformation("Requesting session details");
-                var result = Program._enterpriseAdapter.GetSessionConnectionDetails(sessionID, hostID, sessionKey);
-
-                var domain = ConfigurationManager.AppSettings["EnterpriseDomain"];
-                var netbiosDomain = ConfigurationManager.AppSettings["EnterpriseNetbiosDomain"];
-
-                if (!string.IsNullOrEmpty(netbiosDomain) && !result.PromptForCredentials)
-                {
-                    result.Domain = netbiosDomain;
-                }
-                else if (result != null && domain != null 
-                    && !IPAddress.TryParse(domain, out IPAddress address) //check if domain is IP, prevent login failure if FQDN not used
-                    && !result.PromptForCredentials) //no need to set this automatically if the user is prompted for credentials
-                {
-                    result.Domain = domain;
-                }
-                return result;
+                return Program._enterpriseAdapter.GetSessionConnectionDetails(sessionID, hostID, sessionKey);
             }
             catch (Exception ex)
             {
@@ -162,12 +141,12 @@ namespace Myrtille.Services
             }
         }
 
-        public string CreateUserSession(string sessionID, long hostID, string username, string password)
+        public string CreateUserSession(string sessionID, long hostID, string username, string password, string domain)
         {
             try
             {
-                Trace.TraceInformation("Create user session requested, host {0}, user {1}", hostID, username);
-                return Program._enterpriseAdapter.CreateUserSession(sessionID,hostID,username,password);
+                Trace.TraceInformation("Create user session requested, host {0}, user {1}", hostID, string.IsNullOrEmpty(domain) ? username : string.Format("{0}\\{1}", domain, username));
+                return Program._enterpriseAdapter.CreateUserSession(sessionID, hostID, username, password, domain);
             }
             catch (Exception ex)
             {
@@ -194,7 +173,7 @@ namespace Myrtille.Services
         {
             try
             {
-                Trace.TraceInformation("creating session credentials for {0}", credentials.Username);
+                Trace.TraceInformation("creating session credentials for {0}", string.IsNullOrEmpty(credentials.Domain) ? credentials.Username : string.Format("{0}\\{1}", credentials.Domain, credentials.Username));
                 return Program._enterpriseAdapter.AddSessionHostCredentials(credentials);
             }
             catch (Exception ex)

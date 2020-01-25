@@ -61,16 +61,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LocalAdmin.cs" />
     <Compile Include="ActiveDirectory.cs" />
     <Compile Include="Data\Host.cs" />
     <Compile Include="Data\HostAccessGroups.cs" />
-    <Compile Include="Data\MigrationConfiguration.cs" />
+    <Compile Include="Migrations\MigrationConfiguration.cs" />
     <Compile Include="Data\MyrtilleEnterpriseDBContext.cs" />
     <Compile Include="Data\Session.cs" />
     <Compile Include="Data\SessionGroup.cs" />
     <Compile Include="Data\SessionHostCredential.cs" />
     <Compile Include="Helpers\DirectoryExceptionHelper.cs" />
-    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -86,6 +86,7 @@
       <Name>Myrtille.Services.Contracts</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

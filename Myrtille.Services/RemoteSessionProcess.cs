@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -128,7 +128,7 @@ namespace Myrtille.Services
                 hostType == HostType.RDP ? securityProtocol.ToString().ToUpper() : "N/A",
                 serverAddress,
                 hostType == HostType.RDP ? (string.IsNullOrEmpty(vmGuid) ? "(none)" : vmGuid) : "N/A",
-                hostType == HostType.RDP ? (string.IsNullOrEmpty(userDomain) ? "(none)" : userDomain) : "N/A",
+                string.IsNullOrEmpty(userDomain) ? "(none)" : userDomain,
                 userName,
                 hostType == HostType.RDP ? (string.IsNullOrEmpty(startProgram) ? "(none)" : startProgram) : "N/A");
 
@@ -351,7 +351,7 @@ namespace Myrtille.Services
                         (asyncUpdate ? " +" : " -") + "async-update" +                                                              // async update
                         (asyncChannels ? " +" : " -") + "async-channels" +                                                          // async channels
                         (allowRemoteClipboard ? " +" : " -") + "clipboard" +                                                        // clipboard support
-                        (securityProtocol != SecurityProtocol.auto ? " /sec:" + securityProtocol.ToString() : string.Empty) +   // security protocol
+                        (securityProtocol != SecurityProtocol.auto ? " /sec:" + securityProtocol.ToString() : string.Empty) +       // security protocol
                         (allowAudioPlayback ? " /sound" : string.Empty) +                                                           // sound support
                         " /audio-mode:" + (allowAudioPlayback ? "0" : "2");                                                         // audio mode (0: redirect, 1: play on server, 2: do not play)
                 }

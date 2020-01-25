@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -300,7 +300,7 @@ namespace Myrtille.Web
                 // don't recycle in case of connection failure, so that the page can handle it (show the related error dialog)
                 if (idleAppPoolRecycling &&
                     remoteSessions.Count == 0 &&
-                    !_enterpriseClient.GetState() &&
+                    (_enterpriseClient.GetMode() == EnterpriseMode.None)  &&
                     (exitCode == RemoteSessionExitCode.Success || exitCode == RemoteSessionExitCode.SessionDisconnectFromMenu || exitCode == RemoteSessionExitCode.SessionLogoutFromMenu))
                 {
                     // if using a custom login page, the application pool must be recycled after the redirect

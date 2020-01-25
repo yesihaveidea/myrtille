@@ -93,10 +93,11 @@
     <Compile Include="Helpers\GuidHelper.cs" />
     <Compile Include="Helpers\HttpSessionHelper.cs" />
     <Compile Include="Helpers\IISHelper.cs" />
+    <Compile Include="Helpers\MailHelper.cs" />
     <Compile Include="Helpers\PermissionsHelper.cs" />
     <Compile Include="Helpers\PipeHelper.cs" />
     <Compile Include="Helpers\ProcessHelper.cs" />
-    <Compile Include="Helpers\RDPCryptoHelper.cs" />
+    <Compile Include="Helpers\CryptoHelper.cs" />
     <Compile Include="Network\Buffer.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="Helpers\XmlTools.cs" />

@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -133,6 +133,7 @@ namespace Myrtille.Web
                     else if (message.StartsWith("clipboard|"))
                     {
                         Trace.TraceInformation("Sending clipboard content, remote session {0}", RemoteSession.Id);
+                        RemoteSession.ClipboardText = message.Remove(0, 10);
                         SendMessage(new RemoteSessionMessage { Type = MessageType.RemoteClipboard, Prefix = "clipboard|", Text = message.Remove(0, 10) });
                     }
                     // SSH Terminal data
@@ -231,6 +232,9 @@ namespace Myrtille.Web
                     if (RemoteSession.State != RemoteSessionState.Connected)
                         return;
 
+                    if (RemoteSession.BrowserResize == BrowserResize.None)
+                        return;
+
                     if (_resizeDelayed)
                     {
                         if (_resizeTimeout != null)
@@ -241,7 +245,8 @@ namespace Myrtille.Web
                         _resizeTimeout = new CancellationTokenSource();
                         Task.Delay(500, _resizeTimeout.Token).ContinueWith(task =>
                         {
-                            var resolution = args.Split(new[] { "x" }, StringSplitOptions.None);
+                            var parts = args.Split(new[] { "|" }, StringSplitOptions.None);
+                            var resolution = parts[1].Split(new[] { "x" }, StringSplitOptions.None);
                             var width = int.Parse(resolution[0]);
                             var height = int.Parse(resolution[1]);
 
@@ -253,7 +258,7 @@ namespace Myrtille.Web
                                 RemoteSession.Reconnect = true;
                                 SendCommand(RemoteSessionCommand.CloseClient);
                             }
-                            else
+                            else if (RemoteSession.BrowserResize == BrowserResize.Scale)
                             {
                                 _resizeDelayed = false;
                                 SendCommand(RemoteSessionCommand.SendBrowserResize, args);
@@ -318,8 +323,8 @@ namespace Myrtille.Web
                     if (RemoteSession.State != RemoteSessionState.Connected)
                         return;
 
-                    Trace.TraceInformation("Session reconnect {0}, remote session {1}", args == "1" ? "ON" : "OFF", RemoteSession.Id);
-                    RemoteSession.BrowserResize = args == "1" ? BrowserResize.Reconnect : BrowserResize.None;
+                    Trace.TraceInformation("Session reconnect {0}, remote session {1}", args.StartsWith("1") ? "ON" : "OFF", RemoteSession.Id);
+                    RemoteSession.BrowserResize = args.StartsWith("1") ? BrowserResize.Reconnect : BrowserResize.None;
                     break;
 
                 case RemoteSessionCommand.SetImageEncoding:
@@ -444,7 +449,8 @@ namespace Myrtille.Web
 
                 case RemoteSessionCommand.SendLocalClipboard:
 
-                    if (RemoteSession.State != RemoteSessionState.Connected)
+                    if ((RemoteSession.State != RemoteSessionState.Connecting) &&
+                        (RemoteSession.State != RemoteSessionState.Connected))
                         return;
 
                     var clipboardText = string.Empty;
@@ -461,6 +467,9 @@ namespace Myrtille.Web
                     {
                         clipboardText = clipboardText.Substring(0, _clipboardMaxLength) + "--- TRUNCATED ---";
                     }
+
+                    // set the clipboard text on the gateway; if the remote session is reconnected, it will be sent to the new instance of wfreerdp
+                    RemoteSession.ClipboardText = clipboardText;
 
                     commandWithArgs = string.Concat((string)RemoteSessionCommandMapping.ToPrefix[command], clipboardText);
 
@@ -593,7 +602,7 @@ namespace Myrtille.Web
                         var command = (RemoteSessionCommand)RemoteSessionCommandMapping.FromPrefix[input.Substring(0, 3)];
 
                         // if the remote session is shared, only the remote session owner and guests with control access can interact with it
-                        // for the latter, such a control is limited to sending keyboard and mouse inputs (not sharing it with others persons or change the remote session configuration)
+                        // for the latter, such a control is limited to some actions (not sharing it with others persons or change the remote session configuration)
                         // only FSUs is allowed for anyone to update their display
 
                         // TODO: maintain a list of guests for the remote session, with different settings for each guest, then have different processings accordingly
@@ -608,7 +617,8 @@ namespace Myrtille.Web
                                command == RemoteSessionCommand.SendMouseRightButton ||
                                command == RemoteSessionCommand.SendMouseWheelUp ||
                                command == RemoteSessionCommand.SendMouseWheelDown ||
-                               command == RemoteSessionCommand.SendMouseMove)) ||
+                               command == RemoteSessionCommand.SendMouseMove ||
+                               command == RemoteSessionCommand.SendLocalClipboard)) ||
                             command == RemoteSessionCommand.RequestFullscreenUpdate)
                         {
                             SendCommand(command, input.Remove(0, 3));
@@ -889,10 +899,6 @@ namespace Myrtille.Web
         // new audio
         private void ProcessAudio(byte[] data)
         {
-            if (RemoteSession.AudioFormat.HasValue &&
-                RemoteSession.AudioFormat.Value == AudioFormat.NONE)
-                return;
-
             try
             {
                 var audio = new RemoteSessionAudio

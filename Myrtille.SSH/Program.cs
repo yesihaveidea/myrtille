@@ -2,7 +2,7 @@
     Myrtille: A native HTML4/5 Remote Desktop and SSH Protocol client.
 
     Copyright(c) 2018 Paul Oliver (Olive Innovations)
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -117,9 +117,13 @@ namespace Myrtille.SSH
                     WriteOutput(command, data);
                     ClearOrExitTerminal(data);
                     break;
+                case RemoteSessionCommand.SendUserDomain:
+                    WriteOutput(command, data);
+                    Domain = data;
+                    break;
                 case RemoteSessionCommand.SendUserName:
                     WriteOutput(command, data);
-                    UserName = data;
+                    UserName = string.IsNullOrEmpty(Domain) ? data : string.Format("{0}\\{1}", Domain, data);
                     break;
                 case RemoteSessionCommand.SendServerAddress:
                     WriteOutput(command, data);
@@ -374,6 +378,7 @@ namespace Myrtille.SSH
         #endregion
 
         #region configuration
+        private static string Domain { get; set; } // Domain use to create SSH connection
         private static string UserName { get; set; } // Username use to create SSH connection
         private static string Password { get; set; } // Password use to create SSH connection
         private static string ServerAddress { get; set; } //Host to establish SSH connection with

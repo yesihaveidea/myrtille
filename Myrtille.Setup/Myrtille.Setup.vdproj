@@ -64,7 +64,7 @@
         "Entry"
         {
         "MsmKey" = "8:_1EE5D98F80FD1E8988C38C20595D35F2"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -82,13 +82,13 @@
         "Entry"
         {
         "MsmKey" = "8:_22ADBD516A0D6B0686A1ADB91F100AC4"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_24F6CA80A4951607FC2D459A1E16FF08"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -100,7 +100,7 @@
         "Entry"
         {
         "MsmKey" = "8:_45CB0595F5A7C6F661B3AE7E03FF554B"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -118,7 +118,7 @@
         "Entry"
         {
         "MsmKey" = "8:_51BCB2FF21490F04432D6C214807B83B"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -159,6 +159,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_66F2CF0FC3964C14A69521899A2ED1FF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -178,7 +184,7 @@
         "Entry"
         {
         "MsmKey" = "8:_6CB508B385016CC92F8B4AA8861F2235"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -226,7 +232,7 @@
         "Entry"
         {
         "MsmKey" = "8:_7BDFED357A797F9F78D2A2939058F770"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -262,6 +268,18 @@
         "Entry"
         {
         "MsmKey" = "8:_83A15477F512314BC17E6D4FAEDDDF13"
+        "OwnerKey" = "8:_A17DBF12B6A6522264FE8C544BE7637C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_83A15477F512314BC17E6D4FAEDDDF13"
+        "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_83A15477F512314BC17E6D4FAEDDDF13"
         "OwnerKey" = "8:_9240A03151B1609F69B0D890ADE451BC"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -280,25 +298,13 @@
         "Entry"
         {
         "MsmKey" = "8:_83A15477F512314BC17E6D4FAEDDDF13"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_83A15477F512314BC17E6D4FAEDDDF13"
-        "OwnerKey" = "8:_A17DBF12B6A6522264FE8C544BE7637C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_83A15477F512314BC17E6D4FAEDDDF13"
-        "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_8509FA2AF779A31287B4B15E10EC1B3E"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -358,7 +364,7 @@
         "Entry"
         {
         "MsmKey" = "8:_917286C9A1719DDE028EAF47B67B458B"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -376,7 +382,7 @@
         "Entry"
         {
         "MsmKey" = "8:_9240A03151B1609F69B0D890ADE451BC"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -400,13 +406,13 @@
         "Entry"
         {
         "MsmKey" = "8:_990AC498687A0E2ED129023E9CC2D5B5"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_990AC498687A0E2ED129023E9CC2D5B5"
-        "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -430,7 +436,7 @@
         "Entry"
         {
         "MsmKey" = "8:_A45F72E723FA6DFC7CAFF899597494CE"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -442,12 +448,6 @@
         "Entry"
         {
         "MsmKey" = "8:_A490591BEB0F433F8F7017269A180690"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -502,13 +502,13 @@
         "Entry"
         {
         "MsmKey" = "8:_C86279E0F97A6677B41B24460FBAF2B5"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_C86279E0F97A6677B41B24460FBAF2B5"
-        "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -574,13 +574,13 @@
         "Entry"
         {
         "MsmKey" = "8:_DF0572015795804F70A9AA695417FBAB"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_DF0572015795804F70A9AA695417FBAB"
-        "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -610,12 +610,6 @@
         "Entry"
         {
         "MsmKey" = "8:_DF64623992E0504E6E44F78E0DACDA36"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_DF64623992E0504E6E44F78E0DACDA36"
         "OwnerKey" = "8:_51E1684E0AC9A2E6C91C688F2C9DD4B1"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -623,6 +617,12 @@
         {
         "MsmKey" = "8:_DF64623992E0504E6E44F78E0DACDA36"
         "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_DF64623992E0504E6E44F78E0DACDA36"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -646,12 +646,6 @@
         "Entry"
         {
         "MsmKey" = "8:_E385E6F4F7BC7295F537EC6B3C8250D3"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_E385E6F4F7BC7295F537EC6B3C8250D3"
         "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -665,6 +659,12 @@
         {
         "MsmKey" = "8:_E385E6F4F7BC7295F537EC6B3C8250D3"
         "OwnerKey" = "8:_51E1684E0AC9A2E6C91C688F2C9DD4B1"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E385E6F4F7BC7295F537EC6B3C8250D3"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -706,7 +706,7 @@
         "Entry"
         {
         "MsmKey" = "8:_F14DAE3BE1FDDA0C5904925C132EB39B"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -832,7 +832,55 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+        "OwnerKey" = "8:_2C5EE9B0316B45F3E32CFD4DA799A678"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_CFD104DD0F9641079881F7AD9854F50B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_5B491BD4724B09308F12AFD5B23FE7B6"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_DBCE7EA11E8AD9C53593890EDB116972"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_E76FFE893BD37BAA153E3EFB44999C4E"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_A17DBF12B6A6522264FE8C544BE7637C"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_51E1684E0AC9A2E6C91C688F2C9DD4B1"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_F2FF150F59BF51862493844900AF6E49"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -905,54 +953,6 @@
         {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_A45F72E723FA6DFC7CAFF899597494CE"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_2C5EE9B0316B45F3E32CFD4DA799A678"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_CFD104DD0F9641079881F7AD9854F50B"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_5B491BD4724B09308F12AFD5B23FE7B6"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_DBCE7EA11E8AD9C53593890EDB116972"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_E76FFE893BD37BAA153E3EFB44999C4E"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_A17DBF12B6A6522264FE8C544BE7637C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_51E1684E0AC9A2E6C91C688F2C9DD4B1"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F2FF150F59BF51862493844900AF6E49"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -1075,17 +1075,17 @@
     {
         "CustomAction"
         {
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_3E8CAD47E80D457CA0A4B6B8325E0635"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_2FA1AA1093C14E9F89427047D0A4E208"
             {
             "Name" = "8:Primary output from Myrtille.Web (Active)"
             "Condition" = "8:"
-            "Object" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+            "Object" = "8:_653D6FBBA167416D9037981F1E63EC6A"
             "FileType" = "3:1"
-            "InstallAction" = "3:1"
+            "InstallAction" = "3:2"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_7A627235_F7FB_4166_AAFF_4EDB2B859E48"
+            "Identifier" = "8:_E6478927_12B9_48D9_A231_BA6AB3FB6424"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /ServicesPort=\"[SERVICESPORT]\" /AdminServicesPort=\"[ADMINSERVICESPORT]\" /SslCert=\"[SSLCERT]\" /PdfPrinter=\"[PDFPRINTER]\" /SessionUrl=\"[SESSIONURL]\""
             }
@@ -1103,17 +1103,17 @@
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /OasisApiKey=\"[OASISAPIKEY]\" /OasisAppKey=\"[OASISAPPKEY]\" /OasisAppId=\"[OASISAPPID]\" /EnterpriseAdminGroup=\"[ENTERPRISEADMINGROUP]\" /EnterpriseDomain=\"[ENTERPRISEDOMAIN]\" /EnterpriseNetbiosDomain=\"[ENTERPRISENETBIOSDOMAIN]\" /ServicesPort=\"[SERVICESPORT]\" /PdfPrinter=\"[PDFPRINTER]\""
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_48666C6D8CED455399640A11B2D1E9B4"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_567058BA31184A4EB214A1A65D3C47EC"
             {
             "Name" = "8:Primary output from Myrtille.Admin.Services (Active)"
             "Condition" = "8:"
             "Object" = "8:_EF7BA948A8A34B5CB515E968F9EFD966"
             "FileType" = "3:2"
-            "InstallAction" = "3:2"
+            "InstallAction" = "3:1"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:3"
-            "Identifier" = "8:_F20575EE_B8A6_4AC2_AEC7_1A7EB1126643"
+            "Identifier" = "8:_8CCC19CB_A319_4213_BD2F_8645517B7C06"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /AdminServicesPort=\"[ADMINSERVICESPORT]\""
             }
@@ -1131,6 +1131,20 @@
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /OasisApiKey=\"[OASISAPIKEY]\" /OasisAppKey=\"[OASISAPPKEY]\" /OasisAppId=\"[OASISAPPID]\" /EnterpriseAdminGroup=\"[ENTERPRISEADMINGROUP]\" /EnterpriseDomain=\"[ENTERPRISEDOMAIN]\" /EnterpriseNetbiosDomain=\"[ENTERPRISENETBIOSDOMAIN]\" /ServicesPort=\"[SERVICESPORT]\" /PdfPrinter=\"[PDFPRINTER]\""
             }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_77FE6101995B4A8F88A586CC9B34E599"
+            {
+            "Name" = "8:Primary output from Myrtille.Web (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_653D6FBBA167416D9037981F1E63EC6A"
+            "FileType" = "3:1"
+            "InstallAction" = "3:1"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_7C487AA9_B469_4E37_8000_AB8891C22F98"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /ServicesPort=\"[SERVICESPORT]\" /AdminServicesPort=\"[ADMINSERVICESPORT]\" /SslCert=\"[SSLCERT]\" /PdfPrinter=\"[PDFPRINTER]\" /SessionUrl=\"[SESSIONURL]\""
+            }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_814362E4BC5246BC9DE9A8A836B80D9F"
             {
             "Name" = "8:Primary output from Myrtille.Services (Active)"
@@ -1144,6 +1158,20 @@
             "Identifier" = "8:_1BD552D0_0264_4A28_B710_BDBC6656FDFE"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /OasisApiKey=\"[OASISAPIKEY]\" /OasisAppKey=\"[OASISAPPKEY]\" /OasisAppId=\"[OASISAPPID]\" /EnterpriseAdminGroup=\"[ENTERPRISEADMINGROUP]\" /EnterpriseDomain=\"[ENTERPRISEDOMAIN]\" /EnterpriseNetbiosDomain=\"[ENTERPRISENETBIOSDOMAIN]\" /ServicesPort=\"[SERVICESPORT]\" /PdfPrinter=\"[PDFPRINTER]\""
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_82596355187F4AAAAE2ED43ABB33D30B"
+            {
+            "Name" = "8:Primary output from Myrtille.Web (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_653D6FBBA167416D9037981F1E63EC6A"
+            "FileType" = "3:1"
+            "InstallAction" = "3:3"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_EDBE9EE8_798D_4D72_B141_10001A25A4F2"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /ServicesPort=\"[SERVICESPORT]\" /AdminServicesPort=\"[ADMINSERVICESPORT]\" /SslCert=\"[SSLCERT]\" /PdfPrinter=\"[PDFPRINTER]\" /SessionUrl=\"[SESSIONURL]\""
             }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_85C9D8F2D451409EA39FD39A771D1E86"
             {
@@ -1159,31 +1187,17 @@
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /AdminServicesPort=\"[ADMINSERVICESPORT]\""
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_97B8679BD26D43C0896319B6B12AEBAD"
-            {
-            "Name" = "8:Primary output from Myrtille.Admin.Services (Active)"
-            "Condition" = "8:"
-            "Object" = "8:_EF7BA948A8A34B5CB515E968F9EFD966"
-            "FileType" = "3:2"
-            "InstallAction" = "3:1"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:3"
-            "Identifier" = "8:_021844B1_B532_4721_9D54_08AC1D75122C"
-            "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /AdminServicesPort=\"[ADMINSERVICESPORT]\""
-            }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_A818E89273C341A0807462566C867C46"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_9EF8E71F727C4BBC9190FBD2433AB6E3"
             {
             "Name" = "8:Primary output from Myrtille.Web (Active)"
             "Condition" = "8:"
-            "Object" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
+            "Object" = "8:_653D6FBBA167416D9037981F1E63EC6A"
             "FileType" = "3:1"
-            "InstallAction" = "3:3"
+            "InstallAction" = "3:4"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_3CE2F9B0_4571_43DE_A1E1_2FC7A1A0DA72"
+            "Identifier" = "8:_3082BB14_D5C1_44EA_944A_F265935BF912"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /ServicesPort=\"[SERVICESPORT]\" /AdminServicesPort=\"[ADMINSERVICESPORT]\" /SslCert=\"[SSLCERT]\" /PdfPrinter=\"[PDFPRINTER]\" /SessionUrl=\"[SESSIONURL]\""
             }
@@ -1201,20 +1215,6 @@
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /AdminServicesPort=\"[ADMINSERVICESPORT]\""
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_BFE6EB36E53A456F94035E78B692B834"
-            {
-            "Name" = "8:Primary output from Myrtille.Web (Active)"
-            "Condition" = "8:"
-            "Object" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
-            "FileType" = "3:1"
-            "InstallAction" = "3:4"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:1"
-            "Identifier" = "8:_2FCB018F_0377_4649_A800_71D1F30615E8"
-            "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /ServicesPort=\"[SERVICESPORT]\" /AdminServicesPort=\"[ADMINSERVICESPORT]\" /SslCert=\"[SSLCERT]\" /PdfPrinter=\"[PDFPRINTER]\" /SessionUrl=\"[SESSIONURL]\""
-            }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_DF4C16F2E2E34DC9A3DAC82E9F27E87C"
             {
             "Name" = "8:Primary output from Myrtille.Services (Active)"
@@ -1229,19 +1229,19 @@
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /OasisApiKey=\"[OASISAPIKEY]\" /OasisAppKey=\"[OASISAPPKEY]\" /OasisAppId=\"[OASISAPPID]\" /EnterpriseAdminGroup=\"[ENTERPRISEADMINGROUP]\" /EnterpriseDomain=\"[ENTERPRISEDOMAIN]\" /EnterpriseNetbiosDomain=\"[ENTERPRISENETBIOSDOMAIN]\" /ServicesPort=\"[SERVICESPORT]\" /PdfPrinter=\"[PDFPRINTER]\""
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_F42254A210A245448AE9A00EEF26D531"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_F39D4DAA88044742A022F75C2A4F9E07"
             {
-            "Name" = "8:Primary output from Myrtille.Web (Active)"
+            "Name" = "8:Primary output from Myrtille.Admin.Services (Active)"
             "Condition" = "8:"
-            "Object" = "8:_AA7B9254EDD24A378250099DC28F1BC1"
-            "FileType" = "3:1"
+            "Object" = "8:_EF7BA948A8A34B5CB515E968F9EFD966"
+            "FileType" = "3:2"
             "InstallAction" = "3:2"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
-            "Sequence" = "3:1"
-            "Identifier" = "8:_8649B7A4_1192_472E_9342_548E7A446A9A"
+            "Sequence" = "3:3"
+            "Identifier" = "8:_C82F167E_21DD_4F8C_9901_0D8D8814EEA0"
             "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /ServicesPort=\"[SERVICESPORT]\" /AdminServicesPort=\"[ADMINSERVICESPORT]\" /SslCert=\"[SSLCERT]\" /PdfPrinter=\"[PDFPRINTER]\" /SessionUrl=\"[SESSIONURL]\""
+            "CustomActionData" = "8:/TargetDir=\"[TARGETDIR]\\\" /LogToConsole=true /LogFile=\"[TARGETDIR]\\log\\Myrtille.Setup.log\" /AdminServicesPort=\"[ADMINSERVICESPORT]\""
             }
         }
         "DefaultFeature"
@@ -1567,7 +1567,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Myrtille.Enterprise, Version=2.7.1.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Myrtille.Enterprise, Version=2.8.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_51E1684E0AC9A2E6C91C688F2C9DD4B1"
@@ -2545,7 +2545,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Myrtille.Common, Version=2.7.1.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Myrtille.Common, Version=2.8.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_DF64623992E0504E6E44F78E0DACDA36"
@@ -2607,7 +2607,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Myrtille.Services.Contracts, Version=2.7.1.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Myrtille.Services.Contracts, Version=2.8.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_E385E6F4F7BC7295F537EC6B3C8250D3"
@@ -2658,7 +2658,7 @@
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Myrtille.MFAProviders, Version=2.7.1.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Myrtille.MFAProviders, Version=2.8.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
                     "_E76FFE893BD37BAA153E3EFB44999C4E"
@@ -2960,15 +2960,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Myrtille"
-        "ProductCode" = "8:{B00BCC6F-3958-4726-9D99-DBAC78513C26}"
-        "PackageCode" = "8:{482A6AF5-61F8-4238-83D9-9EC7CE0B09EF}"
+        "ProductCode" = "8:{F948238B-9510-4952-9102-8D0BECD55BA8}"
+        "PackageCode" = "8:{921046D7-254A-4437-AF87-DA4C9C843C47}"
         "UpgradeCode" = "8:{86A6145E-11DB-4EE7-9CE0-53F997050716}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:2.7.1"
+        "ProductVersion" = "8:2.8.0"
         "Manufacturer" = "8:Cedric Coste"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://cedrozor.github.io/myrtille"
@@ -2984,7 +2984,7 @@
         "UseSystemSearchPath" = "11:TRUE"
         "TargetPlatform" = "3:0"
         "PreBuildEvent" = "8:"
-        "PostBuildEvent" = "8:"
+        "PostBuildEvent" = "8:::@echo on\r\n\"$(ProjectDir)postbuild.cmd\" \"$(ProjectDir)wirunsql.vbs\" \"$(BuiltOuputPath)\""
         "RunPostBuildEvent" = "3:0"
         }
         "Registry"
@@ -3119,8 +3119,8 @@
                             "Type" = "3:15"
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
-                            "Setting" = "3:1"
-                            "Value" = "8:#1258"
+                            "Setting" = "3:2"
+                            "Value" = "8:Please use Windows Update to check for any critical updates to the .NET Framework.\nSee CHANGELOG for changes related to this version."
                             "DefaultValue" = "8:#1258"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -3499,7 +3499,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:If you use an Active Directory, manage your remote hosts and users from a simple dashboard.\nLeave all values empty to skip this feature (can be configured later, see documentation)."
+                            "Value" = "8:If you use an Active Directory, manage your remote hosts and users from a synthetic dashboard.\nIf you don't have a domain, you can use the simplified dashboard (default login: admin/admin).\nLeave all values empty to skip this feature (can be configured later, see documentation)."
                             "DefaultValue" = "8:#1215"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -3564,7 +3564,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:Domain Name (or Domain Controller FQDN or IP if this machine is not part of a domain)"
+                            "Value" = "8:Domain Name (i.e. MYDOMAIN or mydomain.local) or Domain Controller FQDN or IP"
                             "DefaultValue" = "8:#1247"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -3616,7 +3616,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:NetBios Domain Name (leave empty if using FQDN or IP above)"
+                            "Value" = "8:NetBios Domain Name (i.e. MYDOMAIN)"
                             "DefaultValue" = "8:#1248"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -4102,7 +4102,7 @@
                             "ContextData" = "8:Unchecked=;Checked=1"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:1"
+                            "Value" = "8:"
                             "DefaultValue" = "8:"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -4267,7 +4267,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:The installer will guide you through the steps required to install [ProductName] [ProductVersion] on your computer.\n\nPLEASE READ BEFORE CONTINUING!\n\n- Ensure IIS and ASP.NET 4.5+ are installed (Server Manager > Roles and Features).\n\n- Enable HTTP Activation (.NET Framework 4.5+ > WCF Services > HTTP Activation).\n\n- If you have IIS 8+, enable WebSockets (IIS > Application Development > WebSocket Protocol)."
+                            "Value" = "8:The installer will guide you through the steps required to install [ProductName] [ProductVersion] on your computer.\n\nIt will attempt to install the [ProductName] prerequisites (see documentation), if not already installed.\n\nIf an older version of [ProductName] is installed, it will upgrade it; preserving your hosts configuration (database and logs) but resetting the [ProductName] admin password (admin/admin). You will be prompted to change it upon the next login.\n\nIn case of any issue during the installation process, please check the install log folder."
                             "DefaultValue" = "8:#1203"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -4434,7 +4434,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:The installer will guide you through the steps required to install [ProductName] [ProductVersion] on your computer.\n\nPLEASE READ BEFORE CONTINUING!\n\n- Ensure IIS and ASP.NET 4.5+ are installed (Server Manager > Roles and Features).\n\n- Enable HTTP Activation (.NET Framework 4.5+ > WCF Services > HTTP Activation).\n\n- If you have IIS 8+, enable WebSockets (IIS > Application Development > WebSocket Protocol)."
+                            "Value" = "8:The installer will guide you through the steps required to install [ProductName] [ProductVersion] on your computer.\n\nIt will attempt to install the [ProductName] prerequisites (see documentation), if not already installed.\n\nIf an older version of [ProductName] is installed, it will upgrade it; preserving your hosts configuration (database and logs) but resetting the [ProductName] admin password (admin/admin). You will be prompted to change it upon the next login.\n\nIn case of any issue during the installation process, please check the install log folder."
                             "DefaultValue" = "8:#1203"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -4616,6 +4616,34 @@
                 {
                 }
             }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_653D6FBBA167416D9037981F1E63EC6A"
+            {
+            "SourcePath" = "8:..\\Myrtille.Web\\obj\\Release\\Myrtille.Web.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_B8E8F5F7726243109EBB878F4275F26E"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{F00C33EB-EDA4-4980-AC2A-0BF574913A24}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_68B52B9A90214511BA3A28036A021026"
             {
             "SourcePath" = "8:"
@@ -4728,6 +4756,34 @@
                 {
                 }
             }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_819A5A440F374636A42A0DAED2CEFE5A"
+            {
+            "SourcePath" = "8:"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:ContentFiles"
+            "OutputProjectGuid" = "8:{2705B2A1-B47A-4E4D-96F9-BACE48F9A807}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_84AC3D69B0824060A5632545504E14F3"
             {
             "SourcePath" = "8:"
@@ -4750,34 +4806,6 @@
             "ProjectOutputGroupRegister" = "3:1"
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:ContentFiles"
-            "OutputProjectGuid" = "8:{F00C33EB-EDA4-4980-AC2A-0BF574913A24}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_AA7B9254EDD24A378250099DC28F1BC1"
-            {
-            "SourcePath" = "8:..\\Myrtille.Web\\obj\\Release\\Myrtille.Web.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_B8E8F5F7726243109EBB878F4275F26E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{F00C33EB-EDA4-4980-AC2A-0BF574913A24}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"

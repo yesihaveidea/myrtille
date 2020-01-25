@@ -38,12 +38,16 @@
                 </span>
                 <br/>
                 <div class="editCredentialPopupInput">
+                    <h5><label id="domainLabel" for="promptDomain">Domain (optional)</label></h5>
+                    <input type="text" runat="server" id="promptDomain" title="user domain" tabindex="1" />
+                </div>
+                <div class="editCredentialPopupInput">
                     <h5><label id="usernameLabel" for="promptUserName">Username</label></h5>
-                    <input type="text" runat="server" id="promptUserName" title="user name" tabindex="1" />
+                    <input type="text" runat="server" id="promptUserName" title="user name" tabindex="2" />
                 </div>
                 <div class="editCredentialPopupInput">
                     <h5><label id="passwordLabel" for="promptPassword">Password</label></h5>
-                    <input type="password" runat="server" id="promptPassword" title="password" />
+                    <input type="password" runat="server" id="promptPassword" title="user password" />
                 </div>
                 <br/>
                 <div class="editCredentialPopupInput">

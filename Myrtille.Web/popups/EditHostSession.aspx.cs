@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -79,6 +79,11 @@ namespace Myrtille.Web
                             }
                         }
                     }
+
+                    if (!IsPostBack)
+                    {
+                        userDomain.Value = _enterpriseSession.Domain;
+                    }
                 }
                 catch (ThreadAbortException)
                 {
@@ -105,7 +110,7 @@ namespace Myrtille.Web
 
             try
             {
-                var url = _enterpriseClient.CreateUserSession(_enterpriseSession.SessionID, _hostId, userName.Value, userPassword.Value);
+                var url = _enterpriseClient.CreateUserSession(_enterpriseSession.SessionID, _hostId, userName.Value, userPassword.Value, userDomain.Value);
                 if (!string.IsNullOrEmpty(url))
                 {
                     sessionUrl.Value = Request.Url.Scheme + "://" + Request.Url.Host + (Request.Url.Port != 80 && Request.Url.Port != 443 ? ":" + Request.Url.Port : "")  + Request.ApplicationPath + "/"  + url + "&__EVENTTARGET=&__EVENTARGUMENT=&connect=Connect%21";

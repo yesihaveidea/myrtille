@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -140,6 +140,13 @@ label,
 {
     font-size: 10px;
     display: inline-block;
+}
+
+#adminDiv
+{
+    margin-top: 5px;
+    font-size: 12px;
+    text-decoration: underline;
 }
 
 #errorDiv
@@ -377,13 +384,13 @@ label,
     padding-left: 10px;
 }
 
-/* credential popup*/
+/* credential popup */
 
 #editCredentialPopup,
 #editCredentialPopupInner
 {
     width: 400px;
-    height: 200px;
+    height: 250px;
 }
 
 #editCredentialPopupInner
@@ -409,7 +416,7 @@ label,
 #editHostSessionPopupInner
 {
     width: 400px;
-    height: 450px;
+    height: 500px;
 }
 
 #editHostSessionPopupInner
@@ -434,7 +441,7 @@ label,
     width: 370px;
 }
 
-/* share session popup*/
+/* share session popup */
 
 #shareSessionPopup,
 #shareSessionPopupInner

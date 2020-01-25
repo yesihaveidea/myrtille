@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@ using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Configuration.Install;
+using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Security.AccessControl;
-using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
 using System.Xml;
 using Myrtille.Helpers;
@@ -60,15 +59,34 @@ namespace Myrtille.Web
 
             try
             {
-                // register Myrtille.Web to local IIS
-                if (!IISHelper.IsIISApplicationPoolExists("MyrtilleAppPool"))
-                {
-                    IISHelper.CreateIISApplicationPool("MyrtilleAppPool", "v4.0");
-                }
+                var process = new Process();
 
-                if (!IISHelper.IsIISApplicationExists("/Myrtille"))
+                bool debug = true;
+
+                #if !DEBUG
+                    debug = false;
+                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                #endif
+
+                // the install.ps1 (powershell) script enable the myrtille prerequisites (IIS, .NET, websocket, WCF/HTTP activation, etc.),
+                // create a self-signed certificate (if requested), an application pool and a web application for myrtille, etc.
+                // it can be adapted and run manually outside of this installer, if needed
+                // its output is logged under <install path>\log\install.log
+                process.StartInfo.FileName = string.Format(@"{0}\WindowsPowerShell\v1.0\powershell.exe", Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess ? Environment.SystemDirectory.ToLower().Replace("system32", "sysnative") : Environment.SystemDirectory);
+                process.StartInfo.Arguments = "-ExecutionPolicy Bypass" +
+                    " -Command \"& '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Myrtille.Web.Install.ps1") + "'" +
+                    " -InstallPath '" + Path.GetFullPath(Context.Parameters["targetdir"]) + "'" +
+                    " -SslCert " + (!string.IsNullOrEmpty(Context.Parameters["SSLCERT"]) ? "1" : "0") +
+                    " -DebugMode " + (debug ? "1" : "0") +
+                    " 3>&1 2>&1 | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Web.Install.log") + "'" + "\"";
+
+                process.Start();
+                process.WaitForExit();
+                if (process.ExitCode != 0)
                 {
-                    IISHelper.CreateIISApplication("/Myrtille", Path.GetFullPath(Context.Parameters["targetdir"]), "MyrtilleAppPool");
+                    throw new Exception(string.Format("An error occured while running {0}. See {1} for more information.",
+                        Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Myrtille.Web.Install.ps1"),
+                        Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Web.Install.log")));
                 }
 
                 // load config
@@ -110,16 +128,6 @@ namespace Myrtille.Web
                     {
                         settings.InnerXml = settings.InnerXml.Replace("8008", adminServicesPort.ToString());
                     }
-                }
-
-                // ssl certificate
-                if (!string.IsNullOrEmpty(Context.Parameters["SSLCERT"]))
-                {
-                    // create a self signed certificate
-                    var cert = CertificateHelper.CreateSelfSignedCertificate(Dns.GetHostEntry(Environment.MachineName).HostName, "Myrtille self-signed certificate");
-
-                    // bind it to the default website
-                    IISHelper.BindCertificate(cert);
                 }
 
                 // pdf printer
@@ -221,40 +229,30 @@ namespace Myrtille.Web
 
             try
             {
-                // unregister Myrtille.Web from local IIS
-                if (IISHelper.IsIISApplicationExists("/Myrtille"))
+                var process = new Process();
+
+                bool debug = true;
+
+                #if !DEBUG
+                    debug = false;
+                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                #endif
+
+                // same logic as for install, with an uninstall script
+                process.StartInfo.FileName = string.Format(@"{0}\WindowsPowerShell\v1.0\powershell.exe", Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess ? Environment.SystemDirectory.ToLower().Replace("system32", "sysnative") : Environment.SystemDirectory);
+                process.StartInfo.Arguments = "-ExecutionPolicy Bypass" +
+                    " -Command \"& '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Myrtille.Web.Uninstall.ps1") + "'" +
+                    " -DebugMode " + (debug ? "1" : "0") +
+                    " 3>&1 2>&1 | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Web.Uninstall.log") + "'" + "\"";
+
+                process.Start();
+                process.WaitForExit();
+                if (process.ExitCode != 0)
                 {
-                    IISHelper.DeleteIISApplication("/Myrtille");
+                    throw new Exception(string.Format("An error occured while running {0}. See {1} for more information.",
+                        Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Myrtille.Web.Uninstall.ps1"),
+                        Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Web.Uninstall.log")));
                 }
-
-                if (IISHelper.IsIISApplicationPoolExists("MyrtilleAppPool"))
-                {
-                    IISHelper.DeleteIISApplicationPool("MyrtilleAppPool");
-                }
-
-                // retrieve the myrtille self signed certificate, if exists
-                var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
-                store.Open(OpenFlags.ReadWrite);
-                var certs = store.Certificates.Find(X509FindType.FindByIssuerName, Dns.GetHostEntry(Environment.MachineName).HostName, false);
-                if (certs.Count > 0)
-                {
-                    foreach (var cert in certs)
-                    {
-                        if (cert.FriendlyName == "Myrtille self-signed certificate")
-                        {
-                            // unbind it from the default website
-                            IISHelper.UnbindCertificate(cert);
-
-                            // remove it
-                            store.Remove(cert);
-
-                            // normally, there should be only one myrtille self-signed certificate, but let's check further (just in case)...
-                            //break;
-                        }
-                    }
-                }
-
-                store.Close();
 
                 Context.LogMessage("Uninstalled Myrtille.Web");
             }

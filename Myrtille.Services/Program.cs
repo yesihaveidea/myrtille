@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ using System.Reflection;
 using System.ServiceModel;
 using System.ServiceProcess;
 using log4net.Config;
+using Myrtille.Enterprise;
 using Myrtille.Services.Contracts;
 
 namespace Myrtille.Services
@@ -40,8 +41,9 @@ namespace Myrtille.Services
         public static IMultifactorAuthenticationAdapter _multifactorAdapter = null;
         public static IEnterpriseAdapter _enterpriseAdapter = null;
 
-        public static string _adminGroup;
+        public static string _enterpriseAdminGroup;
         public static string _enterpriseDomain;
+        public static string _enterpriseNetbiosDomain;
 
         private static ServiceHost OpenService(Type serviceType)
         {
@@ -169,26 +171,46 @@ namespace Myrtille.Services
         {
             var configuration = ConfigurationManager.AppSettings["EnterpriseAdapter"];
             if (configuration == null)
-                return;
+            {
+                var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                var section = config.GetSection("localAdmin");
+                if (section != null)
+                {
+                    var localAdminUser = ((AppSettingsSection)section).Settings["LocalAdminUser"];
+                    var localAdminPassword = ((AppSettingsSection)section).Settings["localAdminPassword"];
+                    if (localAdminUser != null && !string.IsNullOrEmpty(localAdminUser.Value) &&
+                        localAdminPassword != null && !string.IsNullOrEmpty(localAdminPassword.Value))
+                    {
+                        _enterpriseAdapter = new LocalAdmin();
+                    }
+                }
+            }
+            else
+            {
+                var assemblyDetails = configuration.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                if (assemblyDetails.Length != 2)
+                    throw new FormatException("EnterpriseAdapter configuration is invalid!");
 
-            var assemblyDetails = configuration.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-            if (assemblyDetails.Length != 2)
-                throw new FormatException("EnterpriseAdapter configuration is invalid!");
+                var assembly = Assembly.Load(assemblyDetails[1].Trim());
+                _enterpriseAdapter = (IEnterpriseAdapter)assembly.CreateInstance(assemblyDetails[0]);
+                if (_enterpriseAdapter == null)
+                    throw new InvalidOperationException(string.Format("Unable to create instance of {0}", assemblyDetails[0]));
 
-            var assembly = Assembly.Load(assemblyDetails[1].Trim());
-            _enterpriseAdapter = (IEnterpriseAdapter)assembly.CreateInstance(assemblyDetails[0]);
-            if (_enterpriseAdapter == null)
-                throw new InvalidOperationException(string.Format("Unable to create instance of {0}", assemblyDetails[0]));
+                _enterpriseAdminGroup = ConfigurationManager.AppSettings["EnterpriseAdminGroup"];
+                if (_enterpriseAdminGroup == null)
+                    throw new Exception("EnterpriseAdminGroup has not been configured!");
 
-            _adminGroup = ConfigurationManager.AppSettings["EnterpriseAdminGroup"];
-            if (_adminGroup == null)
-                throw new Exception("EnterpriseAdminGroup has not been configured!");
+                _enterpriseDomain = ConfigurationManager.AppSettings["EnterpriseDomain"];
+                if (_enterpriseDomain == null)
+                    throw new Exception("EnterpriseDomain has not been configured!");
 
-            _enterpriseDomain = ConfigurationManager.AppSettings["EnterpriseDomain"];
-            if (_enterpriseDomain == null)
-                throw new Exception("EnterpriseDomain has not been configured!");
+                _enterpriseNetbiosDomain = ConfigurationManager.AppSettings["EnterpriseNetbiosDomain"];
+            }
 
-            _enterpriseAdapter.Initialize();
+            if (_enterpriseAdapter != null)
+            {
+                _enterpriseAdapter.Initialize();
+            }
         }
 
         private static void ConfigureEnterpriseDatabase()

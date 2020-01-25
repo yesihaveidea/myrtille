@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -184,8 +184,9 @@ function Network(base, config, dialog, display)
                 websocket.init();
             }
 
-            // websocket enabled and functional, RDP host
-            if (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && config.getHostType() == config.getHostTypeEnum().RDP)
+            // websocket enabled and functional, RDP host, audio enabled
+            // audio playback can also be switched on the gateway (web.config); this parameter takes precedence over config.js
+            if (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && config.getHostType() == config.getHostTypeEnum().RDP && config.getAudioFormat() != config.getAudioFormatEnum().NONE)
             {
                 // audio
                 audioWebsocket = new AudioWebsocket(base, config, dialog, display, this);

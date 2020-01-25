@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -109,6 +109,14 @@ namespace Myrtille.Web
                     vmEnhancedModeInput.Visible = _hostType == HostType.RDP;
                     rdpSecurityInput.Visible = _hostType == HostType.RDP;
                     startProgramInput.Visible = _hostType == HostType.RDP;
+
+                    // local admin
+                    groupsAccessInput.Visible = !string.IsNullOrEmpty(_enterpriseSession.Domain);
+                    if (string.IsNullOrEmpty(_enterpriseSession.Domain))
+                    {
+                        promptCredentials.Checked = true;
+                        promptCredentials.Disabled = true;
+                    }
                 }
                 catch (ThreadAbortException)
                 {
@@ -146,7 +154,7 @@ namespace Myrtille.Web
                     DirectoryGroups = groupsAccess.Value,
                     Protocol = (SecurityProtocol)securityProtocol.SelectedIndex,
                     StartRemoteProgram = startProgram.Value,
-                    PromptForCredentials = promptCredentials.Checked
+                    PromptForCredentials = string.IsNullOrEmpty(_enterpriseSession.Domain) ? true : promptCredentials.Checked
                 };
 
                 if (_hostId != null)

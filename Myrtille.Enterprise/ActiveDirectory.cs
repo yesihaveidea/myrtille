@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
     Copyright(c) 2018 Paul Oliver (Olive Innovations)
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,9 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using Myrtille.Helpers;
 using Myrtille.Services.Contracts;
@@ -41,15 +39,7 @@ namespace Myrtille.Enterprise
             }
         }
 
-        /// <summary>
-        /// Authenticate user against an active directory
-        /// </summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <param name="adminGroup"></param>
-        /// <param name="domain"></param>
-        /// <returns></returns>
-        public EnterpriseSession Authenticate(string username, string password, string adminGroup, string domain)
+        public EnterpriseSession Authenticate(string username, string password, string adminGroup, string domain, string netbiosDomain)
         {
             try
             {
@@ -86,7 +76,8 @@ namespace Myrtille.Enterprise
                     if (!user.PasswordNeverExpires )//&& !user.UserCannotChangePassword)
                     {
                         var expDate = (DateTime)entry.InvokeGet("PasswordExpirationDate");
-                        if (expDate <= DateTime.Now)
+                        // if the expiration date is not set, its default value is 1970/01/01
+                        if (expDate <= DateTime.Now && expDate > new DateTime(1970, 1, 1))
                         {
                             return new EnterpriseSession
                             {
@@ -129,8 +120,9 @@ namespace Myrtille.Enterprise
 
                         session = new Session
                         {
+                            Domain = netbiosDomain,
                             Username = username,
-                            Password = AES_Encrypt(RDPCryptoHelper.EncryptPassword(password), sessionKey),
+                            Password = CryptoHelper.AES_Encrypt(CryptoHelper.RDP_Encrypt(password), sessionKey),
                             SessionID = sessionID,
                             IsAdmin = isAdmin
                         };
@@ -148,6 +140,8 @@ namespace Myrtille.Enterprise
                         db.SaveChanges();
                         return new EnterpriseSession
                         {
+                            Domain = netbiosDomain,
+                            UserName = username,
                             SessionID = sessionID,
                             SessionKey = sessionKey,
                             IsAdmin = isAdmin,
@@ -179,16 +173,11 @@ namespace Myrtille.Enterprise
             }
         }
 
-        /// <summary>
-        /// Delete user session
-        /// </summary>
-        /// <param name="sessionID"></param>
         public void Logout(string sessionID)
         {
             using (var db = new MyrtilleEnterpriseDBContext())
             {
                 var session = db.Session.FirstOrDefault(m => m.SessionID == sessionID);
-
                 if (session != null)
                 {
                     db.Session.Remove(session);
@@ -197,12 +186,6 @@ namespace Myrtille.Enterprise
             }
         }
 
-        /// <summary>
-        /// Add new host to the platform
-        /// </summary>
-        /// <param name="editHost"></param>
-        /// <param name="sessionID"></param>
-        /// <returns></returns>
         public long? AddHost(EnterpriseHostEdit editHost, string sessionID)
         {
             using (var db = new MyrtilleEnterpriseDBContext())
@@ -241,12 +224,6 @@ namespace Myrtille.Enterprise
             }
         }
 
-        /// <summary>
-        /// Get host information from ID and sesssion ID
-        /// </summary>
-        /// <param name="hostID"></param>
-        /// <param name="sessionID"></param>
-        /// <returns>Host information for connection or null if invalid hostid or sessionId specified</returns>
         public EnterpriseHostEdit GetHost(long hostID, string sessionID)
         {
             using (var db = new MyrtilleEnterpriseDBContext())
@@ -286,19 +263,17 @@ namespace Myrtille.Enterprise
             }
         }
 
-        /// <summary>
-        /// Update host information
-        /// </summary>
-        /// <param name="editHost"></param>
-        /// <param name="sessionID"></param>
-        /// <returns></returns>
         public bool UpdateHost(EnterpriseHostEdit editHost, string sessionID)
         {
             using (var db = new MyrtilleEnterpriseDBContext())
             {
                 if (!db.Session.Any(m => m.SessionID == sessionID && m.IsAdmin && m.Expire > DateTime.Now)) return false;
 
+                if (db.Host.Any(m => m.HostName.Equals(editHost.HostName, StringComparison.InvariantCultureIgnoreCase) && m.ID != editHost.HostID)) return false;
+
                 var host = db.Host.FirstOrDefault(m => m.ID == editHost.HostID);
+
+                if (host == null) return false;
 
                 host.HostName = editHost.HostName;
                 host.HostAddress = editHost.HostAddress;
@@ -334,12 +309,6 @@ namespace Myrtille.Enterprise
             }
         }
 
-        /// <summary>
-        /// Delete host
-        /// </summary>
-        /// <param name="hostID"></param>
-        /// <param name="sessionID"></param>
-        /// <returns></returns>
         public bool DeleteHost(long hostID, string sessionID)
         {
             using (var db = new MyrtilleEnterpriseDBContext())
@@ -391,11 +360,6 @@ namespace Myrtille.Enterprise
             return directoryGroups;
         }
 
-        /// <summary>
-        /// Retrieve a list of hosts the user session is allowed to access
-        /// </summary>
-        /// <param name="sessionID"></param>
-        /// <returns></returns>
         public List<EnterpriseHost> SessionHosts(string sessionID)
         {
             using (var db = new MyrtilleEnterpriseDBContext())
@@ -458,105 +422,140 @@ namespace Myrtille.Enterprise
             }
         }
 
-        /// <summary>
-        /// Get the connection details for the session and host
-        /// </summary>
-        /// <param name="sessionID"></param>
-        /// <param name="hostID"></param>
-        /// <param name="sessionKey"></param>
-        /// <returns></returns>
         public EnterpriseConnectionDetails GetSessionConnectionDetails(string sessionID, long hostID, string sessionKey)
         {
             using (var db = new MyrtilleEnterpriseDBContext())
             {
-                var session = db.Session
+                var sessionInfo = db.Session
                                 .Where(m => m.SessionID == sessionID && m.Expire > DateTime.Now)
                                 .Select(m => new
                                 {
-                                    SessionID = m.SessionID
-                                    ,
-                                    OneTime = m.OneTime
+                                    SessionID = m.SessionID,
+                                    OneTime = m.OneTime,
+                                    IsAdmin = m.IsAdmin
                                 })
                                 .FirstOrDefault();
 
                 EnterpriseConnectionDetails result = null;
-                if (session != null)
+                if (sessionInfo != null)
                 {
-                    if (session.OneTime)
+                    if (sessionInfo.OneTime)
                     {
                         result = (from s in db.Session
-                                  from h in db.Host
-                                  where s.SessionID == sessionID
-                                     && h.ID == hostID
-                                     && s.Expire > DateTime.Now
-                                  select new EnterpriseConnectionDetails
-                                  {
-                                      HostID = h.ID
-                                      ,
-                                      HostName = h.HostName
-                                      ,
-                                      HostAddress = h.HostAddress
-                                      ,
-                                      VMGuid = h.VMGuid
-                                      ,
-                                      VMEnhancedMode = h.VMEnhancedMode
-                                      ,
-                                      HostType = h.HostType
-                                      ,
-                                      Username = s.Username
-                                      ,
-                                      Password = s.Password
-                                      ,
-                                      Protocol = h.Protocol
-                                      ,
-                                      StartRemoteProgram = h.StartRemoteProgram
-                                  })
+                                    from h in db.Host
+                                    where s.SessionID == sessionID
+                                        && h.ID == hostID
+                                        && s.Expire > DateTime.Now
+                                    select new EnterpriseConnectionDetails
+                                    {
+                                        HostID = h.ID
+                                        ,
+                                        HostName = h.HostName
+                                        ,
+                                        HostAddress = h.HostAddress
+                                        ,
+                                        VMGuid = h.VMGuid
+                                        ,
+                                        VMEnhancedMode = h.VMEnhancedMode
+                                        ,
+                                        HostType = h.HostType
+                                        ,
+                                        Domain = s.Domain
+                                        ,
+                                        Username = s.Username
+                                        ,
+                                        Password = s.Password
+                                        ,
+                                        Protocol = h.Protocol
+                                        ,
+                                        StartRemoteProgram = h.StartRemoteProgram
+                                    })
                                 .FirstOrDefault();
                     }
                     else
                     {
-                        result = (from s in db.Session
-                                  join sg in db.SessionGroup on s.ID equals sg.SessionID
-                                  join hag in db.HostAccessGroups on sg.DirectoryGroup equals hag.AccessGroup
-                                  join h in db.Host on hag.HostID equals h.ID
-                                  join sc in db.SessionHostCredentials on new { x1 = s.ID, x2 = h.ID } equals new {x1 = sc.SessionID, x2 = sc.HostID } into scl
-                                  from sc in scl.DefaultIfEmpty()
-                                  where s.SessionID == sessionID
-                                     && h.ID == hostID
-                                     && s.Expire > DateTime.Now
-                                  select new EnterpriseConnectionDetails
-                                  {
-                                      HostID = h.ID
-                                      ,
-                                      HostName = h.HostName
-                                      ,
-                                      HostAddress = h.HostAddress
-                                      ,
-                                      VMGuid = h.VMGuid
-                                      ,
-                                      VMEnhancedMode = h.VMEnhancedMode
-                                      ,
-                                      HostType = h.HostType
-                                      ,
-                                      Username = (h.PromptForCredentials ? sc.Username : s.Username)
-                                      ,
-                                      Password = (h.PromptForCredentials ? sc.Password : s.Password)
-                                      ,
-                                      Protocol = h.Protocol
-                                      ,
-                                      StartRemoteProgram = h.StartRemoteProgram
-                                  })
-                                .FirstOrDefault();
+                        if (sessionInfo.IsAdmin)
+                        {
+                            result = (from s in db.Session
+                                      from h in db.Host
+                                      join sc in db.SessionHostCredentials on new { x1 = s.ID, x2 = h.ID } equals new { x1 = sc.SessionID, x2 = sc.HostID } into scl
+                                      from sc in scl.DefaultIfEmpty()
+                                      where s.SessionID == sessionID
+                                          && h.ID == hostID
+                                          && s.Expire > DateTime.Now
+                                      select new EnterpriseConnectionDetails
+                                      {
+                                          HostID = h.ID
+                                          ,
+                                          HostName = h.HostName
+                                          ,
+                                          HostAddress = h.HostAddress
+                                          ,
+                                          VMGuid = h.VMGuid
+                                          ,
+                                          VMEnhancedMode = h.VMEnhancedMode
+                                          ,
+                                          HostType = h.HostType
+                                          ,
+                                          Domain = (h.PromptForCredentials ? sc.Domain : s.Domain)
+                                          ,
+                                          Username = (h.PromptForCredentials ? sc.Username : s.Username)
+                                          ,
+                                          Password = (h.PromptForCredentials ? sc.Password : s.Password)
+                                          ,
+                                          Protocol = h.Protocol
+                                          ,
+                                          StartRemoteProgram = h.StartRemoteProgram
+                                      })
+                                    .FirstOrDefault();
+                        }
+                        else
+                        {
+                            result = (from s in db.Session
+                                      join sg in db.SessionGroup on s.ID equals sg.SessionID
+                                      join hag in db.HostAccessGroups on sg.DirectoryGroup equals hag.AccessGroup
+                                      join h in db.Host on hag.HostID equals h.ID
+                                      join sc in db.SessionHostCredentials on new { x1 = s.ID, x2 = h.ID } equals new { x1 = sc.SessionID, x2 = sc.HostID } into scl
+                                      from sc in scl.DefaultIfEmpty()
+                                      where s.SessionID == sessionID
+                                          && h.ID == hostID
+                                          && s.Expire > DateTime.Now
+                                      select new EnterpriseConnectionDetails
+                                      {
+                                          HostID = h.ID
+                                          ,
+                                          HostName = h.HostName
+                                          ,
+                                          HostAddress = h.HostAddress
+                                          ,
+                                          VMGuid = h.VMGuid
+                                          ,
+                                          VMEnhancedMode = h.VMEnhancedMode
+                                          ,
+                                          HostType = h.HostType
+                                          ,
+                                          Domain = (h.PromptForCredentials ? sc.Domain : s.Domain)
+                                          ,
+                                          Username = (h.PromptForCredentials ? sc.Username : s.Username)
+                                          ,
+                                          Password = (h.PromptForCredentials ? sc.Password : s.Password)
+                                          ,
+                                          Protocol = h.Protocol
+                                          ,
+                                          StartRemoteProgram = h.StartRemoteProgram
+                                      })
+                                    .FirstOrDefault();
+                        }
                     }
 
                     if (result != null)
                     {
-                        result.Password = AES_Decrypt(result.Password, sessionKey);
+                        result.Password = CryptoHelper.AES_Decrypt(result.Password, sessionKey);
                     }
 
                     // when connected from the login page, the session logout is based on expiration or user action
                     // when connected from a one time url, the logout is done immediately
-                    if (session.OneTime)
+                    if (sessionInfo.OneTime)
                     {
                         Logout(sessionID);
                     }
@@ -566,15 +565,7 @@ namespace Myrtille.Enterprise
             }
         }
 
-        /// <summary>
-        /// Create a session, the session URL returned can be given to external users to connect to a specific host using a URL
-        /// </summary>
-        /// <param name="sessionID"></param>
-        /// <param name="hostID"></param>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        public string CreateUserSession(string sessionID, long hostID, string username, string password)
+        public string CreateUserSession(string sessionID, long hostID, string username, string password, string domain)
         {
             using (var db = new MyrtilleEnterpriseDBContext())
             {
@@ -587,8 +578,9 @@ namespace Myrtille.Enterprise
 
                 var session = new Session
                 {
+                    Domain = domain,
                     Username = username,
-                    Password = AES_Encrypt(RDPCryptoHelper.EncryptPassword(password), sessionKey),
+                    Password = CryptoHelper.AES_Encrypt(CryptoHelper.RDP_Encrypt(password), sessionKey),
                     SessionID = newSessionID,
                     IsAdmin = false,
                     Expire = DateTime.Now.AddHours(1),
@@ -602,13 +594,6 @@ namespace Myrtille.Enterprise
             }
         }
 
-        /// <summary>
-        /// Change password for user
-        /// </summary>
-        /// <param name="username"></param>
-        /// <param name="oldPassword"></param>
-        /// <param name="newPassword"></param>
-        /// <returns></returns>
         public bool ChangeUserPassword(string username, string oldPassword, string newPassword, string domain)
         {
             try
@@ -626,11 +611,6 @@ namespace Myrtille.Enterprise
             }
         }
 
-        /// <summary>
-        /// Add override credentials for specific session host
-        /// </summary>
-        /// <param name="credentials"></param>
-        /// <returns></returns>
         public bool AddSessionHostCredentials(EnterpriseHostSessionCredentials credentials)
         {
             using (var db = new MyrtilleEnterpriseDBContext())
@@ -642,7 +622,7 @@ namespace Myrtille.Enterprise
                 if (!db.Host.Any(m => m.ID == credentials.HostID)) return false;
 
                 var sessionHost = db.SessionHostCredentials.FirstOrDefault(m => m.SessionID == session.ID
-                                            && m.HostID == m.HostID);
+                                            && m.HostID == credentials.HostID);
 
                 if(sessionHost != null)
                 {
@@ -653,8 +633,9 @@ namespace Myrtille.Enterprise
                 {
                     SessionID = session.ID,
                     HostID = credentials.HostID,
+                    Domain = credentials.Domain,
                     Username = credentials.Username,
-                    Password = AES_Encrypt(RDPCryptoHelper.EncryptPassword(credentials.Password), credentials.SessionKey),
+                    Password = CryptoHelper.AES_Encrypt(CryptoHelper.RDP_Encrypt(credentials.Password), credentials.SessionKey)
                 };
 
                 
@@ -664,78 +645,5 @@ namespace Myrtille.Enterprise
                 return true;
             }
         }
-        
-        #region aes encryption
-
-        private static string AES_Encrypt(string stringToBeEncrypted, string passwordString)
-        {
-            string encrypted;
-            byte[] passwordBytes = Encoding.UTF8.GetBytes(passwordString);
-            byte[] bytesToBeEncrypted = Encoding.UTF8.GetBytes(stringToBeEncrypted);
-
-            byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-
-            using (MemoryStream ms = new MemoryStream())
-            {
-                using (RijndaelManaged AES = new RijndaelManaged())
-                {
-                    AES.KeySize = 256;
-                    AES.BlockSize = 128;
-
-                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
-                    AES.Key = key.GetBytes(AES.KeySize / 8);
-                    AES.IV = key.GetBytes(AES.BlockSize / 8);
-
-                    AES.Mode = CipherMode.CBC;
-
-                    using (var cs = new CryptoStream(ms, AES.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(bytesToBeEncrypted, 0, bytesToBeEncrypted.Length);
-                        cs.Close();
-                    }
-                    encrypted = Convert.ToBase64String(ms.ToArray());
-                    
-                }
-            }
-
-            return encrypted;
-        }
-
-        public string AES_Decrypt(string stringToBeDecrypted, string passwordString)
-        {
-            string decryptedString;
-            byte[] bytesToBeDecrypted = Convert.FromBase64String(stringToBeDecrypted);
-            byte[] passwordBytes = Encoding.UTF8.GetBytes(passwordString);
-
-            // Set your salt here, change it to meet your flavor:
-            // The salt bytes must be at least 8 bytes.
-            byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-
-            using (MemoryStream ms = new MemoryStream())
-            {
-                using (RijndaelManaged AES = new RijndaelManaged())
-                {
-                    AES.KeySize = 256;
-                    AES.BlockSize = 128;
-
-                    var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
-                    AES.Key = key.GetBytes(AES.KeySize / 8);
-                    AES.IV = key.GetBytes(AES.BlockSize / 8);
-
-                    AES.Mode = CipherMode.CBC;
-
-                    using (var cs = new CryptoStream(ms, AES.CreateDecryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(bytesToBeDecrypted, 0, bytesToBeDecrypted.Length);
-                        cs.Close();
-                    }
-                    decryptedString = Encoding.UTF8.GetString(ms.ToArray());
-                }
-            }
-
-            return decryptedString;
-        }
-        
-        #endregion
     }
 }

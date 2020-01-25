@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -82,10 +82,30 @@ function User(base, config, dialog, display, network)
                 };
             }
 
+            // prompts the user to confirm or not to close the window/tab
+
+            // unfortunately, this method isn't reliable (the browser may decide or not to prompt the user, this is not guaranteed: see https://dev.to/chromiumdev/sure-you-want-to-leavebrowser-beforeunload-event-4eg5)
+            // the message is not customizable (the browser shows a generic and confusing message, advising to save data; this doesn't apply to a remote session which isn't even disconnected when the page is closed)
+            // also, the browser doesn't differentiate a page reload and close (such a confirm dialog should only be displayed on close); this is a problem because myrtille reloads the page on several occasions
+            // this can even be considered as a bad practice to disturb the user with such a confirm dialog (...)
+            // anyway, if the browser or page is closed by mistake: cross icon, ctrl + w or alt + f4, etc. (these key combinations can't be captured by javascript because the browser or OS are intercepting them first!), the user can still use its browser history > "pages or tabs closed recently" to resume its session
+
+            //eventListener('beforeunload', function(e) { e.preventDefault(); e.returnValue = 'Are you sure you want to close this page?'; });
+
             if (config.getHostType() == config.getHostTypeEnum().RDP)
             {
                 // responsive display
                 eventListener('resize', function() { browserResize(); });
+
+                // default action on browser resize
+                if (config.getBrowserResize() == null)
+                {
+                    var reconnect = document.getElementById('reconnect');
+                    if (reconnect != null)
+                    {
+                        reconnect.value = config.getDefaultResize() == config.getBrowserResizeEnum().RECONNECT ? 'Reconnect ON' : 'Reconnect OFF';
+                    }
+                }
 
                 keyboard = new Keyboard(base, config, dialog, display, network, this);
                 keyboard.init();
@@ -175,8 +195,13 @@ function User(base, config, dialog, display, network)
 
         try
         {
-            // disable the toolbar while resizing
-            disableToolbar();
+            // disable the toolbar while resizing, if needed
+            var reconnect = document.getElementById('reconnect');
+            var scale = document.getElementById('scale');
+            if (reconnect != null && scale != null && !reconnect.disabled && !scale.disabled)
+            {
+                disableToolbar();
+            }
 
             var width = display.getBrowserWidth();
             var height = display.getBrowserHeight();
@@ -188,7 +213,7 @@ function User(base, config, dialog, display, network)
             }
 
             // send the new browser resolution
-            network.send(base.getCommandEnum().SEND_BROWSER_RESIZE.text + width + 'x' + height);
+            network.send(base.getCommandEnum().SEND_BROWSER_RESIZE.text + (config.getKeepAspectRatio() ? '1' : '0') + '|' + width + 'x' + height);
         }
         catch (exc)
         {

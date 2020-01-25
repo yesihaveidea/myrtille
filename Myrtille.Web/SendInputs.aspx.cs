@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2019 Cedric Coste
+    Copyright(c) 2014-2020 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -49,48 +49,58 @@ namespace Myrtille.Web
                 // retrieve the remote session for the current http session
                 remoteSession = (RemoteSession)Session[HttpSessionStateVariables.RemoteSession.ToString()];
 
-                // update guest information
-                if (!Session.SessionID.Equals(remoteSession.OwnerSessionID))
+                // filters out the dummy xhr calls (used with websocket to keep the http session alive)
+                if (!string.IsNullOrEmpty(Request.QueryString["data"]))
                 {
-                    // filters out the dummy xhr calls (used with websocket to keep the http session alive)
-                    if (!string.IsNullOrEmpty(Request.QueryString["data"]))
+                    // register a message queue for the current http session, if not exists
+                    // the http client is now using HTML4 mode
+                    lock (remoteSession.Manager.MessageQueues.SyncRoot)
+                    {
+                        if (!remoteSession.Manager.MessageQueues.ContainsKey(Session.SessionID))
+                        {
+                            remoteSession.Manager.MessageQueues.Add(Session.SessionID, new List<RemoteSessionMessage>());
+                        }
+                    }
+
+                    // update guest information
+                    if (!Session.SessionID.Equals(remoteSession.OwnerSessionID))
                     {
                         if (Session[HttpSessionStateVariables.GuestInfo.ToString()] != null)
                         {
                             ((GuestInfo)Session[HttpSessionStateVariables.GuestInfo.ToString()]).Websocket = false;
                         }
                     }
-                }
-                // connect the remote server
-                else if (remoteSession.State == RemoteSessionState.Connecting && !remoteSession.Manager.HostClient.ProcessStarted)
-                {
-                    try
+                    // connect the remote server
+                    else if (remoteSession.State == RemoteSessionState.Connecting && !remoteSession.Manager.HostClient.ProcessStarted)
                     {
-                        // create pipes for the web gateway and the host client to talk
-                        remoteSession.Manager.Pipes.CreatePipes();
+                        try
+                        {
+                            // create pipes for the web gateway and the host client to talk
+                            remoteSession.Manager.Pipes.CreatePipes();
 
-                        // the host client does connect the pipes when it starts; when it stops (either because it was closed, crashed or because the remote session had ended), pipes are released
-                        // as the process command line can be displayed into the task manager / process explorer, the connection settings (including user credentials) are now passed to the host client through the inputs pipe
-                        // use http://technet.microsoft.com/en-us/sysinternals/dd581625 to track the existing pipes
-                        remoteSession.Manager.HostClient.StartProcess(
-                            remoteSession.Id,
-                            remoteSession.HostType,
-                            remoteSession.SecurityProtocol,
-                            remoteSession.ServerAddress,
-                            remoteSession.VMGuid,
-                            remoteSession.UserDomain,
-                            remoteSession.UserName,
-                            remoteSession.StartProgram,
-                            remoteSession.ClientWidth,
-                            remoteSession.ClientHeight,
-                            remoteSession.AllowRemoteClipboard,
-                            remoteSession.AllowPrintDownload,
-                            remoteSession.AllowAudioPlayback);
-                    }
-                    catch (Exception exc)
-                    {
-                        System.Diagnostics.Trace.TraceError("Failed to connect the remote session {0} ({1})", remoteSession.Id, exc);
-                        throw;
+                            // the host client does connect the pipes when it starts; when it stops (either because it was closed, crashed or because the remote session had ended), pipes are released
+                            // as the process command line can be displayed into the task manager / process explorer, the connection settings (including user credentials) are now passed to the host client through the inputs pipe
+                            // use http://technet.microsoft.com/en-us/sysinternals/dd581625 to track the existing pipes
+                            remoteSession.Manager.HostClient.StartProcess(
+                                remoteSession.Id,
+                                remoteSession.HostType,
+                                remoteSession.SecurityProtocol,
+                                remoteSession.ServerAddress,
+                                remoteSession.VMGuid,
+                                remoteSession.UserDomain,
+                                remoteSession.UserName,
+                                remoteSession.StartProgram,
+                                remoteSession.ClientWidth,
+                                remoteSession.ClientHeight,
+                                remoteSession.AllowRemoteClipboard,
+                                remoteSession.AllowPrintDownload,
+                                remoteSession.AllowAudioPlayback);
+                        }
+                        catch (Exception exc)
+                        {
+                            System.Diagnostics.Trace.TraceError("Failed to connect the remote session {0} ({1})", remoteSession.Id, exc);
+                            throw;
+                        }
                     }
                 }
 

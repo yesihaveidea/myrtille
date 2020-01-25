@@ -193,6 +193,33 @@ namespace Myrtille.Web {
         protected global::System.Web.UI.HtmlControls.HtmlInputSubmit connect;
         
         /// <summary>
+        /// adminDiv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl adminDiv;
+        
+        /// <summary>
+        /// adminUrl control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor adminUrl;
+        
+        /// <summary>
+        /// adminText control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl adminText;
+        
+        /// <summary>
         /// connectError control.
         /// </summary>
         /// <remarks>

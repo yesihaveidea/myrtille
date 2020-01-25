@@ -1,6 +1,7 @@
 ﻿- [Introduction](#introduction)
 - [History](#history)
 - [Installation](#installation)
+- [Docker](#docker)
 - [Remote Desktop Services](#remote-desktop-services)
 - [Auto-connect / Start remote application from URL](#auto-connect--start-remote-application-from-url)
 - [Syntax](#syntax)
@@ -54,6 +55,36 @@ All releases here: https://github.com/cedrozor/myrtille/releases
 - Setup.exe (preferred installation method): setup bootstrapper
 - Myrtille.msi: MSI package (x86)
 
+## Docker
+From version 2.8.0, Myrtille is available as a docker image.
+
+No installation is required, you just need Docker Desktop or Toolbox for Windows (Windows 10 Pro or Windows Server 2016 or greater) with Windows containers enabled and Hyper-V isolation.
+
+Myrtille is fully functional as a container, but there are also some limitations (inherent to Windows containers): print and audio redirection (through RDP) is not supported at the moment (this may change into a future version).
+
+You can pull it from Docker Hub with the following command (use a tag for a specific version, or latest otherwise):
+docker pull cedrozor/myrtille(:tag)
+
+To list the network adapters available to Docker:
+docker network ls
+
+Run the image (in detached mode) and provide the resulting container a network adapter able to connect your hosts:
+docker run -d --network="<network adapter>" cedrozor/myrtille(:tag)
+
+To list the containers:
+docker ps -a
+
+To open a shell into a container (and be able to explore it, check its **ip address**, logs, etc.):
+docker exec -it <container ID> cmd
+docker exec -it <container ID> powershell
+
+To stop a container
+docker stop <container ID>
+
+If you intend to have custom settings, manage your hosts or keep track of the logs, you will need to perform additional steps (**data persistence**).
+
+More details into **Dockerfile**.
+
 ## Remote Desktop Services
 
 **For best experience**, and be able to go over the default limit of 2 concurrent users, you will need to install the [RDS role](https://www.exitthefastlane.com/2016/05/native-rds-in-server2016-part-1-basics.html) on your remote server(s). Optionally, you can install the [RD Connection Broker](https://www.tech-coffee.net/rds-2016-farm-deploy-the-farm-in-azure/) feature to allow load-balancing across an RDS farm (possibly hosted on Azure) and manage the applications allowed to run (and with which parameters) on session start.
@@ -61,6 +92,10 @@ All releases here: https://github.com/cedrozor/myrtille/releases
 You will also need to enable [multiple sessions per user](https://portal.databasemart.com/kb/a220/how-to-enable-multiple-single-remote-desktop-sessions-in-windows-server-2012.aspx) if you don't want your users to be limited to 1 session only (if you have several users sharing the same account, they will otherwise disconnect each others).
 
 The RDS role offers you a **grace period of 120 days** after which you will need to use an [RD License Server](https://www.exitthefastlane.com/2016/06/native-rds-in-server2016-part-3-rdsh.html) with proper licenses (CALs) to suit your licensing mode ("Per Device" or "Per User").
+
+**PLEASE READ!** starting with Windows Server 2019 (or Windows 10 release 1903), RDS doesn't reconnect a previously disconnected session (due to a network issue or a manual disconnect) when multiple sessions per user is enabled on the RDS host; instead, it creates a new session. A workaround to that behavior is to lock the session before disconnecting the session (see https://nakedsecurity.sophos.com/2019/06/06/microsoft-dismisses-new-windows-rdp-bug-as-a-feature/ and https://social.technet.microsoft.com/Forums/windowsserver/en-US/baa5cb75-2fed-4d90-bbc6-404eab4aa20d/2019-rdsh-not-able-reconnect-to-disconnected-session-every-time-new-session-with?forum=winserverTS).
+
+Consequently, starting from version 2.8.0, Myrtille scales the session display instead of reconnecting the session (with the new browser size), when the browser is resized. To change that default setting, edit (myrtille path)\js\config.js ("display" section). In addition, you can choose whether or not to keep the aspect ratio of the display (default = don't keep).
 
 ## Auto-connect / Start remote application from URL
 Starting from version 1.3.0, it's possible to connect and run a program automatically, on session start, from an URL. It's a feature comparable to remoteApp (.rdp files).
@@ -241,7 +276,7 @@ NOTE: If you have enabled Enterprise Mode and wish to sync your Active Directory
 - Create an application (choose Applications from the menu), then click New, enter a Name and save. You will be directed to the application details page, grant access to the user group created in Step 2
 - Within the application page, click the button Application Key, this will display the information to configure myrtille
 
-Once these steps are completed, edit the app.config file of Myrtille.Services and uncomment the following appSettings:
+Once these steps are completed, edit [myrtille path]\bin\Myrtille.Services.exe.config and uncomment the following appSettings:
 - `MFAAuthAdapter`, this is the OASIS MFA adapter
 - `OASISApiKey`, this is the API Key found when you clicked Application Key in step 5
 - `OASISAppID`, this is the App ID found when you clicked Application Key in step 5
@@ -264,7 +299,7 @@ The enterprise mode provides the following additional features:
 - Access to hosts can be restricted based on the groups the authenticated users belongs to
 - Administrators can create a single use session url to a specific host (with specific login credentials) which can be shared with external (non domain) users and only be used once
 
-To enable enterprise mode, edit the app.config file of Myrtille.Services and uncomment the following appSettings:
+To enable enterprise mode, edit [myrtille path]\bin\Myrtille.Services.exe.config and uncomment the following appSettings:
 - `EnterpriseAdapter`, this is the adapter to use for enterprise mode
 - `EnterpriseAdminGroup`, this is the security group which will define a user as an administrator who can create, edit, delete hosts, define access to hosts and create single use sessions
 - `EnterpriseDomain`, this is the name of your domain (i.e. MYDOMAIN or mydomain.local) if myrtille is part of it or the domain controller FQDN or IP otherwise
@@ -273,6 +308,8 @@ To enable enterprise mode, edit the app.config file of Myrtille.Services and unc
 To specify a custom path for the MyrtilleEnterprise database or use another SQL server, amend Myrtille.Services app.config connectionString
 
 If you wish to create your own enterprise adapter (with a different authentication, database or behavior), `Myrtille.Services.Contracts` contains the interfaces you need.
+
+From version 2.8.0, myrtille provides a simplified host management designed for a local administrator, without the need for a domain and without group access restrictions. The default credentials are "**admin**"/"**admin**" (username/password) and are changed upon first login. See comments into (myrtille path)\bin\Myrtille.Services.exe.config.
 
 ## REST APIs
 
