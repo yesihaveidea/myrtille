@@ -2961,7 +2961,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Myrtille"
         "ProductCode" = "8:{F948238B-9510-4952-9102-8D0BECD55BA8}"
-        "PackageCode" = "8:{921046D7-254A-4437-AF87-DA4C9C843C47}"
+        "PackageCode" = "8:{C24FF62F-8A40-4E47-A95A-44DA0CDF4978}"
         "UpgradeCode" = "8:{86A6145E-11DB-4EE7-9CE0-53F997050716}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -4102,7 +4102,7 @@
                             "ContextData" = "8:Unchecked=;Checked=1"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:"
+                            "Value" = "8:1"
                             "DefaultValue" = "8:"
                             "UsePlugInResources" = "11:TRUE"
                             }
