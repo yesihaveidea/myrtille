@@ -72,7 +72,7 @@ namespace Myrtille.Admin.Services
                     " -Command \"& '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Admin.Services.Install.ps1") + "'" +
                     " -BinaryPath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Admin.Services.exe") + "'" +
                     " -DebugMode " + (debug ? "1" : "0") +
-                    " 3>&1 2>&1 | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Admin.Services.Install.log") + "'" + "\"";
+                    " | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Admin.Services.Install.log") + "'" + "\"";
 
                 process.Start();
                 process.WaitForExit();
@@ -162,7 +162,7 @@ namespace Myrtille.Admin.Services
                 process.StartInfo.Arguments = "-ExecutionPolicy Bypass" +
                     " -Command \"& '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "bin", "Myrtille.Admin.Services.Uninstall.ps1") + "'" +
                     " -DebugMode " + (debug ? "1" : "0") +
-                    " 3>&1 2>&1 | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Admin.Services.Uninstall.log") + "'" + "\"";
+                    " | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Admin.Services.Uninstall.log") + "'" + "\"";
 
                 process.Start();
                 process.WaitForExit();
@@ -177,8 +177,9 @@ namespace Myrtille.Admin.Services
             }
             catch (Exception exc)
             {
+                // in case of any error, don't rethrow the exception or myrtille won't be uninstalled otherwise (rollback action)
+                // if myrtille can't be uninstalled, it can't be re-installed either! (at least, with an installer of the same product code)
                 Context.LogMessage(string.Format("Failed to uninstall Myrtille.Admin.Services ({0})", exc));
-                throw;
             }
         }
 	}

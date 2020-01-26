@@ -1,4 +1,8 @@
-﻿2020-01-25 Version 2.8.0 (stable)
+﻿2020-01-26 Version 2.8.0 (stable)
+	pre-requisites change; myrtille now requires Windows 8.1 or Windows Server 2012 R2 or greater
+	the installer is now shipped without bootstraper (Setup.exe); open the myrtille msi file directly instead
+	the installer now installs the myrtille pre-requisites automatically (roles and features); the related powershell scripts can also be run manually from outside the installer, if needed
+	the installer now supports upgrading (thanks to Orca, which allows finer control over msi files), removing the need to uninstall a previous version first
 	myrtille is now available as a docker image (see DOCUMENTATION.MD)
 	resynced FreeRDP (among many things, fixes some issues related to the clipboard and audio)
 	fixed session disconnect occuring under some circumstances on clipboard paste
@@ -6,9 +10,6 @@
 	simplified hosts management (no domain or enterprise mode required); default login: admin/admin (changed upon first login)
 	updated the enterprise mode so that a member of "EnterpriseAdminGroup" can connect an host whatever the allowed groups or users defined on it (thanks dgcom)
 	fixed an issue with the enterprise mode, which prompted to change the password due to expiration whereas the expiration date was just not set (thanks dgcom)
-	the installer is now shipped without bootstraper (Setup.exe); open Myrtille.msi directly instead
-	the installer now installs the myrtille pre-requisites automatically (roles and features); the related script (Myrtille.Web\Install.ps1) can also be run manually from outside the installer, if needed
-	the installer now supports upgrading (thanks to Orca, which allows finer control over msi files), removing the need to uninstall a previous version first
 	security protocol is now configurable for RDP over VM bus
 	user domain is now configurable whatever the protocol and displayed into the toolbar, if defined
 	updated comments to drain disconnected sessions when using a connection broker in HA mode (myrtille services config)

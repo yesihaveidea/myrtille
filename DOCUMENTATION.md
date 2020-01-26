@@ -41,19 +41,17 @@ I hope you will enjoy Myrtille! :)
 Special thanks to Catalin Trifanescu for its support.
 
 ## Installation
-You need at least IIS 7 before installing myrtille (the HTTP(S) to RDP/SSH gateway). It installs as a role on Windows Servers and as a feature on others Windows versions.
+Starting from version 2.8.0, the Myrtille requirements change: Windows 8.1 or Windows Server 2012 R2 or greater. This is partly because of the automated installation of the roles and features required by myrtille (which requires a modern powershell) and partly to deliver the best user experience possible (fast display and audio support), as HTML5 websockets (supported by all browsers nowadays) are only available in IIS 8.0+ (Windows 8.1 or Windows Server 2012 R2 or greater).
 
-**CAUTION! If you want to use websockets**, you need IIS 8 or greater with the websocket protocol enabled (disabled by default; see https://www.iis.net/configreference/system.webserver/websocket).
+That said, Myrtille will continue to fallback to HTML4 (xhr and long-polling) if websockets are not enabled into IIS (it's optional) or if the websocket traffic is blocked by any network equipment.
 
-The .NET 4.5+ framework can be installed automatically by the myrtille installer (Setup.exe), enabled as a feature of IIS (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012) or installed separately (https://www.microsoft.com/en-us/download/details.aspx?id=30653).
+The .NET 4.5+ framework can be installed automatically by the myrtille installer, enabled as a feature of IIS (Web Server role > Applications Development > ASP.NET 4.5 on Windows Server 2012) or installed separately (https://www.microsoft.com/en-us/download/details.aspx?id=30653).
 
 Into the roles and features management, ensure you have enabled **HTTP Activation** under ".NET Framework 4.5+ Features" > "WCF Services" (required by the Myrtille services and REST API).
 
 The installer does install myrtille under the IIS default website and creates a custom application pool ("MyrtilleAppPool"). If you want to use another website or application pool, you can change it manually afterward (with the IIS manager).
 
 All releases here: https://github.com/cedrozor/myrtille/releases
-- Setup.exe (preferred installation method): setup bootstrapper
-- Myrtille.msi: MSI package (x86)
 
 ## Docker
 From version 2.8.0, Myrtille is available as a docker image.
@@ -163,7 +161,7 @@ If your browser machine is on the same network as the gateway or the remote serv
 If your remote server have internet access, you can also use a cloud printer (such a Google Print).
 
 ## Security
-The installer can create a self-signed certificate for myrtille (so you can use it at https://myserver/myrtille), but you can set your own certificate (if you wish).
+The installer can create a self-signed certificate for myrtille (so you can use it at https://myserver/myrtille), but you can set your own certificate (if you wish) to prevent the users from having to add a security exception into their browser.
 
 ## Configuration / Performance tweaks / Debug
 Both the gateway and services have their own .NET config files; the gateway also uses XDT transform files to adapt the settings depending on the current solution configuration.
@@ -369,7 +367,7 @@ See the Myrtille.Admin.Web **mockup** to see how to implement Myrtille into your
 - the clipboard synchronization requires Chrome (or async clipboard API support) and HTTPS connection and is limited to text only and 1MB max
 
 ## Troubleshoot
-First at all, ensure the Myrtille prerequisites are met (IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+). Note that IIS must be installed separately, before running the installer (see "Installation").
+First at all, ensure the Myrtille prerequisites are met (see "Installation").
 
 Also please read notes and limitations above.
 

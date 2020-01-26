@@ -78,7 +78,7 @@ namespace Myrtille.Web
                     " -InstallPath '" + Path.GetFullPath(Context.Parameters["targetdir"]) + "'" +
                     " -SslCert " + (!string.IsNullOrEmpty(Context.Parameters["SSLCERT"]) ? "1" : "0") +
                     " -DebugMode " + (debug ? "1" : "0") +
-                    " 3>&1 2>&1 | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Web.Install.log") + "'" + "\"";
+                    " | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Web.Install.log") + "'" + "\"";
 
                 process.Start();
                 process.WaitForExit();
@@ -243,7 +243,7 @@ namespace Myrtille.Web
                 process.StartInfo.Arguments = "-ExecutionPolicy Bypass" +
                     " -Command \"& '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "Myrtille.Web.Uninstall.ps1") + "'" +
                     " -DebugMode " + (debug ? "1" : "0") +
-                    " 3>&1 2>&1 | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Web.Uninstall.log") + "'" + "\"";
+                    " | Tee-Object -FilePath '" + Path.Combine(Path.GetFullPath(Context.Parameters["targetdir"]), "log", "Myrtille.Web.Uninstall.log") + "'" + "\"";
 
                 process.Start();
                 process.WaitForExit();
@@ -258,8 +258,9 @@ namespace Myrtille.Web
             }
             catch (Exception exc)
             {
+                // in case of any error, don't rethrow the exception or myrtille won't be uninstalled otherwise (rollback action)
+                // if myrtille can't be uninstalled, it can't be re-installed either! (at least, with an installer of the same product code)
                 Context.LogMessage(string.Format("Failed to uninstall Myrtille.Web ({0})", exc));
-                throw;
             }
         }
     }

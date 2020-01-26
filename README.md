@@ -33,7 +33,7 @@ More information in the DOCUMENTATION.md file.
 
 ## Requirements
 - Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required. The clipboard synchronization requires Chrome (or async clipboard API support) and HTTPS connection
-- Gateway (myrtille): IIS 7 or greater (preferably IIS 8+ with websocket protocol enabled) and .NET 4.5+ (with WCF Services > HTTP Activation enabled)
+- Gateway (myrtille): Windows 8.1 or Windows Server 2012 R2 or greater (IIS 8.0+, .NET 4.5+ and WCF/HTTP activation enabled)
 - RDP server: any RDP enabled machine (preferably Windows Server but can also be Windows XP, 7, 8, 10 or Linux xRDP server)
 - SSH server: any SSH server (tests were made using the built-in Windows 10 OpenSSH server)
 
