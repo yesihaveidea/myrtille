@@ -130,7 +130,7 @@ Myrtille is licensed under Apache 2.0 license.
 See LICENSE file.
 
 ## Author
-Cedric Coste (cedrozor@gmail.com).
+Cedric Coste.
 - Website:  https://www.cedric-coste.com
 - LinkedIn:	https://fr.linkedin.com/in/cedric-coste-a1b9194b
 - Twitter:	https://twitter.com/cedrozor
