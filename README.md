@@ -131,12 +131,11 @@ See LICENSE file.
 
 ## Author
 Cedric Coste (cedrozor@gmail.com).
+- Website:  https://www.cedric-coste.com
 - LinkedIn:	https://fr.linkedin.com/in/cedric-coste-a1b9194b
 - Twitter:	https://twitter.com/cedrozor
 - Google+:	https://plus.google.com/111659262235573941837
 - Facebook:	https://www.facebook.com/profile.php?id=100011710352840
-
-**New 2018-10-18!** I'm offering my services as freelance, for Myrtille or Web Development, Digital Learning LMS / LRS Consulting and Security Audits. You can find my portfolio and contact form at https://www.cedric-coste.com/
 
 ## Contributors
 - Catalin Trifanescu (AppliKr developer: application server. Steemind cofounder)
@@ -159,10 +158,9 @@ Cedric Coste (cedrozor@gmail.com).
 Ever wanted to run Myrtille in your Tesla supercar? :) https://www.youtube.com/watch?v=YwNlf6Bm_so
 
 ## Links
-- Website:	http://cedrozor.github.io/myrtille
+- Website:	https://www.myrtille.io (support & consulting services)
 - Sources:	https://github.com/cedrozor/myrtille
 - Tracker:	https://github.com/cedrozor/myrtille/issues
 - Wiki:		https://github.com/cedrozor/myrtille/wiki
-- Support:	https://groups.google.com/forum/#!forum/myrtille_rdp
-- Demo:		https://www.youtube.com/watch?v=l4CL8h0KfQ8
+- Forum:	https://groups.google.com/forum/#!forum/myrtille_rdp (community)
 - Donate:	https://www.paypal.me/costecedric
