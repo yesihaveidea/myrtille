@@ -123,6 +123,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="handlers\LongPollingHandler.ashx.cs">
+      <DependentUpon>LongPollingHandler.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="handlers\EventSourceHandler.ashx.cs">
+      <DependentUpon>EventSourceHandler.ashx</DependentUpon>
+    </Compile>
     <Compile Include="GetHash.aspx.cs">
       <DependentUpon>GetHash.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -207,7 +213,7 @@
     <Compile Include="PrintDocument.aspx.designer.cs">
       <DependentUpon>PrintDocument.aspx</DependentUpon>
     </Compile>
-    <Compile Include="AudioSocketHandler.ashx.cs">
+    <Compile Include="handlers\AudioSocketHandler.ashx.cs">
       <DependentUpon>AudioSocketHandler.ashx</DependentUpon>
     </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
@@ -215,13 +221,15 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="SocketHandler.ashx.cs">
+    <Compile Include="handlers\SocketHandler.ashx.cs">
       <DependentUpon>SocketHandler.ashx</DependentUpon>
     </Compile>
     <Compile Include="src\Clients\ApplicationPoolClient.cs" />
     <Compile Include="src\Controllers\DisconnectionController.cs" />
     <Compile Include="src\Controllers\SharingControler.cs" />
+    <Compile Include="src\Handlers\RemoteSessionLongPollingHandler.cs" />
     <Compile Include="src\Models\SharingInfo.cs" />
+    <Compile Include="src\Handlers\RemoteSessionEventSourceHandler.cs" />
     <Compile Include="src\Services\DisconnectionService.cs" />
     <Compile Include="src\Services\SharingService.cs" />
     <Compile Include="src\Services\CaptureService.cs" />
@@ -237,8 +245,8 @@
     <Compile Include="src\RemoteSessionImage.cs" />
     <Compile Include="src\RemoteSessionPipes.cs" />
     <Compile Include="src\Clients\RemoteSessionProcessClient.cs" />
-    <Compile Include="src\RemoteSessionAudioSocketHandler.cs" />
-    <Compile Include="src\RemoteSessionSocketHandler.cs" />
+    <Compile Include="src\Handlers\RemoteSessionAudioSocketHandler.cs" />
+    <Compile Include="src\Handlers\RemoteSessionSocketHandler.cs" />
     <Compile Include="src\WebInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -267,13 +275,6 @@
     <Compile Include="GetUpdate.aspx.designer.cs">
       <DependentUpon>GetUpdate.aspx</DependentUpon>
     </Compile>
-    <Compile Include="PushUpdates.aspx.cs">
-      <DependentUpon>PushUpdates.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="PushUpdates.aspx.designer.cs">
-      <DependentUpon>PushUpdates.aspx</DependentUpon>
-    </Compile>
     <Compile Include="SendInputs.aspx.cs">
       <DependentUpon>SendInputs.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -286,6 +287,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="css\xterm.css" />
+    <Content Include="handlers\EventSourceHandler.ashx" />
     <Content Include="favicon.ico" />
     <Content Include="GetHash.aspx" />
     <Content Include="img\bandwidthTest.png" />
@@ -299,6 +301,7 @@
     <Content Include="js\display\canvas.js" />
     <Content Include="js\display\divs.js" />
     <Content Include="js\display\terminaldiv.js" />
+    <Content Include="js\network\eventsource.js" />
     <Content Include="js\network\websocket.js" />
     <Content Include="js\tools\convert.js" />
     <Content Include="js\tools\common.js" />
@@ -331,7 +334,6 @@
     <Content Include="js\user\keyboard.js" />
     <Content Include="js\user\mouse.js" />
     <Content Include="PrintDocument.aspx" />
-    <Content Include="PushUpdates.aspx" />
     <Content Include="SendInputs.aspx" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -339,11 +341,12 @@
     <Content Include="log\README" />
     <Content Include="Myrtille.Web.Install.ps1" />
     <Content Include="Myrtille.Web.Uninstall.ps1" />
+    <Content Include="handlers\LongPollingHandler.ashx" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <Content Include="SocketHandler.ashx" />
-    <Content Include="AudioSocketHandler.ashx" />
+    <Content Include="handlers\SocketHandler.ashx" />
+    <Content Include="handlers\AudioSocketHandler.ashx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

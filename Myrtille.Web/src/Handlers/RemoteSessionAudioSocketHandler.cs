@@ -35,25 +35,25 @@ namespace Myrtille.Web
         private HttpSessionState _session;
         private RemoteSession _remoteSession;
 
-        public bool BinaryMode { get; private set; }
+        public bool Binary { get; private set; }
 
         public DataBuffer<int> Buffer { get; private set; }
 
         private const int _bufferCount = 6;
         private const int _bufferDelay = 1000;
 
-        public RemoteSessionAudioSocketHandler(HttpSessionState session, bool binaryMode)
+        public RemoteSessionAudioSocketHandler(HttpSessionState session, bool binary)
             : base()
         {
             _session = session;
-            BinaryMode = binaryMode;
+            Binary = binary;
 
             try
             {
                 if (session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
                     throw new NullReferenceException();
 
-                if (!BinaryMode)
+                if (!binary)
                     throw new Exception("Audio requires a binary websocket (HTML5 standard)");
 
                 // retrieve the remote session for the given http session

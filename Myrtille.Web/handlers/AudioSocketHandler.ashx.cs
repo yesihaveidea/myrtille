@@ -28,7 +28,10 @@ namespace Myrtille.Web
         {
             if (context.IsWebSocketRequest)
             {
-                context.AcceptWebSocketRequest(new RemoteSessionAudioSocketHandler(context.Session, string.IsNullOrEmpty(context.Request["type"]) ? true : context.Request["type"] == "binary"));
+                context.AcceptWebSocketRequest(
+                    new RemoteSessionAudioSocketHandler(
+                        context.Session,
+                        string.IsNullOrEmpty(context.Request["binary"]) ? true : context.Request["binary"] == "true"));
             }
         }
 

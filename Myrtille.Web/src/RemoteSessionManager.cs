@@ -57,6 +57,12 @@ namespace Myrtille.Web
                 WebSockets = new List<RemoteSessionSocketHandler>();
                 AudioWebSockets = new List<RemoteSessionAudioSocketHandler>();
 
+                // event sources
+                EventSources = new List<RemoteSessionEventSourceHandler>();
+
+                // long pollings
+                LongPollings = new List<RemoteSessionLongPollingHandler>();
+
                 // messages
                 MessageQueues = new Hashtable();
 
@@ -197,6 +203,18 @@ namespace Myrtille.Web
 
         public List<RemoteSessionSocketHandler> WebSockets { get; set; }
         public List<RemoteSessionAudioSocketHandler> AudioWebSockets { get; set; }
+
+        #endregion
+
+        #region Event Sources
+
+        public List<RemoteSessionEventSourceHandler> EventSources { get; set; }
+
+        #endregion
+
+        #region Long Pollings
+
+        public List<RemoteSessionLongPollingHandler> LongPollings { get; set; }
 
         #endregion
 
@@ -697,39 +715,31 @@ namespace Myrtille.Web
 
                 Trace.TraceInformation("Received image {0} ({1}), remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), RemoteSession.Id);
 
-                // while a fullscreen update is pending, discard all updates; the fullscreen will replace all of them
-                if (FullscreenEventPending)
+                // a fullscreen update was requested
+                if (FullscreenEventPending && image.Fullscreen)
                 {
-                    if (!image.Fullscreen)
-                    {
-                        Trace.TraceInformation("Discarding image {0} (region) as a fullscreen update is pending, remote session {1}", image.Idx, RemoteSession.Id);
-                        return;
-                    }
-                    else
-                    {
-                        Trace.TraceInformation("Fullscreen update received, resuming image(s) processing, remote session {0}", RemoteSession.Id);
-                        FullscreenEventPending = false;
+                    Trace.TraceInformation("Fullscreen update received, remote session {0}", RemoteSession.Id);
+                    FullscreenEventPending = false;
 
-                        // screenshot request
-                        if (ScreenshotEventLock != null)
+                    // screenshot request
+                    if (ScreenshotEventLock != null)
+                    {
+                        lock (ScreenshotEventLock)
                         {
-                            lock (ScreenshotEventLock)
-                            {
-                                // screenshot image index
-                                ScreenshotImageIdx = image.Idx;
+                            // screenshot image index
+                            ScreenshotImageIdx = image.Idx;
 
-                                // if waiting for a screenshot, signal the reception
-                                if (ScreenshotEventPending)
-                                {
-                                    ScreenshotEventPending = false;
-                                    Monitor.Pulse(ScreenshotEventLock);
-                                }
+                            // if waiting for a screenshot, signal the reception
+                            if (ScreenshotEventPending)
+                            {
+                                ScreenshotEventPending = false;
+                                Monitor.Pulse(ScreenshotEventLock);
                             }
                         }
                     }
                 }
 
-                // HTML5 client(s)
+                // websocket client(s)
                 if (WebSockets.Count > 0)
                 {
                     Trace.TraceInformation("Sending image {0} ({1}) on websocket(s), remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), RemoteSession.Id);
@@ -740,7 +750,29 @@ namespace Myrtille.Web
                     }
                 }
 
-                // HTML4 client(s)
+                // event source client(s)
+                if (EventSources.Count > 0)
+                {
+                    Trace.TraceInformation("Sending image {0} ({1}) on event source(s), remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), RemoteSession.Id);
+
+                    foreach (var eventSource in EventSources)
+                    {
+                        eventSource.SendImage(image);
+                    }
+                }
+
+                // long polling client(s)
+                if (LongPollings.Count > 0)
+                {
+                    Trace.TraceInformation("Sending image {0} ({1}) on long polling(s), remote session {2}", image.Idx, (image.Fullscreen ? "screen" : "region"), RemoteSession.Id);
+
+                    foreach (var longPolling in LongPollings)
+                    {
+                        longPolling.SendImage(image);
+                    }
+                }
+
+                // xhr client(s)
                 lock (_imageEventLock)
                 {
                     // last received image index
@@ -826,6 +858,12 @@ namespace Myrtille.Web
             return image;
         }
 
+        // retrieve the last image
+        public RemoteSessionImage GetLastUpdate()
+        {
+            return GetCachedUpdate(_lastReceivedImageIdx);
+        }
+
         #endregion
 
         #region Messages
@@ -834,7 +872,7 @@ namespace Myrtille.Web
 
         public void SendMessage(RemoteSessionMessage message)
         {
-            // HTML5 client(s)
+            // websocket client(s)
             if (WebSockets.Count > 0)
             {
                 foreach (var webSocket in WebSockets)
@@ -843,7 +881,25 @@ namespace Myrtille.Web
                 }
             }
 
-            // HTML4 client(s)
+            // event source client(s)
+            if (EventSources.Count > 0)
+            {
+                foreach (var eventSource in EventSources)
+                {
+                    eventSource.SendMessage(message);
+                }
+            }
+
+            // long polling client(s)
+            if (LongPollings.Count > 0)
+            {
+                foreach (var longPolling in LongPollings)
+                {
+                    longPolling.SendMessage(message);
+                }
+            }
+
+            // xhr client(s)
             foreach (List<RemoteSessionMessage> messageQueue in MessageQueues.Values)
             {
                 lock (((ICollection)messageQueue).SyncRoot)
@@ -978,7 +1034,7 @@ namespace Myrtille.Web
         private Cache _cache;
 
         // cache lifetime (ms); that is, represents the maximal lag possible for a client, before having to drop some images or audio in order to catch up with the remote session (proceed with caution with these values!)
-        private const int _imageCacheDuration = 3000;
+        private const int _imageCacheDuration = 1000;
         private const int _audioCacheDuration = 2000;
 
         #endregion

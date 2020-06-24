@@ -192,7 +192,7 @@ namespace Myrtille.Web
                                     image.Format.ToString().ToLower() + "," +
                                     image.Quality + "," +
                                     image.Fullscreen.ToString().ToLower() + "," +
-                                    Convert.ToBase64String(image.Data);
+                                    Convert.ToBase64String(image.Data) + ";";
 
                                 // write the output
                                 Response.Write(imgData);

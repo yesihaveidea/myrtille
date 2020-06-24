@@ -181,7 +181,7 @@ function Dialog(config)
             statData.Bandwidth = statBandwidthUsage + '/' + statBandwidthSize + ' (' + (statBandwidthSize > 0 ? Math.round((statBandwidthUsage * 100) / statBandwidthSize) : 0) + '%)';
             statData.PeriodicalFSU = config.getPeriodicalFullscreenInterval() / 1000;
             statData.AdaptiveFSU = config.getAdaptiveFullscreenTimeout() / 1000;
-            statData.NetworkMode = statNetworkMode.text + (statNetworkMode == config.getNetworkModeEnum().LONGPOLLING ? ' (' + config.getLongPollingDuration() / 1000 + 's)' : '');
+            statData.NetworkMode = statNetworkMode.text + (statNetworkMode == config.getNetworkModeEnum().LONGPOLLING ? ' (' + config.getLongPollingDuration() / 1000 + 's)' : (statNetworkMode == config.getNetworkModeEnum().WEBSOCKET ? ' (' + (config.getWebsocketDuplex() ? 'duplex' : 'dual') + ')' : ''));
             statData.DisplayMode = statDisplayMode.text;
             statData.ImageCount = statImageCount + ' (' + statImageCountPerSec + '/s)';
             statData.ImageIndex = statImageIndex;

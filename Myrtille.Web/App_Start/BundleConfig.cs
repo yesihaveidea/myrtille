@@ -32,6 +32,7 @@ namespace Myrtille.Web
             bundles.Add(new Bundle("~/js/display/terminaldiv.js").Include("~/js/display/terminaldiv.js"));
             bundles.Add(new Bundle("~/js/network.js").Include("~/js/network.js"));
             bundles.Add(new Bundle("~/js/network/buffer.js").Include("~/js/network/buffer.js"));
+            bundles.Add(new Bundle("~/js/network/eventsource.js").Include("~/js/network/eventsource.js"));
             bundles.Add(new Bundle("~/js/network/longpolling.js").Include("~/js/network/longpolling.js"));
             bundles.Add(new Bundle("~/js/network/websocket.js").Include("~/js/network/websocket.js"));
             bundles.Add(new Bundle("~/js/network/xmlhttp.js").Include("~/js/network/xmlhttp.js"));

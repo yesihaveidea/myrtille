@@ -90,7 +90,8 @@ function Config(
         AUTO: { value: 0, text: 'AUTO' },
         XHR: { value: 1, text: 'XHR' },
         LONGPOLLING: { value: 2, text: 'LONGPOLLING' },
-        WEBSOCKET: { value: 3, text: 'WEBSOCKET' }
+        EVENTSOURCE: { value: 3, text: 'EVENTSOURCE' },
+        WEBSOCKET: { value: 4, text: 'WEBSOCKET' }
     };
 
     // starting from IE9, it's possible to use Object.freeze along with enums (to prevent them being modified, making them static objects)
@@ -124,16 +125,16 @@ function Config(
     var displayMode = displayModeEnum.AUTO;                         // display mode
     var imageEncoding = imageEncodingEnum.JPEG;                     // image encoding
     var imageQuality = 75;                                          // image quality (%) higher = better; not applicable for PNG (lossless); tweaked dynamically to fit the available bandwidth if using JPEG, AUTO or WEBP encoding. for best user experience, fullscreen updates are always done in higher quality (75%), regardless of this setting and bandwidth
-    var imageQuantity = 100;                                        // image quantity (%) less images = lower cpu and bandwidth usage / faster; more = smoother display (skipping images may result in some display inconsistencies). tweaked dynamically to fit the available bandwidth; possible values: 5, 10, 20, 25, 50, 100 (lower = higher drop rate)
-    var imageTweakBandwidthLowerThreshold = 50;                     // tweak the image quality & quantity depending on the available bandwidth (%): lower threshold
-    var imageTweakBandwidthHigherThreshold = 90;                    // tweak the image quality & quantity depending on the available bandwidth (%): higher threshold
+    var imageQuantity = 100;                                        // image quantity (%) less images = lower cpu and bandwidth usage / faster; more = smoother display (skipping images may result in some display inconsistencies). tweaked dynamically to fit the available bandwidth; possible values: 5, 10, 20, 25, 50, 100 (lower = higher consolidation rate)
+    var imageTweakBandwidthLowerThreshold = 25;                     // tweak the image quality & quantity depending on the available bandwidth (%): lower threshold. see network.js
+    var imageTweakBandwidthHigherThreshold = 50;                    // tweak the image quality & quantity depending on the available bandwidth (%): higher threshold. see network.js
     var imageCountOk = 100;                                         // reasonable number of images to display at once; for HTML4 (divs), used to clean the DOM (by requesting a fullscreen update) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
-    var imageCountMax = 200;                                        // maximal number of images to display at once; for HTML4 (divs), used to clean the DOM (by reloading the page) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
+    var imageCountMax = 300;                                        // maximal number of images to display at once; for HTML4 (divs), used to clean the DOM (by reloading the page) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
     var imageMode = imageModeEnum.AUTO;                             // image mode
     var imageBlobEnabled = false;                                   // display images from local cached urls using blob objects (HTML5 only, binary mode)
     var imageDebugEnabled = false;                                  // display a red border around images, for debug purpose
     var periodicalFullscreenInterval = 30000;                       // periodical fullscreen update (ms); used to refresh the whole display
-    var adaptiveFullscreenTimeout = 0;                              // adaptive fullscreen update (ms); requested after a given period of user inactivity (=no input). 0 to disable
+    var adaptiveFullscreenTimeout = 1500;                           // adaptive fullscreen update (ms); requested after a given period of user inactivity (=no input). 0 to disable
 
     // audio
     var audioFormat = audioFormatEnum.MP3;                          // audio format (HTML5); requires websocket enabled and RDP host; IE doesn't support WAV format (MP3 fallback); others: WAV and MP3 support
@@ -141,9 +142,11 @@ function Config(
 
     // network
     var additionalLatency = 0;                                      // simulate a network latency (ms) which adds to the real latency (useful to test various network situations). 0 to disable
-    var roundtripDurationMax = 5000;                                // roundtrip duration (ms) above which the connection is considered having issues
+    var roundtripDurationMax = 0;                                   // roundtrip duration (ms) above which the connection is considered having issues, displaying a warning message to the user. 0 to disable
     var bandwidthCheckInterval = 300000;                            // periodical bandwidth check; used to tweak down the images (quality & quantity) if the available bandwidth gets too low. it relies on a 5MB dummy file download, so this param shouldn't be set on a too short timer (or it will eat the bandwidth it's supposed to test...)
     var networkMode = networkModeEnum.AUTO;                         // network mode
+    var websocketDuplex = true;                                     // use the same websocket (preferred) to send the user inputs and receive the display updates (duplex) or use two separate websockets otherwise (dual)
+    var websocketMaxLatency = 0;                                    // when using websocket, latency (ms) above which switching network mode to event source (the websocket protocol may be filtered or throttled by some network proxies). 0 to disable
     var httpSessionKeepAliveInterval = 30000;                       // periodical dummy xhr calls (ms) when using websocket, in order to keep the http session alive
     var xmlHttpTimeout = 3000;                                      // xmlhttp requests (xhr) timeout (ms)
     var longPollingDuration = 60000;                                // long-polling requests duration (ms)
@@ -231,6 +234,9 @@ function Config(
     this.setNetworkMode = function(mode) { networkMode = mode; };
 
     // websocket
+    this.getWebsocketDuplex = function() { return websocketDuplex; };
+    this.setWebsocketDuplex = function(duplex) { websocketDuplex = duplex; };
+    this.getWebsocketMaxLatency = function() { return websocketMaxLatency; };
     this.getHttpSessionKeepAliveInterval = function() { return httpSessionKeepAliveInterval; };
  
     // xmlhttp

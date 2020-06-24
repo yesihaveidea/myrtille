@@ -1,4 +1,16 @@
-﻿2020-04-20 Version 2.8.1 (stable)
+﻿2020-06-24 Version 2.9.0 (beta)
+	display updates are now consolidated instead of dropped when the available bandwidth gets low (config.js)
+	websocket can now be configured to handle both user inputs and display updates on the same instance (duplex, default) or use separate instances (dual) [experimental]
+	added support of event source (SSE) as an alternative to long-polling (requires HTML5 and not compatible with old IE/Edge browsers) [experimental]
+	it's now possible to switch automatically from websocket to event source when the latency gets high (the websocket protocol may be filtered or throttled by some network proxies) (config.js) [experimental]
+	disabled the warning messages when the latency gets high (config.js) or in case of xhr timeout (xmlhttp.js)
+	latency is now updated on a 1 sec timer, even if the user does nothing
+	fixed random freezes while requesting fullscreen updates
+	the disconnect command is now given priority in xhr mode
+	long-polling is now an http handler
+	refactoring
+
+2020-04-20 Version 2.8.1 (stable)
 	changed the default display resize mode from scale to none (config.js); this eliminates a loss of display sharpness when the aspect ratio is not preserved; reconnect is not supported by Windows Server 2019 (see documentation)
 	if using scale on resize, the aspect ratio is now preserved by default (config.js)
 	lowered bandwidth usage: the default display quality is now JPEG 75% (lossy) instead of PNG (lossless) (config.js); this significantly reduces the size of display updates when using graphics applications and JPEG is generated faster
