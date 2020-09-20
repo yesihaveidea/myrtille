@@ -21,6 +21,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Web;
 using System.Web.SessionState;
+using Newtonsoft.Json;
 
 namespace Myrtille.Web
 {
@@ -93,52 +94,27 @@ namespace Myrtille.Web
 
         public void SendImage(RemoteSessionImage image)
         {
-            Send("<script>parent.lpProcessImage(" + GetImageText(image) + ");</script>");
+            Send(string.Format("<script>parent.lpProcessImage({0});</script>", GetImageText(image)));
         }
 
         public void SendMessage(RemoteSessionMessage message)
         {
-            switch (message.Type)
-            {
-                case MessageType.Connected:
-                    Send("<script>parent.lpProcessMessage('connected');</script>");
-                    break;
-
-                case MessageType.Disconnected:
-                    Send("<script>parent.lpProcessMessage('disconnected');</script>");
-                    break;
-
-                case MessageType.PageReload:
-                    Send("<script>parent.lpProcessMessage('reload');</script>");
-                    break;
-
-                case MessageType.RemoteClipboard:
-                    Send(string.Format("<script>parent.lpProcessMessage('clipboard|{0}');</script>", message.Text.Replace(@"\", @"\\").Replace("\r", @"\r").Replace("\n", @"\n").Replace("'", @"\'")));
-                    break;
-
-                case MessageType.TerminalOutput:
-                    Send(string.Format("<script>parent.lpProcessMessage('term|{0}');</script>", message.Text.Replace(@"\", @"\\").Replace("\r", @"\r").Replace("\n", @"\n").Replace("'", @"\'")));
-                    break;
-
-                case MessageType.PrintJob:
-                    Send(string.Format("<script>parent.lpProcessMessage('printjob|{0}');</script>", message.Text));
-                    break;
-            }
+            Send(string.Format("<script>parent.lpProcessMessage('{0}');</script>", JsonConvert.SerializeObject(message).Replace(@"\", @"\\").Replace("\r", @"\r").Replace("\n", @"\n").Replace("'", @"\'")));
         }
 
-        public void Send(string message)
+        public void Send(string data)
         {
             try
             {
                 if (_context.Response.IsClientConnected)
                 {
-                    _context.Response.Write(message);
+                    _context.Response.Write(data);
                     _context.Response.Flush();
                 }
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to send long polling message for the remote session {0}, ({1})", _remoteSession.Id, exc);
+                Trace.TraceError("Failed to send long polling data for the remote session {0}, ({1})", _remoteSession.Id, exc);
             }
         }
     }

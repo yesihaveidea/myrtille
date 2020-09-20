@@ -1,4 +1,8 @@
-﻿2020-06-24 Version 2.9.0 (beta)
+﻿2020-09-20 Version 2.9.0 (stable)
+	added a virtual on-screen keyboard (multi-languages)
+	popups are now draggable
+	showing the toolbar no longer shifts the display down
+	the rendering quality can now tweaked from the toolbar (lower quality = lower bandwidth usage), in addition to the default value defined in config.js
 	display updates are now consolidated instead of dropped when the available bandwidth gets low (config.js)
 	websocket can now be configured to handle both user inputs and display updates on the same instance (duplex, default) or use separate instances (dual) [experimental]
 	added support of event source (SSE) as an alternative to long-polling (requires HTML5 and not compatible with old IE/Edge browsers) [experimental]
@@ -8,6 +12,10 @@
 	fixed random freezes while requesting fullscreen updates
 	the disconnect command is now given priority in xhr mode
 	long-polling is now an http handler
+	messages are serialized in JSON instead of raw text
+	fixed an issue with messages containing the ";" character
+	fixed an issue with file transfer when using a domain (thanks camjcorley)
+	fixed an issue with the tab key in SSH mode (this also fixes shell autocompletion)
 	refactoring
 
 2020-04-20 Version 2.8.1 (stable)

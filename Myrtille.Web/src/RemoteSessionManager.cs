@@ -132,7 +132,7 @@ namespace Myrtille.Web
                     if (message.Equals("reload"))
                     {
                         Trace.TraceInformation("Sending reload request, remote session {0}", RemoteSession.Id);
-                        SendMessage(new RemoteSessionMessage { Type = MessageType.PageReload, Prefix = "reload" });
+                        SendMessage(new RemoteSessionMessage { Type = MessageType.PageReload });
                     }
                     // remote clipboard
                     // truncated above max length
@@ -140,7 +140,7 @@ namespace Myrtille.Web
                     {
                         Trace.TraceInformation("Sending clipboard content, remote session {0}", RemoteSession.Id);
                         RemoteSession.ClipboardText = message.Remove(0, 10);
-                        SendMessage(new RemoteSessionMessage { Type = MessageType.RemoteClipboard, Prefix = "clipboard|", Text = message.Remove(0, 10) });
+                        SendMessage(new RemoteSessionMessage { Type = MessageType.RemoteClipboard, Text = message.Remove(0, 10) });
                     }
                     // SSH Terminal data
                     else if (message.StartsWith("term|"))
@@ -148,17 +148,17 @@ namespace Myrtille.Web
                         if (RemoteSession.State == RemoteSessionState.Connecting)
                         {
                             RemoteSession.State = RemoteSessionState.Connected;
-                            SendMessage(new RemoteSessionMessage { Type = MessageType.Connected, Prefix = "connected" });
+                            SendMessage(new RemoteSessionMessage { Type = MessageType.Connected });
                         }
 
                         Trace.TraceInformation("Sending terminal content {0}, remote session {1}", message, RemoteSession.Id);
-                        SendMessage(new RemoteSessionMessage { Type = MessageType.TerminalOutput, Prefix = "term|", Text = message.Remove(0, 5) });
+                        SendMessage(new RemoteSessionMessage { Type = MessageType.TerminalOutput, Text = message.Remove(0, 5) });
                     }
                     // print job
                     else if (message.StartsWith("printjob|"))
                     {
                         Trace.TraceInformation("Sending print job {0}, remote session {1}", message, RemoteSession.Id);
-                        SendMessage(new RemoteSessionMessage { Type = MessageType.PrintJob, Prefix = "printjob|", Text = message.Remove(0, 9) });
+                        SendMessage(new RemoteSessionMessage { Type = MessageType.PrintJob, Text = message.Remove(0, 9) });
                     }
                 }
                 // image
@@ -167,7 +167,7 @@ namespace Myrtille.Web
                     if (RemoteSession.State == RemoteSessionState.Connecting)
                     {
                         RemoteSession.State = RemoteSessionState.Connected;
-                        SendMessage(new RemoteSessionMessage { Type = MessageType.Connected, Prefix = "connected" });
+                        SendMessage(new RemoteSessionMessage { Type = MessageType.Connected });
 
                         // in case the remote session was reconnected, send the capture API config
                         SendCommand(RemoteSessionCommand.SetScreenshotConfig, string.Format("{0}|{1}|{2}", RemoteSession.ScreenshotIntervalSecs, (int)RemoteSession.ScreenshotFormat, RemoteSession.ScreenshotPath));
@@ -323,6 +323,10 @@ namespace Myrtille.Web
                     if (rdpScanCode != null && rdpScanCode.Value != 0)
                     {
                         commandWithArgs = string.Concat((string)RemoteSessionCommandMapping.ToPrefix[command], rdpScanCode.Value + "-" + keyState + "-" + (rdpScanCode.Extend ? "1" : "0"));
+                    }
+                    else
+                    {
+                        return;
                     }
                     break;
 

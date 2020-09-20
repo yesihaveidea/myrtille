@@ -142,8 +142,8 @@ namespace Myrtille.SSH
                     pipeMessaging.ClosePipes();
                     break;
                 case RemoteSessionCommand.SendKeyUnicode:
-                    WriteOutput(command, string.IsNullOrEmpty(data) ? "," : data);
-                    HandleKeyboardInput(string.IsNullOrEmpty(data) ? "," : data);
+                    WriteOutput(command, data);
+                    HandleKeyboardInput(data);
                     break;
             }
         }

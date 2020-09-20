@@ -199,6 +199,13 @@
     <Compile Include="popups\ShowDialog.aspx.designer.cs">
       <DependentUpon>ShowDialog.aspx</DependentUpon>
     </Compile>
+    <Compile Include="popups\OnScreenKeyboard.aspx.cs">
+      <DependentUpon>OnScreenKeyboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="popups\OnScreenKeyboard.aspx.designer.cs">
+      <DependentUpon>OnScreenKeyboard.aspx</DependentUpon>
+    </Compile>
     <Compile Include="popups\VirtualKeyboard.aspx.cs">
       <DependentUpon>VirtualKeyboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -228,6 +235,7 @@
     <Compile Include="src\Controllers\DisconnectionController.cs" />
     <Compile Include="src\Controllers\SharingControler.cs" />
     <Compile Include="src\Handlers\RemoteSessionLongPollingHandler.cs" />
+    <Compile Include="src\JSKeyCodeToRDPScanCodeMapping.cs" />
     <Compile Include="src\Models\SharingInfo.cs" />
     <Compile Include="src\Handlers\RemoteSessionEventSourceHandler.cs" />
     <Compile Include="src\Services\DisconnectionService.cs" />
@@ -282,7 +290,6 @@
     <Compile Include="SendInputs.aspx.designer.cs">
       <DependentUpon>SendInputs.aspx</DependentUpon>
     </Compile>
-    <Compile Include="src\JSKeyCodeToRDPScanCodeMapping.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -323,6 +330,7 @@
     <Content Include="popups\FileStorage.aspx" />
     <Content Include="popups\CopyClipboard.aspx" />
     <Content Include="popups\ShowDialog.aspx" />
+    <Content Include="popups\OnScreenKeyboard.aspx" />
     <Content Include="popups\VirtualKeyboard.aspx" />
     <Content Include="css\Default.css" />
     <Content Include="Global.asax" />

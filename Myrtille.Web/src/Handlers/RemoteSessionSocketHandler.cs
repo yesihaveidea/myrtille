@@ -22,6 +22,7 @@ using System.IO;
 using System.Text;
 using System.Web.SessionState;
 using Microsoft.Web.WebSockets;
+using Newtonsoft.Json;
 using Myrtille.Services.Contracts;
 
 namespace Myrtille.Web
@@ -182,7 +183,7 @@ namespace Myrtille.Web
                 }
 
                 // acknowledge the message processing with the given timestamp; it will be used by the client to compute the roundtrip time
-                SendMessage(new RemoteSessionMessage { Type = MessageType.Ack, Prefix = "ack,", Text = timestamp.ToString() });
+                SendMessage(new RemoteSessionMessage { Type = MessageType.Ack, Text = timestamp.ToString() });
             }
             catch (Exception exc)
             {
@@ -232,7 +233,7 @@ namespace Myrtille.Web
         {
             if (!Binary)
             {
-                Send(GetImageText(image) + ";");
+                Send(GetImageText(image));
             }
             else
             {
@@ -244,11 +245,11 @@ namespace Myrtille.Web
         {
             if (!Binary)
             {
-                Send(string.Concat(message.Prefix, message.Text));
+                Send(JsonConvert.SerializeObject(message));
             }
             else
             {
-                Send(Encoding.UTF8.GetBytes(string.Concat(message.Prefix, message.Text)));
+                Send(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)));
             }
         }
     }

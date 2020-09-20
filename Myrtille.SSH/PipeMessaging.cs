@@ -92,13 +92,9 @@ namespace Myrtille.SSH
         private void ProcessInputsPipeMessage(byte[] msg)
         {
             var message = Encoding.UTF8.GetString(msg);
-            var commandsWithArgs = message.Split(new[] { "\t" }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var commandWithArgs in commandsWithArgs)
-            {
-                var command = (RemoteSessionCommand)RemoteSessionCommandMapping.FromPrefix[commandWithArgs.Substring(0, 3)];
-                var data = commandWithArgs.Substring(3);
-                OnMessageReceivedEvent?.Invoke(command, data);
-            }
+            var command = (RemoteSessionCommand)RemoteSessionCommandMapping.FromPrefix[message.Substring(0, 3)];
+            var data = message.Substring(3);
+            OnMessageReceivedEvent?.Invoke(command, data);
         }
 
         public void SendUpdatesPipeMessage(string msg)

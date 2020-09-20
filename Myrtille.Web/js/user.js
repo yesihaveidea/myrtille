@@ -179,7 +179,7 @@ function User(base, config, dialog, display, network)
             }
 
             verticalSwipeEnabled = !verticalSwipeEnabled;
-            button.value = verticalSwipeEnabled ? 'Vertical Swipe ON' : 'Vertical Swipe OFF';
+            button.value = verticalSwipeEnabled ? 'VSwipe ON' : 'VSwipe OFF';
             //dialog.showDebug('toggling ' + button.value);
         }
         catch (exc)
@@ -195,13 +195,7 @@ function User(base, config, dialog, display, network)
 
         try
         {
-            // disable the toolbar while resizing, if needed
-            var reconnect = document.getElementById('reconnect');
-            var scale = document.getElementById('scale');
-            if (reconnect != null && scale != null && !reconnect.disabled && !scale.disabled)
-            {
-                disableToolbar();
-            }
+            disableToolbar();
 
             var width = display.getBrowserWidth();
             var height = display.getBrowserHeight();

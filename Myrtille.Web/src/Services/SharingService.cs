@@ -236,7 +236,7 @@ namespace Myrtille.Web
                             }
 
                             // have the removed guest back to the login page
-                            sharingInfo.RemoteSession.Manager.SendMessage(new RemoteSessionMessage { Type = MessageType.PageReload, Prefix = "reload" });
+                            sharingInfo.RemoteSession.Manager.SendMessage(new RemoteSessionMessage { Type = MessageType.PageReload });
                         }
                         sharedSessions.Remove(guestId);
                         success = true;

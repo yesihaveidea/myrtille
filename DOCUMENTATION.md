@@ -279,7 +279,7 @@ In addition to 2fa, an access control could be enforced to allow connections onl
 
 The adapter has been written to use a platform provided by Olive Innovations and named OASIS. It's free to use up to 10 users; to use this service follow these instructions:
 
-- Visit https://www.oliveinnovations.com and register for free
+- Visit https://www.oliveinnovations.com and register for free at https://www.oasis2fa.com
 - Once logged in, create a User Group (into the menu select User Groups), then click New, input a Name (i.e. Myrtille) and save
 - Create a user (choose Users from the menu), then click New, input user details and tick the box to send register by email (**IMPORTANT** the username must be the same as the username you will login with myrtille; when registering via email, the user will have a link to complete the registration) and save. Into the user details page, select the user group created in Step 2
 NOTE: If you have enabled Enterprise Mode and wish to sync your Active Directory with OASIS, visit https://www.oliveinnovations.com, go to download area and download the Gateway application; instructions for configuration can be found into the docs on the same website
@@ -365,6 +365,12 @@ See the Myrtille.Admin.Web **mockup** to see how to implement Myrtille into your
 - in HTML4 mode, data is sent to Myrtille using xhrs; these are limited in size (depends on browser and IIS config), so sending a large block of text with the "keyboard" popup may fail in such a case
 
 - the clipboard synchronization requires Chrome (or async clipboard API support) and HTTPS connection and is limited to text only and 1MB max
+
+- The left mouse button sometimes doesn't work on Windows Server 2019 (despite the event being sent), when connected to a standard (enhanced mode disabled) Hyper-V console session
+
+- Hyper-V Linux VMs don't support enhanced mode (except if using xRDP with Ubuntu, see https://c-nergy.be/blog/?p=12429)
+
+- When the Hyper-V enhanced mode is disabled, the keyboard mapping is limited to en-US only (using RDP scancodes instead of unicode) and the keyboard layout must therefore be configured in en-US (qwerty) in the remote session
 
 ## Troubleshoot
 First at all, ensure the Myrtille prerequisites are met (see "Installation").

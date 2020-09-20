@@ -20,6 +20,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Web.UI;
+using Newtonsoft.Json;
 using Myrtille.Services.Contracts;
 
 namespace Myrtille.Web
@@ -135,32 +136,12 @@ namespace Myrtille.Web
 
                             switch (message.Type)
                             {
-                                case MessageType.Connected:
-                                    msgText = "connected";
-                                    msgComplete = true;
-                                    break;
-
-                                case MessageType.Disconnected:
-                                    msgText = "disconnected";
-                                    msgComplete = true;
-                                    break;
-
-                                case MessageType.PageReload:
-                                    msgText = "reload";
-                                    msgComplete = true;
-                                    break;
-
-                                case MessageType.RemoteClipboard:
-                                    msgText = string.Format("clipboard|{0}", message.Text);
-                                    msgComplete = true;
-                                    break;
-
                                 case MessageType.TerminalOutput:
-                                    msgText += string.IsNullOrEmpty(msgText) ? string.Format("term|{0}", message.Text) : message.Text;
+                                    msgText += message.Text;
                                     break;
 
-                                case MessageType.PrintJob:
-                                    msgText = string.Format("printjob|{0}", message.Text);
+                                default:
+                                    msgText = JsonConvert.SerializeObject(message);
                                     msgComplete = true;
                                     break;
                             }
@@ -171,11 +152,19 @@ namespace Myrtille.Web
                             }
                         }
 
+                        // message
                         if (!string.IsNullOrEmpty(msgText))
                         {
-                            Response.Write(msgText);
+                            if (!msgComplete)
+                            {
+                                Response.Write(JsonConvert.SerializeObject(new RemoteSessionMessage { Type = MessageType.TerminalOutput, Text = msgText }));
+                            }
+                            else
+                            {
+                                Response.Write(msgText);
+                            }
                         }
-                        // next update
+                        // image
                         else
                         {
                             var image = remoteSession.Manager.GetNextUpdate(imgIdx);
@@ -192,7 +181,7 @@ namespace Myrtille.Web
                                     image.Format.ToString().ToLower() + "," +
                                     image.Quality + "," +
                                     image.Fullscreen.ToString().ToLower() + "," +
-                                    Convert.ToBase64String(image.Data) + ";";
+                                    Convert.ToBase64String(image.Data);
 
                                 // write the output
                                 Response.Write(imgData);

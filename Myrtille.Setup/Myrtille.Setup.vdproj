@@ -33,7 +33,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_0540EFB748094D4F8ADE79C304B91BC0"
+        "MsmKey" = "8:_08023E5D358F42FEAD7560CD95422DFB"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -57,20 +57,8 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_1CAF7D9058AF4E4CBD59D8D157776035"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_1EE5D98F80FD1E8988C38C20595D35F2"
         "OwnerKey" = "8:_653D6FBBA167416D9037981F1E63EC6A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_2078F522166C4E658DCE9DF9A15580AF"
-        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -95,6 +83,12 @@
         {
         "MsmKey" = "8:_2C5EE9B0316B45F3E32CFD4DA799A678"
         "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_3C626A04CD3E4FA6ADD051F84F6B4091"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -183,7 +177,7 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_6AC1B8C984724809988C5617A6CBB9CC"
+        "MsmKey" = "8:_6B6F0BEDA21C4D4BB875CFE9C0B83A38"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -351,6 +345,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_8FBC14AFBDA246998BAAF76505DB949A"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_917286C9A1719DDE028EAF47B67B458B"
         "OwnerKey" = "8:_8509FA2AF779A31287B4B15E10EC1B3E"
         "MsmSig" = "8:_UNDEFINED"
@@ -508,12 +508,6 @@
         "Entry"
         {
         "MsmKey" = "8:_BF505211616D4E9191B1B102DE7C37D9"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_BFAB1DC03C5D48499B2C7024A4169EEC"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -705,6 +699,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_EB16E929CE5F43A3AD6968D11FB7BE36"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_EF7BA948A8A34B5CB515E968F9EFD966"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -755,12 +755,6 @@
         {
         "MsmKey" = "8:_F2FF150F59BF51862493844900AF6E49"
         "OwnerKey" = "8:_6A00A4B5E0C64F48AF08EC529C41D062"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_F7CC53E1623541C090FEE4396022324C"
-        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -2813,26 +2807,6 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F7CC53E1623541C090FEE4396022324C"
-            {
-            "SourcePath" = "8:..\\DISCLAIMERS.md"
-            "TargetName" = "8:DISCLAIMERS.md"
-            "Tag" = "8:"
-            "Folder" = "8:_B8E8F5F7726243109EBB878F4275F26E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F90B7E5C1C5C5A33AEE2446EBF2BD753"
             {
             "AssemblyRegister" = "3:1"
@@ -4530,9 +4504,9 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_0540EFB748094D4F8ADE79C304B91BC0"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_08023E5D358F42FEAD7560CD95422DFB"
             {
-            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\wfreerdp.exe"
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\freerdp2.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
@@ -4552,7 +4526,7 @@
             "ProjectOutputGroupRegister" = "3:1"
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{F8E3BE3B-70ED-3443-BCD6-52FE1E06359D}"
+            "OutputProjectGuid" = "8:{12E61D6F-CFA4-317E-875A-5B1269A01B53}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
@@ -4586,9 +4560,9 @@
                 {
                 }
             }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1CAF7D9058AF4E4CBD59D8D157776035"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_3C626A04CD3E4FA6ADD051F84F6B4091"
             {
-            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\freerdp-client2.dll"
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\winpr2.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
@@ -4608,35 +4582,7 @@
             "ProjectOutputGroupRegister" = "3:1"
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{1E82C5D0-E663-392F-91C4-8DCDEDA99005}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_2078F522166C4E658DCE9DF9A15580AF"
-            {
-            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\freerdp2.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{12E61D6F-CFA4-317E-875A-5B1269A01B53}"
+            "OutputProjectGuid" = "8:{DB81D53E-CBD5-3A9C-8F8F-6D732D251637}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
@@ -4726,9 +4672,9 @@
                 {
                 }
             }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_6AC1B8C984724809988C5617A6CBB9CC"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_6B6F0BEDA21C4D4BB875CFE9C0B83A38"
             {
-            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\winpr2.dll"
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\freerdp-client2.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
@@ -4748,7 +4694,7 @@
             "ProjectOutputGroupRegister" = "3:1"
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{DB81D53E-CBD5-3A9C-8F8F-6D732D251637}"
+            "OutputProjectGuid" = "8:{1E82C5D0-E663-392F-91C4-8DCDEDA99005}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {
@@ -4838,7 +4784,7 @@
                 {
                 }
             }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BFAB1DC03C5D48499B2C7024A4169EEC"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_8FBC14AFBDA246998BAAF76505DB949A"
             {
             "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\winpr-tools2.dll"
             "TargetName" = "8:"
@@ -4889,6 +4835,34 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{71AB3401-1B1A-4EF0-8870-BE9D822969A6}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_EB16E929CE5F43A3AD6968D11FB7BE36"
+            {
+            "SourcePath" = "8:..\\Myrtille.RDP\\FreeRDP\\Release\\wfreerdp.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_FA146EB9AE2B44E2AB4B01E26999CAB2"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{F8E3BE3B-70ED-3443-BCD6-52FE1E06359D}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {

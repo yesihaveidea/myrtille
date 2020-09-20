@@ -124,17 +124,17 @@ function Config(
     var keepAspectRatio = true;                                     // if scaling the display, preservation of the aspect ratio
     var displayMode = displayModeEnum.AUTO;                         // display mode
     var imageEncoding = imageEncodingEnum.JPEG;                     // image encoding
-    var imageQuality = 75;                                          // image quality (%) higher = better; not applicable for PNG (lossless); tweaked dynamically to fit the available bandwidth if using JPEG, AUTO or WEBP encoding. for best user experience, fullscreen updates are always done in higher quality (75%), regardless of this setting and bandwidth
+    var imageQuality = 75;                                          // image quality (%) higher = better; not applicable for PNG (lossless); tweaked dynamically to fit the available bandwidth if using JPEG, AUTO or WEBP encoding.
     var imageQuantity = 100;                                        // image quantity (%) less images = lower cpu and bandwidth usage / faster; more = smoother display (skipping images may result in some display inconsistencies). tweaked dynamically to fit the available bandwidth; possible values: 5, 10, 20, 25, 50, 100 (lower = higher consolidation rate)
-    var imageTweakBandwidthLowerThreshold = 25;                     // tweak the image quality & quantity depending on the available bandwidth (%): lower threshold. see network.js
-    var imageTweakBandwidthHigherThreshold = 50;                    // tweak the image quality & quantity depending on the available bandwidth (%): higher threshold. see network.js
+    var imageTweakBandwidthLowerThreshold = 50;                     // tweak the image quality & quantity depending on the available bandwidth (%): lower threshold. see network.js
+    var imageTweakBandwidthHigherThreshold = 75;                    // tweak the image quality & quantity depending on the available bandwidth (%): higher threshold. see network.js
     var imageCountOk = 100;                                         // reasonable number of images to display at once; for HTML4 (divs), used to clean the DOM (by requesting a fullscreen update) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
     var imageCountMax = 300;                                        // maximal number of images to display at once; for HTML4 (divs), used to clean the DOM (by reloading the page) as too many divs may slow down the browser; not applicable for HTML5 (canvas)
     var imageMode = imageModeEnum.AUTO;                             // image mode
     var imageBlobEnabled = false;                                   // display images from local cached urls using blob objects (HTML5 only, binary mode)
     var imageDebugEnabled = false;                                  // display a red border around images, for debug purpose
     var periodicalFullscreenInterval = 30000;                       // periodical fullscreen update (ms); used to refresh the whole display
-    var adaptiveFullscreenTimeout = 1500;                           // adaptive fullscreen update (ms); requested after a given period of user inactivity (=no input). 0 to disable
+    var adaptiveFullscreenTimeout = 1500;                           // adaptive fullscreen update (ms); requested after a given period of user inactivity (=no input). fullscreen updates in adaptive mode are always done in higher quality (75%), regardless of the current image quality and bandwidth usage. 0 to disable
 
     // audio
     var audioFormat = audioFormatEnum.MP3;                          // audio format (HTML5); requires websocket enabled and RDP host; IE doesn't support WAV format (MP3 fallback); others: WAV and MP3 support

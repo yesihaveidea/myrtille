@@ -28,6 +28,7 @@ More information in the DOCUMENTATION.md file.
 - PNG, JPEG and WEBP compression
 - Realtime connection information
 - On-screen/console/logfile debug information
+- On screen keyboard (multi-languages)
 - REST APIs (i.e.: hide connection information from the browser, tracks connections, monitor remote sessions, etc.)
 - fully parameterizable
 
@@ -118,6 +119,8 @@ Myrtille uses the following licensed software:
 - MP3 audio support: NAudio.Lame (https://github.com/Corey-M/NAudio.Lame), licensed under MIT License.
 - MP3 audio support: Lame (http://lame.sourceforge.net/), licensed under LGPL license.
 - Remote Desktop Services API wrapper: Cassia (https://github.com/danports/cassia), licensed under MIT License.
+- On-Screen keyboard: Simple-Keyboard (https://github.com/hodgef/simple-keyboard), licensed under MIT License.
+- Draggable popups: interact.js (https://github.com/taye/interact.js), licensed under MIT License.
 
 See DISCLAIMERS.md file.
 

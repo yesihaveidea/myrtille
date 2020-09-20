@@ -351,7 +351,8 @@ namespace Myrtille.Web
                     scale.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
                     reconnect.Value = RemoteSession.BrowserResize == BrowserResize.Reconnect ? "Reconnect ON" : "Reconnect OFF";
                     reconnect.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
-                    keyboard.Disabled = !controlEnabled;
+                    keyboard.Disabled = !controlEnabled || (!string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode);
+                    osk.Disabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
                     clipboard.Disabled = !controlEnabled || RemoteSession.HostType == HostType.SSH || !RemoteSession.AllowRemoteClipboard || (!string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode);
                     files.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH || !RemoteSession.AllowFileTransfer || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain)) || !string.IsNullOrEmpty(RemoteSession.VMGuid);
                     cad.Disabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
@@ -359,6 +360,7 @@ namespace Myrtille.Web
                     vswipe.Disabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
                     share.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || !RemoteSession.AllowSessionSharing;
                     disconnect.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
+                    imageQuality.Disabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
                 }
             }
             // hosts list

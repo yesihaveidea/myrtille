@@ -1,4 +1,4 @@
-﻿/*
+/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
     Copyright(c) 2014-2020 Cedric Coste
@@ -16,22 +16,11 @@
     limitations under the License.
 */
 
+using System.Web.UI;
+
 namespace Myrtille.Web
 {
-    public enum MessageType
+    public partial class OnScreenKeyboard : Page
     {
-        Connected = 0,
-        Disconnected = 1,
-        PageReload = 2,
-        RemoteClipboard = 3,
-        TerminalOutput = 4,
-        PrintJob = 5,
-        Ack = 6
-    }
-
-    public class RemoteSessionMessage
-    {
-        public MessageType Type;
-        public string Text;
     }
 }

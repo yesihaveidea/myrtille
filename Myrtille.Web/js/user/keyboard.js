@@ -80,7 +80,7 @@ function Keyboard(base, config, dialog, display, network, user)
         if (keyCode == null)
             return false;
 
-        //dialog.showDebug(keyState + ' code: ' + keyCode + ', location: ' + keyLocation + (keyLocation == 1 ? ' (left)' : (keyLocation == 2 ? ' (right)' : '')));
+        //dialog.showDebug(keyState + ' key: ' + e.key + ', code: ' + e.code + ', KeyCode: ' + keyCode + ', location: ' + keyLocation + (keyLocation == 1 ? ' (left)' : (keyLocation == 2 ? ' (right)' : '')));
 
         if (keyCode == 144)     // numlock
             return false;

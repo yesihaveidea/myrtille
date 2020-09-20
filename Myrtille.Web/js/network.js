@@ -69,6 +69,12 @@ function Network(base, config, dialog, display)
     var originalImageQuality = config.getImageQuality();
     var originalImageQuantity = config.getImageQuantity();
 
+    this.getOriginalImageEncoding = function() { return originalImageEncoding; };
+    this.setOriginalImageEncoding = function(encoding) { originalImageEncoding = encoding; };
+
+    this.getOriginalImageQuality = function() { return originalImageQuality; };
+    this.setOriginalImageQuality = function(quality) { originalImageQuality = quality; };
+
     this.init = function()
     {
         try
@@ -475,8 +481,8 @@ function Network(base, config, dialog, display)
             {
                 var endTime = new Date().getTime();
                 var duration = endTime - startTime;
-                // change the value below (i.e. 1MB/s) and comment out the computation line to simulate a bandwidth size
-                //bandwidthSize = 1000 * 1024;
+                // change the value below (i.e. 500KB/s) and comment out the computation line to simulate a bandwidth size
+                //bandwidthSize = 500 * 1024;
                 bandwidthSize = (5087765 * 1000) / duration;
                 //dialog.showDebug('bandwidth check duration (ms): ' + duration + ', size (KB/s): ' + Math.ceil(bandwidthSize / 1024));
                 dialog.showStat(dialog.getShowStatEnum().BANDWIDTH_SIZE, Math.ceil(bandwidthSize / 1024));
@@ -566,6 +572,7 @@ function Network(base, config, dialog, display)
                 commands.push(base.getCommandEnum().SET_IMAGE_QUALITY.text + config.getImageQuality());
                 //dialog.showDebug('tweaking image quantity: ' + config.getImageQuantity());
                 commands.push(base.getCommandEnum().SET_IMAGE_QUANTITY.text + config.getImageQuantity());
+                commands.push(base.getCommandEnum().REQUEST_FULLSCREEN_UPDATE.text + 'tweak');
             }
 
             if (commands.length > 0)

@@ -21,6 +21,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Web;
 using System.Web.SessionState;
+using Newtonsoft.Json;
 
 namespace Myrtille.Web
 {
@@ -94,27 +95,27 @@ namespace Myrtille.Web
 
         public void SendImage(RemoteSessionImage image)
         {
-            Send(GetImageText(image) + ";");
+            Send(GetImageText(image));
         }
 
         public void SendMessage(RemoteSessionMessage message)
         {
-            Send(string.Concat(message.Prefix, message.Text));
+            Send(JsonConvert.SerializeObject(message));
         }
 
-        public void Send(string message)
+        public void Send(string data)
         {
             try
             {
                 if (_context.Response.IsClientConnected)
                 {
-                    _context.Response.Write("data: " + message + "\n\n");
+                    _context.Response.Write("data: " + data + "\n\n");
                     _context.Response.Flush();
                 }
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to send event source message for the remote session {0}, ({1})", _remoteSession.Id, exc);
+                Trace.TraceError("Failed to send event source data for the remote session {0}, ({1})", _remoteSession.Id, exc);
             }
         }
     }

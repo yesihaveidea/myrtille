@@ -76,21 +76,22 @@ function Eventsource(base, config, dialog, display, network)
 
             if (data != null && data != '')
             {
+                // event source data is text only (no binary support)
                 var text = data;
-                var imgText = '';
+                var message = true;
 
                 if (config.getHostType() == config.getHostTypeEnum().RDP)
                 {
-                    if (text.indexOf(';') == -1)
+                    try
                     {
+                        // messages are serialized in JSON, unlike images; check a valid JSON string
+                        JSON.parse(text);
                         //dialog.showDebug('message data: ' + text);
                     }
-                    else
+                    catch
                     {
-                        var image = text.split(';');
-                        imgText = image[0];
-                        text = '';
-                        //dialog.showDebug('image data: ' + imgText);
+                        message = false;
+                        //dialog.showDebug('image data: ' + text);
                     }
                 }
                 else
@@ -99,7 +100,7 @@ function Eventsource(base, config, dialog, display, network)
                 }
 
                 // message
-                if (text != '')
+                if (message)
                 {
                     processMessage(text);
                 }
@@ -108,7 +109,7 @@ function Eventsource(base, config, dialog, display, network)
                 {
                     var imgInfo, idx, posX, posY, width, height, format, quality, fullscreen, imgData;
 
-                    imgInfo = imgText.split(',');
+                    imgInfo = text.split(',');
 
                     idx = parseInt(imgInfo[0]);
                     posX = parseInt(imgInfo[1]);

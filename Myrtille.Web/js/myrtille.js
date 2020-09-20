@@ -293,6 +293,17 @@ var user = null;
 
 var fullscreenPending = false;
 
+var messageTypeEnum =
+{
+    Connected: 0,
+    Disconnected: 1,
+    PageReload: 2,
+    RemoteClipboard: 3,
+    TerminalOutput: 4,
+    PrintJob: 5,
+    Ack: 6
+};
+
 function startMyrtille(connectionState, statEnabled, debugEnabled, compatibilityMode, browserResize, displayWidth, displayHeight, hostType, vmNotEnhanced)
 {
     try
@@ -373,85 +384,88 @@ function processMessage(text)
 {
     try
     {
-        //dialog.showDebug('processing message: ' + text);
+        var message = JSON.parse(text);
 
-        // reload page
-        if (text == 'reload')
-        {
-            window.location.href = window.location.href;
-        }
-        // receive terminal data, send to xtermjs
-        else if (text.length >= 5 && text.substr(0, 5) == "term|")
-        {
-            /* IE hack!
+        //dialog.showDebug('processing message, type: ' + message.Type + ', text: ' + message.Text);
 
-            for some reason, IE (all versions) is very slow to render the terminal, whatever the connection speed
-            while I was debugging, I found the rendering was way faster after displaying the received data into the debug div (?!)
+        switch (message.Type)
+        {
+            // reload page
+            case messageTypeEnum.PageReload:
+                window.location.href = window.location.href;
+                break;
+
+            // receive terminal data, send to xtermjs
+            case messageTypeEnum.TerminalOutput:
+                /* IE hack!
+
+                for some reason, IE (all versions) is very slow to render the terminal, whatever the connection speed
+                while I was debugging, I found the rendering was way faster after displaying the received data into the debug div (?!)
                 
-            I don't really understand why... perhaps it's due to the fact the data is already into the DOM when the terminal handles it...
-            so I made up an hidden "cache div" and put the data on it before writing to the terminal
-            I didn't found any other solution but it's pretty harmless anyway as the cache div is hidden
+                I don't really understand why... perhaps it's due to the fact the data is already into the DOM when the terminal handles it...
+                so I made up an hidden "cache div" and put the data on it before writing to the terminal
+                I didn't found any other solution but it's pretty harmless anyway as the cache div is hidden
 
-            other browsers don't seem to have the same issue, neither benefit from that hack, so IE only for now...
-            also interesting to note, this issue occurs only when using websockets (long-polling and xhr only: ok)
+                other browsers don't seem to have the same issue, neither benefit from that hack, so IE only for now...
+                also interesting to note, this issue occurs only when using websockets (long-polling and xhr only: ok)
 
-            */
+                */
 
-            if (display.isIEBrowser())
-            {
-                var cacheDiv = document.getElementById('cacheDiv');
-                if (cacheDiv != null)
+                if (display.isIEBrowser())
                 {
-                    cacheDiv.innerHTML = text.substr(5, text.length - 5);
+                    var cacheDiv = document.getElementById('cacheDiv');
+                    if (cacheDiv != null)
+                    {
+                        cacheDiv.innerHTML = message.Text;
+                    }
                 }
-            }
 
-            display.getTerminalDiv().writeTerminal(text.substr(5, text.length - 5));
-        }
-        // remote clipboard
-        else if (text.length >= 10 && text.substr(0, 10) == 'clipboard|')
-        {
-            writeClipboard(text.substr(10, text.length - 10));
-        }
-        // print job
-        else if (text.length >= 9 && text.substr(0, 9) == 'printjob|')
-        {
-            downloadPdf(text.substr(9, text.length - 9));
-        }
-        // connected session
-        else if (text == 'connected')
-        {
-            // if running myrtille into an iframe, register the iframe url (into a cookie)
-            // this is necessary to prevent a new http session from being generated when reloading the page, due to the missing http session id into the iframe url (!)
-            // multiple iframes (on the same page), like multiple connections/tabs, requires cookieless="UseUri" for sessionState into web.config
-            if (parent != null && window.name != '')
-            {
-                parent.setCookie(window.name, window.location.href);
-            }
+                display.getTerminalDiv().writeTerminal(message.Text);
+                break;
 
-            // send settings and request a fullscreen update
-            myrtille.initClient();
-        }
-        // disconnected session
-        else if (text == 'disconnected')
-        {
-            // if running myrtille into an iframe, unregister the iframe url
-            if (parent != null && window.name != '')
-            {
-                parent.eraseCookie(window.name);
-            }
+            // remote clipboard
+            case messageTypeEnum.RemoteClipboard:
+                writeClipboard(message.Text);
+                break;
 
-            // back to default page
-            window.location.href = config.getHttpServerUrl();
-        }
-        // server ack
-        else if (text.length >= 4 && text.substr(0, 4) == 'ack,')
-        {
-            var ackInfo = text.split(',');
-            //dialog.showDebug('server ack: ' + ackInfo[1]);
+            // print job
+            case messageTypeEnum.PrintJob:
+                downloadPdf(message.Text);
+                break;
 
-            // update the average "latency"
-            network.updateLatency(parseInt(ackInfo[1]));
+            // connected session
+            case messageTypeEnum.Connected:
+                // if running myrtille into an iframe, register the iframe url (into a cookie)
+                // this is necessary to prevent a new http session from being generated when reloading the page, due to the missing http session id into the iframe url (!)
+                // multiple iframes (on the same page), like multiple connections/tabs, requires cookieless="UseUri" for sessionState into web.config
+                if (parent != null && window.name != '')
+                {
+                    parent.setCookie(window.name, window.location.href);
+                }
+
+                // send settings and request a fullscreen update
+                myrtille.initClient();
+                break;
+
+            // disconnected session
+            case messageTypeEnum.Disconnected:
+                // if running myrtille into an iframe, unregister the iframe url
+                if (parent != null && window.name != '')
+                {
+                    parent.eraseCookie(window.name);
+                }
+
+                // back to default page
+                window.location.href = config.getHttpServerUrl();
+                break;
+
+            // server ack
+            case messageTypeEnum.Ack:
+                //dialog.showDebug('server ack: ' + message.Text);
+
+                // update the average "latency"
+                network.updateLatency(parseInt(message.Text));
+                break;
         }
     }
     catch (exc)
@@ -589,6 +603,20 @@ function toggleVerticalSwipe(button)
     catch (exc)
     {
         dialog.showDebug('myrtille toggleVerticalSwipe error: ' + exc.message);
+    }
+}
+
+function changeImageQuality(quality)
+{
+    try
+    {
+        // display settings are applied by the network.js "tweakDisplay" function
+        network.setOriginalImageEncoding(config.getImageEncodingEnum().JPEG);
+        network.setOriginalImageQuality(quality <= 90 ? quality : 90);
+    }
+    catch (exc)
+    {
+        dialog.showDebug('myrtille changeImageQuality error: ' + exc.message);
     }
 }
 

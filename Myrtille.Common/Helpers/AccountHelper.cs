@@ -375,7 +375,7 @@ namespace Myrtille.Helpers
             {
                 // logon the user, domain (if defined) or local otherwise
                 // myrtille must be running on a machine which is part of the domain for it to work
-                if (LogonUser(userName, string.IsNullOrEmpty(userDomain) ? Environment.MachineName : userDomain, userPassword, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, ref token) != 0)
+                if (LogonUser(userName, string.IsNullOrEmpty(userDomain) ? Environment.MachineName : userDomain, userPassword, string.IsNullOrEmpty(userDomain) ? LOGON32_LOGON_INTERACTIVE : LOGON32_LOGON_NETWORK, LOGON32_PROVIDER_DEFAULT, ref token) != 0)
                 {
                     string serverName = null;
                     if (!string.IsNullOrEmpty(userDomain))

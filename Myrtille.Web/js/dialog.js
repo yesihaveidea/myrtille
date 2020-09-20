@@ -202,7 +202,7 @@ function Dialog(config)
                         this.showDebug('statDiv is undefined');
                         return;
                     }
-                    statDiv.style.display = 'block';
+                    statDiv.style.display = 'inline-block';
                     statDiv.style.visibility = 'visible';
                 }
 
@@ -262,7 +262,7 @@ function Dialog(config)
                     alert('debugDiv is undefined');
                     return;
                 }
-                debugDiv.style.display = 'block';
+                debugDiv.style.display = 'inline-block';
                 debugDiv.style.visibility = 'visible';
             }
 
@@ -446,7 +446,7 @@ function Dialog(config)
 
 var popup = null;
 
-function openPopup(id, src)
+function openPopup(id, src, fade)
 {
     try
     {
@@ -456,21 +456,27 @@ function openPopup(id, src)
             closePopup();
         }
 
-        // lock background
-        var bgfDiv = document.getElementById('bgfDiv');
-        if (bgfDiv != null)
+        if (fade == null || fade)
         {
-            bgfDiv.style.visibility = 'visible';
-            bgfDiv.style.display = 'block';
+            // lock background
+            var bgfDiv = document.getElementById('bgfDiv');
+            if (bgfDiv != null)
+            {
+                bgfDiv.style.visibility = 'visible';
+                bgfDiv.style.display = 'block';
+            }
         }
 
         // add popup
         popup = document.createElement('iframe');
         popup.id = id;
         popup.src = 'popups/' + src;
-        popup.className = 'modalPopup';
 
-        document.body.appendChild(popup);
+        // draggable
+        var dragDiv = document.getElementById('dragDiv');
+        dragDiv.appendChild(popup);
+        dragDiv.style.visibility = 'visible';
+        dragDiv.style.display = 'block';
     }
     catch (exc)
     {
@@ -485,7 +491,10 @@ function closePopup()
         // remove popup
         if (popup != null)
         {
-            document.body.removeChild(popup);
+            var dragDiv = document.getElementById('dragDiv');
+            dragDiv.removeChild(popup);
+            dragDiv.style.visibility = 'hidden';
+            dragDiv.style.display = 'none';
             popup = null;
         }
 

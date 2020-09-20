@@ -22,6 +22,9 @@
 
 function Mouse(base, config, dialog, display, network, user)
 {
+    var toolbar = document.getElementById('toolbar');
+    var dragDiv = document.getElementById('dragDiv');
+
     this.init = function()
     {
         try
@@ -48,6 +51,10 @@ function Mouse(base, config, dialog, display, network, user)
         if (e == null)
             return false;
 
+        // the user is dragging a popup
+        if (dragDiv.style.cursor === 'move')
+            return false;
+
         if (!setMousePosition(e))
             return false;
         
@@ -65,6 +72,10 @@ function Mouse(base, config, dialog, display, network, user)
 
         mouseX = (e.pageX ? e.pageX : e.clientX + scrollLeft) - display.getHorizontalOffset();
         mouseY = (e.pageY ? e.pageY : e.clientY + scrollTop) - display.getVerticalOffset();
+
+        // the mouse event is within the toolbar area
+        if (mouseY <= toolbar.clientHeight)
+            return false;
 
         //dialog.showDebug('mouse X: ' + mouseX + ', Y: ' + mouseY);
 
