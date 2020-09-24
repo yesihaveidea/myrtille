@@ -2960,8 +2960,8 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Myrtille"
-        "ProductCode" = "8:{4665580A-61A2-4B7C-98FF-9E44C9012104}"
-        "PackageCode" = "8:{3F82D8DB-CDDC-4128-BF9F-03BFB5255C41}"
+        "ProductCode" = "8:{DE4FFD9F-65D4-418B-9A3F-9A6CBAB10BF8}"
+        "PackageCode" = "8:{5951CE05-B1EC-421C-B8AC-B84F6CBA864F}"
         "UpgradeCode" = "8:{86A6145E-11DB-4EE7-9CE0-53F997050716}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
