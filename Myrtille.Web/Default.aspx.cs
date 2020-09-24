@@ -748,7 +748,7 @@ namespace Myrtille.Web
                     }
                     else if (_enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.PASSWORD_EXPIRED)
                     {
-                        ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), string.Format("openPopup('changePasswordPopup', 'EnterpriseChangePassword.aspx?userName={0}" + (_localAdmin ? "&mode=admin');" : "');"), user.Value), true);
+                        ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), "window.onload = function() { " + string.Format("openPopup('changePasswordPopup', 'EnterpriseChangePassword.aspx?userName={0}" + (_localAdmin ? "&mode=admin" : string.Empty) + "');", user.Value) + " }", true);
                     }
                     else
                     {

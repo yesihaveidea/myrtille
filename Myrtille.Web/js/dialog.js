@@ -480,7 +480,7 @@ function openPopup(id, src, fade)
     }
     catch (exc)
     {
-        this.showDebug('openPopup error: ' + exc.message);
+        console.error('openPopup error: ' + exc.message);
     }
 }
 
@@ -511,7 +511,7 @@ function closePopup()
     }
     catch (exc)
     {
-        this.showDebug('closePopup error: ' + exc.message);
+        console.error('closePopup error: ' + exc.message);
     }
 }
 

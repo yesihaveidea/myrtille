@@ -1,4 +1,4 @@
-﻿2020-09-20 Version 2.9.0 (stable)
+﻿2020-09-24 Version 2.9.0 (stable)
 	added a virtual on-screen keyboard (multi-languages)
 	popups are now draggable
 	showing the toolbar no longer shifts the display down
@@ -16,6 +16,8 @@
 	fixed an issue with messages containing the ";" character
 	fixed an issue with file transfer when using a domain (thanks camjcorley)
 	fixed an issue with the tab key in SSH mode (this also fixes shell autocompletion)
+	fixed an issue with the change password popup (enterprise mode / local admin), which wasn't displayed correctly
+	updated the myrtille project url
 	refactoring
 
 2020-04-20 Version 2.8.1 (stable)

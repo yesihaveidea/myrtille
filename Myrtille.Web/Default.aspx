@@ -183,7 +183,7 @@
 
                 <!-- myrtille version -->
                 <div id="version">
-                    <a href="http://cedrozor.github.io/myrtille/" target="_blank" title="myrtille">
+                    <a href="https://www.myrtille.io/" target="_blank" title="myrtille">
                         <img src="img/myrtille.png" alt="myrtille" width="15px" height="15px"/>
                     </a>
                     <span>
