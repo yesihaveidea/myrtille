@@ -1,4 +1,4 @@
-﻿2020-09-24 Version 2.9.0 (stable)
+﻿2020-09-26 Version 2.9.0 (stable)
 	added a virtual on-screen keyboard (multi-languages)
 	popups are now draggable
 	showing the toolbar no longer shifts the display down
@@ -15,8 +15,10 @@
 	messages are serialized in JSON instead of raw text
 	fixed an issue with messages containing the ";" character
 	fixed an issue with file transfer when using a domain (thanks camjcorley)
+	fixed an issue with file transfer and user profiles containing unicode characters
 	fixed an issue with the tab key in SSH mode (this also fixes shell autocompletion)
 	fixed an issue with the change password popup (enterprise mode / local admin), which wasn't displayed correctly
+	if no domain is defined into the domain input field, myrtille now tries to retrieve the domain from the username (using the standard UPN syntax: DOMAIN\username or username@domain.com)
 	updated the myrtille project url
 	refactoring
 
