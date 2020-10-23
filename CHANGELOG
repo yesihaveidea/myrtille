@@ -1,4 +1,8 @@
-﻿2020-09-26 Version 2.9.0 (stable)
+﻿2020-10-23 Version 2.9.1 (stable)
+	fixed an issue into FreeRDP with a special copy&paste logic into MS Office applications which disconnected the session after a special paste when pressing the enter key
+	the protocol scheme when sharing a session or creating a session URL is now determined by the HTTP_X_FORWARDED_PROTO http header if available, instead of the current http request, so that https is correctly detected after a redirection by a reverse proxy or a load-balancer
+
+2020-09-26 Version 2.9.0 (stable)
 	added a virtual on-screen keyboard (multi-languages)
 	popups are now draggable
 	showing the toolbar no longer shifts the display down

@@ -83,7 +83,8 @@ namespace Myrtille.Web
                 };
 
                 sharedSessions.Add(sharingInfo.GuestInfo.Id, sharingInfo);
-                sessionUrl.Value = Request.Url.Scheme + "://" + Request.Url.Host + (Request.Url.Port != 80 && Request.Url.Port != 443 ? ":" + Request.Url.Port : "") + Request.ApplicationPath + "/?gid=" + sharingInfo.GuestInfo.Id;
+                bool isSecureConnection = Request.ServerVariables["HTTP_X_FORWARDED_PROTO"] != null ? string.Equals(Request.ServerVariables["HTTP_X_FORWARDED_PROTO"], "https", StringComparison.OrdinalIgnoreCase) : string.Equals(Request.Url.Scheme, "https", StringComparison.OrdinalIgnoreCase);
+                sessionUrl.Value = (isSecureConnection ? "https" : "http") + "://" + Request.Url.Host + (Request.Url.Port != 80 && Request.Url.Port != 443 ? ":" + Request.Url.Port : "") + Request.ApplicationPath + "/?gid=" + sharingInfo.GuestInfo.Id;
             }
             catch (ThreadAbortException)
             {
