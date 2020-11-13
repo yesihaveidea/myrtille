@@ -74,7 +74,7 @@ function Mouse(base, config, dialog, display, network, user)
         mouseY = (e.pageY ? e.pageY : e.clientY + scrollTop) - display.getVerticalOffset();
 
         // the mouse event is within the toolbar area
-        if (mouseY <= toolbar.clientHeight)
+        if (toolbar != null && mouseY <= toolbar.clientHeight)
             return false;
 
         //dialog.showDebug('mouse X: ' + mouseX + ', Y: ' + mouseY);

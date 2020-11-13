@@ -129,7 +129,11 @@ function Display(base, config, dialog)
                 }
 
                 // image quality selector
-                document.getElementById('imageQuality').value = config.getImageQuality();
+                var imageQuality = document.getElementById('imageQuality');
+                if (imageQuality != null)
+                {
+                    imageQuality.value = config.getImageQuality();
+                }
 
                 // reasonable number of images to display when using divs
                 dialog.showStat(dialog.getShowStatEnum().IMAGE_COUNT_OK, (config.getDisplayMode() == config.getDisplayModeEnum().CANVAS ? 'N/A' : config.getImageCountOk()));
