@@ -66,6 +66,9 @@ namespace Myrtille.Network
 
         public void AddItem(T item)
         {
+            if (!_enabled)
+                return;
+
             lock (_dataLock)
             {
                 _data.Add(item);

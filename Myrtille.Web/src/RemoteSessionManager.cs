@@ -696,7 +696,7 @@ namespace Myrtille.Web
                 var image = new RemoteSessionImage
                 {
                     //Idx = BitConverter.ToInt32(imgInfo, 0),
-                    Idx = ++_imageIdx,
+                    Idx = _imageIdx == int.MaxValue ? 1 : ++_imageIdx,
                     PosX = BitConverter.ToInt32(imgInfo, 4),
                     PosY = BitConverter.ToInt32(imgInfo, 8),
                     Width = BitConverter.ToInt32(imgInfo, 12),
@@ -963,7 +963,7 @@ namespace Myrtille.Web
             {
                 var audio = new RemoteSessionAudio
                 {
-                    Idx = ++_audioIdx,
+                    Idx = _audioIdx == int.MaxValue ? 1 : ++_audioIdx,
                     Format = RemoteSession.AudioFormat.HasValue ? RemoteSession.AudioFormat.Value : AudioFormat.MP3,
                     Bitrate = RemoteSession.AudioBitrate.HasValue ? RemoteSession.AudioBitrate.Value : 128,
                     Data = data
