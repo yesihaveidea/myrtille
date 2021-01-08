@@ -88,7 +88,7 @@ function Eventsource(base, config, dialog, display, network)
                         JSON.parse(text);
                         //dialog.showDebug('message data: ' + text);
                     }
-                    catch
+                    catch (exc)
                     {
                         message = false;
                         //dialog.showDebug('image data: ' + text);
