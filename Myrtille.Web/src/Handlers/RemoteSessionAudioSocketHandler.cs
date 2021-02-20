@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2020 Cedric Coste
+    Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.Web.SessionState;
+using System.Web;
 using Microsoft.Web.WebSockets;
 using Myrtille.Network;
 using Myrtille.Services.Contracts;
@@ -32,8 +32,9 @@ namespace Myrtille.Web
 {
     public class RemoteSessionAudioSocketHandler : WebSocketHandler
     {
-        private HttpSessionState _session;
+        private HttpContext _context;
         private RemoteSession _remoteSession;
+        private RemoteSessionClient _client;
 
         public bool Binary { get; private set; }
 
@@ -42,47 +43,72 @@ namespace Myrtille.Web
         private const int _bufferCount = 6;
         private const int _bufferDelay = 1000;
 
-        public RemoteSessionAudioSocketHandler(HttpSessionState session, bool binary)
+        public RemoteSessionAudioSocketHandler(HttpContext context, bool binary)
             : base()
         {
-            _session = session;
+            _context = context;
             Binary = binary;
 
             try
             {
-                if (session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                if (context.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
                     throw new NullReferenceException();
 
-                if (!binary)
-                    throw new Exception("Audio requires a binary websocket (HTML5 standard)");
-
                 // retrieve the remote session for the given http session
-                _remoteSession = (RemoteSession)session[HttpSessionStateVariables.RemoteSession.ToString()];
-
-                bool audioBuffering;
-                if (!bool.TryParse(ConfigurationManager.AppSettings["AudioBuffering"], out audioBuffering))
-                {
-                    audioBuffering = true;
-                }
-
-                // RDP: audio blocks are buffered for a seamless playback; buffer data is also invalidated past the audio cache duration (default 1,5 sec) in case of lag
-                // SSH: no audio
-                if (audioBuffering && _remoteSession.HostType == HostType.RDP)
-                {
-                    Buffer = new DataBuffer<int>(_bufferCount, _bufferDelay);
-                    Buffer.SendBufferData = SendBufferData;
-                }
+                _remoteSession = (RemoteSession)context.Session[HttpSessionStateVariables.RemoteSession.ToString()];
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", session.SessionID, exc);
+                Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", context.Session.SessionID, exc);
+                return;
+            }
+
+            var clientId = context.Session.SessionID;
+            if (context.Request.Cookies[HttpRequestCookies.ClientKey.ToString()] != null)
+            {
+                clientId = context.Request.Cookies[HttpRequestCookies.ClientKey.ToString()].Value;
+            }
+
+            if (!_remoteSession.Manager.Clients.ContainsKey(clientId))
+            {
+                lock (_remoteSession.Manager.ClientsLock)
+                {
+                    _remoteSession.Manager.Clients.Add(clientId, new RemoteSessionClient(clientId));
+                }
+            }
+
+            _client = _remoteSession.Manager.Clients[clientId];
+
+            bool audioBuffering;
+            if (!bool.TryParse(ConfigurationManager.AppSettings["AudioBuffering"], out audioBuffering))
+            {
+                audioBuffering = true;
+            }
+
+            // RDP: audio blocks are buffered for a seamless playback; buffer data is also invalidated past the audio cache duration (default 1,5 sec) in case of lag
+            // SSH: no audio
+            if (audioBuffering && _remoteSession.HostType == HostType.RDP)
+            {
+                Buffer = new DataBuffer<int>(_bufferCount, _bufferDelay);
+                Buffer.SendBufferData = SendBufferData;
             }
         }
 
         public override void OnOpen()
         {
-            Trace.TraceInformation("Opening audio websocket, remote session {0}", _remoteSession.Id);
-            _remoteSession.Manager.AudioWebSockets.Add(this);
+            try
+            {
+                lock (_client.Lock)
+                {
+                    _client.AudioWebSocket = this;
+                }
+
+                Trace.TraceInformation("Registered audio websocket handler for client {0}, remote session {1}", _client.Id, _remoteSession.Id);
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to register audio websocket handler for client {0}, remote session {1} ({2})", _client.Id, _remoteSession.Id, exc);
+            }
 
             if (Buffer != null)
             {
@@ -94,8 +120,19 @@ namespace Myrtille.Web
 
         public override void OnClose()
         {
-            Trace.TraceInformation("Closing audio websocket, remote session {0}", _remoteSession.Id);
-            _remoteSession.Manager.AudioWebSockets.Remove(this);
+            try
+            {
+                lock (_client.Lock)
+                {
+                    _client.AudioWebSocket = null;
+                }
+
+                Trace.TraceInformation("Unregistered audio websocket handler for client {0}, remote session {1}", _client.Id, _remoteSession.Id);
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to unregister audio websocket handler for client {0}, remote session {1} ({2})", _client.Id, _remoteSession.Id, exc);
+            }
 
             if (Buffer != null)
             {
@@ -107,7 +144,7 @@ namespace Myrtille.Web
 
         public override void OnError()
         {
-            Trace.TraceError("Audio websocket error, remote session {0} ({1})", _remoteSession.Id, Error);
+            Trace.TraceError("Audio websocket error, client {0}, remote session {1} ({2})", _client.Id, _remoteSession.Id, Error);
             base.OnError();
         }
 

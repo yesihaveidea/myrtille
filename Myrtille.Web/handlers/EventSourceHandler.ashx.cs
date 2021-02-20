@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2020 Cedric Coste
+    Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 */
 
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Web;
 using System.Web.SessionState;
@@ -32,6 +31,8 @@ namespace Myrtille.Web
 
             try
             {
+                handler.Open();
+
                 // keep the http context open as long as the http client is connected
                 while (context.Response.IsClientConnected)
                 {
@@ -40,10 +41,12 @@ namespace Myrtille.Web
             }
             catch (Exception exc)
             {
-                Trace.TraceError("event source error for http session {0} ({1})", context.Session.SessionID, exc);
+                // rethrown
             }
-
-            Trace.TraceInformation("event source closed for http session {0}", context.Session.SessionID);
+            finally
+            {
+                handler.Close();
+            }
         }
 
         public bool IsReusable

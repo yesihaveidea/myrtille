@@ -1,4 +1,11 @@
-﻿2021-01-08 Version 2.9.1 (stable)
+﻿2021-02-20 Version 2.9.2
+	a session can now be shared directly by url (simply copy & paste the page url then share it), with owner rights (web.config, can be disabled for anti-spoofing protection)
+	region updates are now dropped by the gateway if the client latency is above the image cache duration (1 sec); only fullscreen updates are sent
+	display updates can now be distributed across concurrent websockets (round robin load balancing) to reduce lag in case of network issues (config.js, default 5 websockets: 1 up 4 down). CAUTION! IIS on Windows client OSes (7, 8, 10) is limited to 10 simultaneous connections only - across all http sessions - and will hang after that! use Windows Server editions for production environments
+	the mouse move sampling rate is now decreased automatically in case of low bandwidth (default 100%, config.js)
+	refactoring
+
+2021-01-08 Version 2.9.1 (stable)
 	fixed an issue where the installer hangs due to enabling Windows features (via PowerShell) that prompt the user to restart or not while there is no UI to confirm
 	fixed a regression when hiding the toolbar from web.config
 	fixed an issue into FreeRDP with a special copy&paste logic into MS Office applications which disconnected the session after a special paste when pressing the enter key

@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2020 Cedric Coste
+    Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -68,12 +68,16 @@ function Network(base, config, dialog, display)
     var originalImageEncoding = config.getImageEncoding();
     var originalImageQuality = config.getImageQuality();
     var originalImageQuantity = config.getImageQuantity();
+    var originalMouseMoveSamplingRate = config.getMouseMoveSamplingRate();
 
     this.getOriginalImageEncoding = function() { return originalImageEncoding; };
     this.setOriginalImageEncoding = function(encoding) { originalImageEncoding = encoding; };
 
     this.getOriginalImageQuality = function() { return originalImageQuality; };
     this.setOriginalImageQuality = function(quality) { originalImageQuality = quality; };
+
+    this.getOriginalMouseMoveSamplingRate = function() { return originalMouseMoveSamplingRate; };
+    this.setOriginalMouseMoveSamplingRate = function(rate) { originalMouseMoveSamplingRate = rate; };
 
     this.init = function()
     {
@@ -179,10 +183,6 @@ function Network(base, config, dialog, display)
                     if (!wsAvailable)
                     {
                         config.setNetworkMode(config.getNetworkModeEnum().LONGPOLLING);
-                    }
-                    else
-                    {
-                        config.setWebsocketDuplex(false);
                     }
                     config.setImageMode(!display.isBase64Available() ? config.getImageModeEnum().ROUNDTRIP : config.getImageModeEnum().BASE64);
                     break;
@@ -441,25 +441,6 @@ function Network(base, config, dialog, display)
             {
                 dialog.showStat(dialog.getShowStatEnum().BUFFER, 'NONE');
             }
-
-            // the websocket may be struggling under the load (throttled?), fallback to event source
-            if (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && config.getWebsocketMaxLatency() > 0 && roundtripDurationAvg >= config.getWebsocketMaxLatency())
-            {
-                dialog.showDebug('websocket throughput drop, falling back to event source');
-
-                if (websocket.getWsOpened())
-                {
-                    websocket.getWs().close();
-                }
-
-                if (!config.getWebsocketDuplex() && websocket.getWs2Opened())
-                {
-                    websocket.getWs2().close();
-                }
-
-                config.setNetworkMode(config.getNetworkModeEnum().EVENTSOURCE);
-                this.init();
-            }
         }
         catch (exc)
         {
@@ -513,7 +494,7 @@ function Network(base, config, dialog, display)
             var commands = new Array();
 
             /*
-            small bandwidth = lower quality and quantity
+            low bandwidth = lower quality, quantity and mouse move sampling rate
             */
 
             var tweak = false;
@@ -533,6 +514,11 @@ function Network(base, config, dialog, display)
                     config.setImageQuantity(25);
                     tweak = true;
                 }
+
+                if (config.getMouseMoveSamplingRate() != 25)
+                {
+                    config.setMouseMoveSamplingRate(25);
+                }
             }
             else if (bandwidthUsageRatio >= config.getImageTweakBandwidthLowerThreshold() && bandwidthUsageRatio < config.getImageTweakBandwidthHigherThreshold())
             {
@@ -548,6 +534,11 @@ function Network(base, config, dialog, display)
                     config.setImageQuantity(50);
                     tweak = true;
                 }
+
+                if (config.getMouseMoveSamplingRate() != 50)
+                {
+                    config.setMouseMoveSamplingRate(50);
+                }
             }
             else
             {
@@ -562,6 +553,11 @@ function Network(base, config, dialog, display)
                 {
                     config.setImageQuantity(originalImageQuantity);
                     tweak = true;
+                }
+
+                if (config.getMouseMoveSamplingRate() != originalMouseMoveSamplingRate)
+                {
+                    config.setMouseMoveSamplingRate(originalMouseMoveSamplingRate);
                 }
             }
 

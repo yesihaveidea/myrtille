@@ -238,6 +238,7 @@
     <Compile Include="src\JSKeyCodeToRDPScanCodeMapping.cs" />
     <Compile Include="src\Models\SharingInfo.cs" />
     <Compile Include="src\Handlers\RemoteSessionEventSourceHandler.cs" />
+    <Compile Include="src\RemoteSessionClient.cs" />
     <Compile Include="src\Services\DisconnectionService.cs" />
     <Compile Include="src\Services\SharingService.cs" />
     <Compile Include="src\Services\CaptureService.cs" />

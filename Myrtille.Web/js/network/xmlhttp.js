@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2020 Cedric Coste
+    Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -136,6 +136,7 @@ function XmlHttp(base, config, dialog, display, network)
             xhr.open('GET', config.getHttpServerUrl() + 'SendInputs.aspx' +
                 '?data=' + (data == null ? '' : encodeURIComponent(data)) +
                 '&imgIdx=' + display.getImgIdx() +
+                '&latency=' + network.getRoundtripDurationAvg() +
                 '&imgReturn=' + (config.getNetworkMode() == config.getNetworkModeEnum().XHR ? 1 : 0) +
                 '&noCache=' + startTime);
 

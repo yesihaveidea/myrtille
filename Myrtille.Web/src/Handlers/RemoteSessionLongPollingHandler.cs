@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2020 Cedric Coste
+    Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@
 */
 
 using System;
-using System.Collections;
 using System.Diagnostics;
 using System.Web;
-using System.Web.SessionState;
 using Newtonsoft.Json;
 
 namespace Myrtille.Web
@@ -28,53 +26,83 @@ namespace Myrtille.Web
     public class RemoteSessionLongPollingHandler
     {
         private HttpContext _context;
-        public HttpSessionState Session { get; private set; }
         private RemoteSession _remoteSession;
+        private RemoteSessionClient _client;
 
         public RemoteSessionLongPollingHandler(HttpContext context)
         {
             _context = context;
-            Session = context.Session;
 
             try
             {
-                if (_context.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                if (context.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
                     throw new NullReferenceException();
 
                 // retrieve the remote session for the given http session
-                _remoteSession = (RemoteSession)_context.Session[HttpSessionStateVariables.RemoteSession.ToString()];
+                _remoteSession = (RemoteSession)context.Session[HttpSessionStateVariables.RemoteSession.ToString()];
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", context.Session.SessionID, exc);
+                return;
+            }
 
-                // register the handler against the remote session manager
-                lock (((ICollection)_remoteSession.Manager.LongPollings).SyncRoot)
+            var clientId = context.Session.SessionID;
+            if (context.Request.Cookies[HttpRequestCookies.ClientKey.ToString()] != null)
+            {
+                clientId = context.Request.Cookies[HttpRequestCookies.ClientKey.ToString()].Value;
+            }
+
+            if (!_remoteSession.Manager.Clients.ContainsKey(clientId))
+            {
+                lock (_remoteSession.Manager.ClientsLock)
                 {
-                    // search for a previously registered handler
-                    RemoteSessionLongPollingHandler oldLongPolling = null;
+                    _remoteSession.Manager.Clients.Add(clientId, new RemoteSessionClient(clientId));
+                }
+            }
 
-                    foreach (var longPolling in _remoteSession.Manager.LongPollings)
-                    {
-                        if (longPolling.Session.SessionID == _context.Session.SessionID)
-                        {
-                            oldLongPolling = longPolling;
-                            break;
-                        }
-                    }
+            _client = _remoteSession.Manager.Clients[clientId];
+        }
 
-                    // unregister the previous handler, if any
-                    if (oldLongPolling != null)
-                    {
-                        _remoteSession.Manager.LongPollings.Remove(oldLongPolling);
-                    }
-
-                    // register this handler
-                    _remoteSession.Manager.LongPollings.Add(this);
+        public void Open()
+        {
+            try
+            {
+                lock (_client.Lock)
+                {
+                    _client.LongPolling = this;
                 }
 
                 // the handler is ready to push data
                 Send("<script>parent.lpInitConnection();</script>");
+
+                Trace.TraceInformation("registered long polling handler for client {0}, remote session {1}", _client.Id, _remoteSession.Id);
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", _context.Session.SessionID, exc);
+                Trace.TraceError("Failed to register long polling handler for client {0}, remote session {1} ({2})", _client.Id, _remoteSession.Id, exc);
+                throw;
+            }
+        }
+
+        public void Close()
+        {
+            try
+            {
+                lock (_client.Lock)
+                {
+                    // only unregister same instance
+                    if (_client.LongPolling.GetHashCode() == GetHashCode())
+                    {
+                        _client.LongPolling = null;
+                    }
+                }
+
+                Trace.TraceInformation("unregistered long polling handler for client {0}, remote session {1}", _client.Id, _remoteSession.Id);
+            }
+            catch (Exception exc)
+            {
+                Trace.TraceError("Failed to unregister long polling handler for client {0}, remote session {1} ({2})", _client.Id, _remoteSession.Id, exc);
             }
         }
 
@@ -114,7 +142,7 @@ namespace Myrtille.Web
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to send long polling data for the remote session {0}, ({1})", _remoteSession.Id, exc);
+                Trace.TraceError("Failed to send long polling data to client {0}, remote session {1}, ({2})", _client.Id, _remoteSession.Id, exc);
             }
         }
     }

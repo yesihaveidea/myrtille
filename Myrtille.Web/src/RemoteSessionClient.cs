@@ -1,7 +1,6 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2018 Paul Oliver (Olive Innovations)
     Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +16,27 @@
     limitations under the License.
 */
 
-namespace Myrtille.Services.Contracts
+using System.Collections.Generic;
+
+namespace Myrtille.Web
 {
-    public enum EnterpriseMode
+    public class RemoteSessionClient
     {
-        None = 0,
-        Local = 1,
-        Domain = 2
+        public string Id;
+        public List<RemoteSessionSocketHandler> WebSockets;
+        public int WebSocketsRoundRobinIdx = 0;
+        public RemoteSessionAudioSocketHandler AudioWebSocket;
+        public RemoteSessionEventSourceHandler EventSource;
+        public RemoteSessionLongPollingHandler LongPolling;
+        public List<RemoteSessionMessage> MessageQueue;
+        public int ImgIdx = 0;
+        public int Latency = 0;
+        public object Lock;
+
+        public RemoteSessionClient(string id)
+        {
+            Id = id;
+            Lock = new object();
+        }
     }
 }

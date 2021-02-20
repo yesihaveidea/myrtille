@@ -51,6 +51,8 @@ Into the roles and features management, ensure you have enabled **HTTP Activatio
 
 The installer does install myrtille under the IIS default website and creates a custom application pool ("MyrtilleAppPool"). If you want to use another website or application pool, you can change it manually afterward (with the IIS manager).
 
+CAUTION! IIS on Windows client OSes (7, 8, 10) is limited to 10 simultaneous connections only - across all http sessions - and will hang after that! (https://forums.asp.net/t/2062118.aspx?+limit+of+10+simultaneous+connections+imposed+). Use Windows Server editions for production environments.
+
 All releases here: https://github.com/cedrozor/myrtille/releases
 
 ## Docker
@@ -205,7 +207,7 @@ Into the PDF virtual printer settings (bin/Myrtille.Printer.exe.config):
 
 ## Build
 Myrtille uses C#, C++ and vanilla Javascript code (no additional libraries). Microsoft Visual Studio Community 2017 was used as primary development environment, using the .NET 4.5 framework.
-If you want Visual Studio to load the Myrtille setup project, you have to install the (official and free) Microsoft Visual Studio 2017 Installer Projects extension (https://marketplace.visualstudio.com/items?itemName=visualstudioclient.MicrosoftVisualStudio2017InstallerProjects).
+If you want Visual Studio to load the Myrtille setup project, you have to install the (official and free) Microsoft Visual Studio 2017 (or greater) Installer Projects extension (https://marketplace.visualstudio.com/items?itemName=visualstudioclient.MicrosoftVisualStudio2017InstallerProjects).
 
 The Myrtille build have the two classic solution configurations: "Debug" and "Release", on "Any CPU" platform.
 
@@ -430,3 +432,6 @@ Also please read notes and limitations above.
 	- the SSH terminal (xtermjs) becomes laggy after some time; try to refresh or clear ("cls") the screen from time to time
 	- Maybe the default settings are not adapted to your configuration. You can tweak the "js/config.js" file as you wish (see extensive comments there).
 	- Despite my best efforts to produce quality and efficient code, I may have missed/messed something... Please don't hesitate to tell me or add your contribution! Thanks! :)
+
+- The browser loading icon spins indefinitely when I reload the page (or I get websocket error 1006)
+	- IIS on Windows client OSes (7, 8, 10) is limited to 10 simultaneous connections only - across all http sessions - and will hang after that! (https://forums.asp.net/t/2062118.aspx?+limit+of+10+simultaneous+connections+imposed+). Use Windows Server editions for production environments.

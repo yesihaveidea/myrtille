@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2020 Cedric Coste
+    Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Web;
 using System.Web.SessionState;
 using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
@@ -31,62 +33,92 @@ namespace Myrtille.Web
     {
         Duplex = 0,
         Up = 1,
-        Down = 2
+        UpWithAck = 2,
+        Down = 3
     }
 
     public class RemoteSessionSocketHandler : WebSocketHandler
     {
         private HttpSessionState _session;
         private RemoteSession _remoteSession;
+        private RemoteSessionClient _client;
 
         public bool Binary { get; private set; }
         public WebSocketDirection Direction { get; private set; }
 
-        public RemoteSessionSocketHandler(HttpSessionState session, bool binary, WebSocketDirection direction)
+        public RemoteSessionSocketHandler(HttpContext context, bool binary, WebSocketDirection direction)
             : base()
         {
-            _session = session;
+            _session = context.Session;
             Binary = binary;
             Direction = direction;
 
             try
             {
-                if (session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
+                if (context.Session[HttpSessionStateVariables.RemoteSession.ToString()] == null)
                     throw new NullReferenceException();
 
                 // retrieve the remote session for the given http session
-                _remoteSession = (RemoteSession)session[HttpSessionStateVariables.RemoteSession.ToString()];
+                _remoteSession = (RemoteSession)context.Session[HttpSessionStateVariables.RemoteSession.ToString()];
             }
             catch (Exception exc)
             {
-                Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", session.SessionID, exc);
+                Trace.TraceError("Failed to retrieve the remote session for the http session {0}, ({1})", context.Session.SessionID, exc);
+                return;
             }
+
+            var clientId = context.Session.SessionID;
+            if (context.Request.Cookies[HttpRequestCookies.ClientKey.ToString()] != null)
+            {
+                clientId = context.Request.Cookies[HttpRequestCookies.ClientKey.ToString()].Value;
+            }
+
+            if (!_remoteSession.Manager.Clients.ContainsKey(clientId))
+            {
+                lock (_remoteSession.Manager.ClientsLock)
+                {
+                    _remoteSession.Manager.Clients.Add(clientId, new RemoteSessionClient(clientId));
+                }
+            }
+
+            _client = _remoteSession.Manager.Clients[clientId];
         }
 
         public override void OnOpen()
         {
-            Trace.TraceInformation("Opening websocket, remote session {0}", _remoteSession.Id);
-
             base.OnOpen();
 
-            if (Direction != WebSocketDirection.Up)
+            if (Direction == WebSocketDirection.Duplex || Direction == WebSocketDirection.Down)
             {
-                _remoteSession.Manager.WebSockets.Add(this);
+                try
+                {
+                    lock (_client.Lock)
+                    {
+                        if (_client.WebSockets == null)
+                        {
+                            _client.WebSockets = new List<RemoteSessionSocketHandler>();
+                        }
+
+                        _client.WebSockets.Add(this);
+
+                        // unregister the message queue for the client (now using HTML5)
+                        if (_client.MessageQueue != null)
+                        {
+                            _client.MessageQueue = null;
+                        }
+                    }
+
+                    Trace.TraceInformation("Registered websocket handler for client {0}, remote session {1}", _client.Id, _remoteSession.Id);
+                }
+                catch (Exception exc)
+                {
+                    Trace.TraceError("Failed to register websocket handler for client {0}, remote session {1} ({2})", _client.Id, _remoteSession.Id, exc);
+                }
             }
 
             if (Direction == WebSocketDirection.Down)
             {
                 return;
-            }
-
-            // unregister the message queue for the current http session, if exists
-            // the http client is now using HTML5 mode
-            lock (_remoteSession.Manager.MessageQueues.SyncRoot)
-            {
-                if (_remoteSession.Manager.MessageQueues.ContainsKey(_session.SessionID))
-                {
-                    _remoteSession.Manager.MessageQueues.Remove(_session.SessionID);
-                }
             }
 
             // update guest information
@@ -139,19 +171,29 @@ namespace Myrtille.Web
 
         public override void OnClose()
         {
-            Trace.TraceInformation("Closing websocket, remote session {0}", _remoteSession.Id);
-
             base.OnClose();
 
-            if (Direction != WebSocketDirection.Up)
+            if (Direction == WebSocketDirection.Duplex || Direction == WebSocketDirection.Down)
             {
-                _remoteSession.Manager.WebSockets.Remove(this);
+                try
+                {
+                    lock (_client.Lock)
+                    {
+                        _client.WebSockets.Remove(this);
+                    }
+
+                    Trace.TraceInformation("Unregistered websocket handler for client {0}, remote session {1}", _client.Id, _remoteSession.Id);
+                }
+                catch (Exception exc)
+                {
+                    Trace.TraceError("Failed to unregister websocket handler for client {0}, remote session {1} ({2})", _client.Id, _remoteSession.Id, exc);
+                }
             }
         }
 
         public override void OnError()
         {
-            Trace.TraceError("Websocket error, remote session {0} ({1})", _remoteSession.Id, Error);
+            Trace.TraceError("Websocket error, client {0}, remote session {1} ({2})", _client.Id, _remoteSession.Id, Error);
             base.OnError();
         }
 
@@ -172,8 +214,8 @@ namespace Myrtille.Web
                 var msgParams = message.Split(new[] { "&" }, StringSplitOptions.None);
 
                 var data = Uri.UnescapeDataString(msgParams[0]);
-                var imgIdx = int.Parse(msgParams[1]);       // if needed
-                var latency = int.Parse(msgParams[2]);      // if needed
+                var imgIdx = int.Parse(msgParams[1]);
+                var latency = int.Parse(msgParams[2]);
                 var timestamp = long.Parse(msgParams[3]);
 
                 // process input(s)
@@ -182,8 +224,12 @@ namespace Myrtille.Web
                     _remoteSession.Manager.ProcessInputs(_session, data);
                 }
 
+                _client.ImgIdx = imgIdx;
+                _client.Latency = latency;
+
                 // acknowledge the message processing with the given timestamp; it will be used by the client to compute the roundtrip time
-                SendMessage(new RemoteSessionMessage { Type = MessageType.Ack, Text = timestamp.ToString() });
+                var websocket = Direction != WebSocketDirection.Up ? this : _client.WebSockets[0];
+                websocket.SendMessage(new RemoteSessionMessage { Type = MessageType.Ack, Text = timestamp.ToString() });
             }
             catch (Exception exc)
             {

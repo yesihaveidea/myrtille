@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2020 Cedric Coste
+    Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -181,7 +181,7 @@ function Dialog(config)
             statData.Bandwidth = statBandwidthUsage + '/' + statBandwidthSize + ' (' + (statBandwidthSize > 0 ? Math.round((statBandwidthUsage * 100) / statBandwidthSize) : 0) + '%)';
             statData.PeriodicalFSU = config.getPeriodicalFullscreenInterval() / 1000;
             statData.AdaptiveFSU = config.getAdaptiveFullscreenTimeout() / 1000;
-            statData.NetworkMode = statNetworkMode.text + (statNetworkMode == config.getNetworkModeEnum().LONGPOLLING ? ' (' + config.getLongPollingDuration() / 1000 + 's)' : (statNetworkMode == config.getNetworkModeEnum().WEBSOCKET ? ' (' + (config.getWebsocketDuplex() ? 'duplex' : 'dual') + ')' : ''));
+            statData.NetworkMode = statNetworkMode.text + (statNetworkMode == config.getNetworkModeEnum().LONGPOLLING ? ' (' + config.getLongPollingDuration() / 1000 + 's)' : (statNetworkMode == config.getNetworkModeEnum().WEBSOCKET ? ' (' + config.getWebsocketCount() + ')' : ''));
             statData.DisplayMode = statDisplayMode.text;
             statData.ImageCount = statImageCount + ' (' + statImageCountPerSec + '/s)';
             statData.ImageIndex = statImageIndex;

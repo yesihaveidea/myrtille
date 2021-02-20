@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2020 Cedric Coste
+    Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 */
 
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Web;
 using System.Web.SessionState;
@@ -28,8 +27,6 @@ namespace Myrtille.Web
     {
         public void ProcessRequest(HttpContext context)
         {
-            var handler = new RemoteSessionLongPollingHandler(context);
-
             // retrieve params
             var longPollingDuration = int.Parse(context.Request.QueryString["longPollingDuration"]);
             var imgIdx = int.Parse(context.Request.QueryString["imgIdx"]);  // if needed
@@ -39,8 +36,12 @@ namespace Myrtille.Web
             var startTime = DateTime.Now;
             var remainingTime = longPollingDuration;
 
+            var handler = new RemoteSessionLongPollingHandler(context);
+
             try
             {
+                handler.Open();
+
                 // keep the http context open as long as the http client is connected and for the given duration
                 while (context.Response.IsClientConnected && remainingTime > 0)
                 {
@@ -50,10 +51,12 @@ namespace Myrtille.Web
             }
             catch (Exception exc)
             {
-                Trace.TraceError("long polling error for http session {0} ({1})", context.Session.SessionID, exc);
+                // rethrown
             }
-
-            Trace.TraceInformation("long polling closed for http session {0}", context.Session.SessionID);
+            finally
+            {
+                handler.Close();
+            }
         }
 
         public bool IsReusable

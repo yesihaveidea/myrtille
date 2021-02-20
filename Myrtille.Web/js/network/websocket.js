@@ -1,7 +1,7 @@
 ﻿/*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2020 Cedric Coste
+    Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,41 +22,54 @@
 
 function Websocket(base, config, dialog, display, network)
 {
-    // up (inputs, display and notifications if duplex)
-    var ws = null;
-    this.getWs = function() { return ws; };
+    function websocket(connection, opened, error)
+    {
+        this.connection = connection;
+        this.opened = opened;
+        this.error = error;
+    }
 
-    var wsOpened = false;
-    this.getWsOpened = function() { return wsOpened; };
-
-    var wsError = false;
-
-    // down (display and notifications)
-    var ws2 = null;
-    this.getWs2 = function() { return ws2; };
-
-    var ws2Opened = false;
-    this.getWs2Opened = function() { return ws2Opened; };
-
-    var ws2Error = false;
+    var ws = new Array();
 
     this.init = function()
     {
         try
         {
-            // using the IIS 8+ websockets support, the websocket server url is the same as http (there is just a protocol scheme change and a specific handler; standard and secured ports are the same)
-            var wsUrl = config.getHttpServerUrl().replace('http', 'ws') + 'handlers/SocketHandler.ashx?binary=' + (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && config.getImageMode() == config.getImageModeEnum().BINARY ? 'true' : 'false') + '&direction=' + (config.getWebsocketDuplex() ? 'duplex' : 'up');
-
-            //dialog.showDebug('websocket server url: ' + wsUrl);
-
             var wsImpl = window.WebSocket || window.MozWebSocket;
-            ws = new wsImpl(wsUrl);
 
-            // if websocket is enabled and isn't duplex, create a 2nd websocket to receive the updates
-            if (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && !config.getWebsocketDuplex())
+            // using the IIS 8+ websockets support, the websocket server url is the same as http (there is just a protocol scheme change and a specific handler; standard and secured ports are the same)
+            var wsBaseUrl = config.getHttpServerUrl().replace('http', 'ws') + 'handlers/SocketHandler.ashx?binary=' + (config.getImageMode() == config.getImageModeEnum().BINARY ? 'true' : 'false');
+            var wsUrl;
+
+            // 1 websocket up, n down
+            if (config.getHostType() == config.getHostTypeEnum().RDP && config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && config.getWebsocketCount() > 1)
             {
-                var ws2Url = config.getHttpServerUrl().replace('http', 'ws') + 'handlers/SocketHandler.ashx?binary=' + (config.getImageMode() == config.getImageModeEnum().BINARY ? 'true' : 'false') + '&direction=down';
-                ws2 = new wsImpl(ws2Url);
+                wsUrl = wsBaseUrl + '&direction=up';
+                //dialog.showDebug('websocket server url: ' + wsUrl);
+                ws[0] = new websocket(new wsImpl(wsUrl));
+
+                // distribute the display updates load between different websockets (round robin)
+                wsUrl = wsBaseUrl + '&direction=down';
+                for (let i = 1; i <= config.getWebsocketCount() - 1; i++)
+                {
+                    ws[i] = new websocket(new wsImpl(wsUrl));
+                }
+            }
+            // 1 websocket up, with ack
+            else if (config.getNetworkMode() == config.getNetworkModeEnum().EVENTSOURCE)
+            {
+                config.setWebsocketCount(1);
+                wsUrl = wsBaseUrl + '&direction=upWithAck';
+                //dialog.showDebug('websocket server url: ' + wsUrl);
+                ws[0] = new websocket(new wsImpl(wsUrl));
+            }
+            // 1 websocket up/down
+            else
+            {
+                config.setWebsocketCount(1);
+                wsUrl = wsBaseUrl + '&direction=duplex';
+                //dialog.showDebug('websocket server url: ' + wsUrl);
+                ws[0] = new websocket(new wsImpl(wsUrl));
             }
         }
         catch (exc)
@@ -64,7 +77,6 @@ function Websocket(base, config, dialog, display, network)
             dialog.showDebug('websocket init error: ' + exc.message + ', falling back to long-polling');
             config.setNetworkMode(config.getNetworkModeEnum().LONGPOLLING);
             ws = null;
-            ws2 = null;
             return;
         }
 
@@ -74,11 +86,14 @@ function Websocket(base, config, dialog, display, network)
             try
             {
                 // the another possible value is 'blob'; but it involves asynchronous processing whereas we need images to be displayed sequentially
-                ws.binaryType = 'arraybuffer';
+                ws[0].connection.binaryType = 'arraybuffer';
 
-                if (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && !config.getWebsocketDuplex())
+                if (config.getHostType() == config.getHostTypeEnum().RDP && config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && config.getWebsocketCount() > 1)
                 {
-                    ws2.binaryType = 'arraybuffer';
+                    for (let i = 1; i <= config.getWebsocketCount() - 1; i++)
+                    {
+                        ws[i].connection.binaryType = 'arraybuffer';
+                    }
                 }
             }
             catch (exc)
@@ -93,17 +108,20 @@ function Websocket(base, config, dialog, display, network)
 
         try
         {
-            ws.onopen = function() { open(config.getWebsocketDuplex() ? 'duplex' : 'up'); };
-            ws.onmessage = function(e) { message(e); };
-            ws.onerror = function() { error(config.getWebsocketDuplex() ? 'duplex' : 'up'); };
-            ws.onclose = function(e) { close(e, config.getWebsocketDuplex() ? 'duplex' : 'up'); };
-            
-            if (config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && !config.getWebsocketDuplex())
+            ws[0].connection.onopen = function() { open(0); };
+            ws[0].connection.onmessage = function(e) { message(e); };
+            ws[0].connection.onerror = function() { error(0); };
+            ws[0].connection.onclose = function(e) { close(e, 0); };
+
+            if (config.getHostType() == config.getHostTypeEnum().RDP && config.getNetworkMode() == config.getNetworkModeEnum().WEBSOCKET && config.getWebsocketCount() > 1)
             {
-                ws2.onopen = function() { open('down'); };
-                ws2.onmessage = function(e) { message(e); };
-                ws2.onerror = function() { error('down'); };
-                ws2.onclose = function(e) { close(e, 'down'); };
+                for (let i = 1; i <= config.getWebsocketCount() - 1; i++)
+                {
+                    ws[i].connection.onopen = function() { open(i); };
+                    ws[i].connection.onmessage = function(e) { message(e); };
+                    ws[i].connection.onerror = function() { error(i); };
+                    ws[i].connection.onclose = function(e) { close(e, i); };
+                }
             }
         }
         catch (exc)
@@ -111,122 +129,131 @@ function Websocket(base, config, dialog, display, network)
             dialog.showDebug('websocket events init error: ' + exc.message + ', falling back to long-polling');
             config.setNetworkMode(config.getNetworkModeEnum().LONGPOLLING);
             ws = null;
-            ws2 = null;
         }
     };
 
-    function open(direction)
+    function open(i)
     {
-        dialog.showDebug('websocket ' + direction + ' opened');
-
-        var init;
-
-        if (direction != 'down')
+        try
         {
-            wsOpened = true;
-            init = config.getNetworkMode() != config.getNetworkModeEnum().WEBSOCKET || config.getWebsocketDuplex() || ws2Opened;
-        }
-        else
-        {
-            ws2Opened = true;
-            init = wsOpened;
-        }
+            dialog.showDebug('websocket ' + i + ' opened');
 
-        if (init)
-        {
-            // as websockets don't involve any standard http communication, the http session will timeout after a given time (default 20mn)
-            // below is a periodical dummy call, using xhr, to keep it alive
-            window.setInterval(function()
+            ws[i].opened = true;
+
+            var init = false;
+
+            // the init client sequence can't be done until the first websocket down is open (because the client won't be able to receive the connected notification otherwise)
+            if (i == 0)
             {
-                //dialog.showDebug('http session keep alive');
-                network.getXmlhttp().send(null, new Date().getTime());
-            },
-            config.getHttpSessionKeepAliveInterval());
-
-            // if connecting, the gateway will automatically connect the remote server when the socket is opened server side
-            // if connected, send the client settings and request a fullscreen update
-            if (config.getConnectionState() == 'CONNECTED')
-            {
-                base.initClient();
+                init = config.getWebsocketCount() <= 1 || ws[1].opened;
             }
+            // the init client sequence can't be done until the websocket up is open (because the client won't be able to send the init sequence otherwise)
+            else if (i == 1)
+            {
+                init = ws[0].opened;
+            }
+
+            if (init)
+            {
+                // as websockets don't involve any standard http communication, the http session will timeout after a given time (default 20mn)
+                // below is a periodical dummy call, using xhr, to keep it alive
+                window.setInterval(function()
+                {
+                    //dialog.showDebug('http session keep alive');
+                    network.getXmlhttp().send(null, new Date().getTime());
+                },
+                config.getHttpSessionKeepAliveInterval());
+
+                // if connecting, the gateway will automatically connect the remote server when the socket is opened server side
+                // if connected, send the client settings and request a fullscreen update
+                if (config.getConnectionState() == 'CONNECTED')
+                {
+                    base.initClient();
+                }
+            }
+        }
+        catch (exc)
+        {
+            dialog.showDebug('websocket open error: ' + exc.message);
         }
     }
 
     function message(e)
     {
-        // if the websocket isn't duplex, it's not meant to receive data
-        // however, it's just a logical limitation; the websocket is still technically duplex, so let's handle any received data
-        // it happens with event source for example, because server acks are retuned on the websocket
+        try
+        {
+            // if the websocket is up, it's not meant to receive data
+            // however, it's just a logical limitation; the websocket is still technically duplex, so let's handle any received data
+            // it happens with event source for example, because server acks are retuned on the websocket
 
-        if (config.getAdditionalLatency() > 0)
-        {
-            window.setTimeout(function() { receive(e.data); }, Math.round(config.getAdditionalLatency() / 2));
+            if (config.getAdditionalLatency() > 0)
+            {
+                window.setTimeout(function() { receive(e.data); }, Math.round(config.getAdditionalLatency() / 2));
+            }
+            else
+            {
+                receive(e.data);
+            }
         }
-        else
+        catch (exc)
         {
-            receive(e.data);
+            dialog.showDebug('websocket message error: ' + exc.message);
         }
     }
 
-    function error(direction)
+    function error(i)
     {
-        dialog.showDebug('websocket ' + direction + ' error');
-
-        if (direction != 'down')
+        try
         {
-            wsError = true;
+            dialog.showDebug('websocket ' + i + ' error');
+            ws[i].error = true;
         }
-        else
+        catch (exc)
         {
-            ws2Error = true;
+            dialog.showDebug('websocket error error: ' + exc.message);
         }
     }
 
-    function close(e, direction)
+    function close(e, i)
     {
-        var error;
+        try
+        {
+            if (ws[i].opened && !ws[i].error)
+            {
+                dialog.showDebug('websocket ' + i + ' closed');
+            }
+            else
+            {
+                // the websocket failed, fallback to long-polling
+                dialog.showDebug('websocket ' + i + ' closed with error code ' + e.code + ' (if you have IIS 8 or greater, ensure the websocket protocol is enabled), falling back to long-polling');
+                config.setNetworkMode(config.getNetworkModeEnum().LONGPOLLING);
+                network.init();
+            }
 
-        // the websocket may not be duplex; handle error on both directions
-        if (direction != 'down')
-        {
-            error = !wsOpened || wsError;
+            ws[i].opened = false;
         }
-        else
+        catch (exc)
         {
-            error = !ws2Opened || ws2Error;
-        }
-
-        if (!error)
-        {
-            dialog.showDebug('websocket ' + direction + ' closed');
-        }
-        else
-        {
-            // the websocket failed, fallback to long-polling
-            dialog.showDebug('websocket ' + direction + ' closed with error code ' + e.code + ' (if you have IIS 8 or greater, ensure the websocket protocol is enabled), falling back to long-polling');
-            config.setNetworkMode(config.getNetworkModeEnum().LONGPOLLING);
-            network.init();
-        }
-
-        if (direction != 'down')
-        {
-            wsOpened = false;
-        }
-        else
-        {
-            ws2Opened = false;
+            dialog.showDebug('websocket close error: ' + exc.message);
         }
     }
 
     function wsSend(text)
     {
-        if (config.getImageMode() != config.getImageModeEnum().BINARY)
+        try
         {
-            ws.send(text);
+            if (config.getImageMode() != config.getImageModeEnum().BINARY)
+            {
+                ws[0].connection.send(text);
+            }
+            else
+            {
+                ws[0].connection.send(strToBytes(text));
+            }
         }
-        else
+        catch (exc)
         {
-            ws.send(strToBytes(text));
+            dialog.showDebug('websocket send error: ' + exc.message);
         }
     }
 
@@ -249,7 +276,7 @@ function Websocket(base, config, dialog, display, network)
                 return;
             }
 
-            if (!wsOpened)
+            if (!ws[0].opened)
             {
                 //dialog.showDebug('ws is not ready');
                 return;
@@ -381,13 +408,43 @@ function Websocket(base, config, dialog, display, network)
                         imgData = new Uint8Array(data, 36, data.byteLength - 36);
                     }
 
-                    processImage(idx, posX, posY, width, height, format, quality, fullscreen, imgData);
+                    processImageInOrder(idx, posX, posY, width, height, format, quality, fullscreen, imgData, 0);
                 }
             }
         }
         catch (exc)
         {
             dialog.showDebug('websocket receive error: ' + exc.message);
+        }
+    }
+
+    function processImageInOrder(idx, posX, posY, width, height, format, quality, fullscreen, imgData, delayedCount)
+    {
+        try
+        {
+            let curIdx = display.getImgIdx();
+
+            // image is the next in order or was delayed up to 10 times, display it
+            if (curIdx == 0 || curIdx == idx - 1 || (curIdx < idx && delayedCount >= 10))
+            {
+                //dialog.showDebug('current image: ' + curIdx + ', displaying image ' + idx);
+                processImage(idx, posX, posY, width, height, format, quality, fullscreen, imgData);
+            }
+            // wait for the image turn in order
+            else if (curIdx < idx)
+            {
+                //dialog.showDebug('current image: ' + curIdx + ', delaying image ' + idx + ', delayed count: ' + delayedCount);
+                window.setTimeout(function() { processImageInOrder(idx, posX, posY, width, height, format, quality, fullscreen, imgData, ++delayedCount); }, 1);
+            }
+            // the image is older than or equal to the current image, drop it
+            else
+            {
+                //dialog.showDebug('current image: ' + curIdx + ', dropping image ' + idx);
+            }
+        }
+        catch (exc)
+        {
+            dialog.showDebug('websocket processImageInOrder error: ' + exc.message);
         }
     }
 }

@@ -1,7 +1,7 @@
 /*
     Myrtille: A native HTML4/5 Remote Desktop Protocol client.
 
-    Copyright(c) 2014-2020 Cedric Coste
+    Copyright(c) 2014-2021 Cedric Coste
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -137,16 +137,15 @@ function Config(
     var adaptiveFullscreenTimeout = 1500;                           // adaptive fullscreen update (ms); requested after a given period of user inactivity (=no input). fullscreen updates in adaptive mode are always done in higher quality (75%), regardless of the current image quality and bandwidth usage. 0 to disable
 
     // audio
-    var audioFormat = audioFormatEnum.MP3;                          // audio format (HTML5); requires websocket enabled and RDP host; IE doesn't support WAV format (MP3 fallback); others: WAV and MP3 support
-    var audioBitrate = 128;                                         // bitrate (kbps); possible values for WAV: 1411 (44100 Hz, 16 bits stereo); possible values for MP3: 128, 160, 256, 320 (CBR); lower = lesser quality, but also less bandwidth usage (128 kbps is good enough for sound notifications)
+    var audioFormat = audioFormatEnum.WAV;                          // audio format (HTML5); requires websocket enabled and RDP host; IE doesn't support WAV format (MP3 fallback); others: WAV and MP3 support
+    var audioBitrate = 1411;                                        // bitrate (kbps); possible values for WAV: 1411 (44100 Hz, 16 bits stereo); possible values for MP3: 128, 160, 256, 320 (CBR); lower = lesser quality, but also less bandwidth usage (128 kbps is good enough for sound notifications)
 
     // network
     var additionalLatency = 0;                                      // simulate a network latency (ms) which adds to the real latency (useful to test various network situations). 0 to disable
     var roundtripDurationMax = 0;                                   // roundtrip duration (ms) above which the connection is considered having issues, displaying a warning message to the user. 0 to disable
     var bandwidthCheckInterval = 300000;                            // periodical bandwidth check; used to tweak down the images (quality & quantity) if the available bandwidth gets too low. it relies on a 5MB dummy file download, so this param shouldn't be set on a too short timer (or it will eat the bandwidth it's supposed to test...)
     var networkMode = networkModeEnum.AUTO;                         // network mode
-    var websocketDuplex = true;                                     // use the same websocket (preferred) to send the user inputs and receive the display updates (duplex) or use two separate websockets otherwise (dual)
-    var websocketMaxLatency = 0;                                    // when using websocket, latency (ms) above which switching network mode to event source (the websocket protocol may be filtered or throttled by some network proxies). 0 to disable
+    var websocketCount = 5;                                         // number of concurrent websockets to send the user inputs and receive the display updates (RDP host only, max 100). splitting the load across multiple websockets can help to mitigate network lag. 1 for duplex websocket. CAUTION! IIS on Windows client OSes (7, 8, 10) is limited to 10 simultaneous connections only - across all http sessions - and will hang after that! use Windows Server editions for production environments
     var httpSessionKeepAliveInterval = 30000;                       // periodical dummy xhr calls (ms) when using websocket, in order to keep the http session alive
     var xmlHttpTimeout = 3000;                                      // xmlhttp requests (xhr) timeout (ms)
     var longPollingDuration = 60000;                                // long-polling requests duration (ms)
@@ -234,9 +233,8 @@ function Config(
     this.setNetworkMode = function(mode) { networkMode = mode; };
 
     // websocket
-    this.getWebsocketDuplex = function() { return websocketDuplex; };
-    this.setWebsocketDuplex = function(duplex) { websocketDuplex = duplex; };
-    this.getWebsocketMaxLatency = function() { return websocketMaxLatency; };
+    this.getWebsocketCount = function() { return websocketCount; };
+    this.setWebsocketCount = function(count) { websocketCount = count; };
     this.getHttpSessionKeepAliveInterval = function() { return httpSessionKeepAliveInterval; };
  
     // xmlhttp
@@ -257,4 +255,5 @@ function Config(
     
     // mouse
     this.getMouseMoveSamplingRate = function() { return mouseMoveSamplingRate; };
+    this.setMouseMoveSamplingRate = function(rate) { mouseMoveSamplingRate = rate; };
 }

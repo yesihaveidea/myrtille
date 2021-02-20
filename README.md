@@ -34,7 +34,7 @@ More information in the DOCUMENTATION.md file.
 
 ## Requirements
 - Browser: any HTML4 or HTML5 browser (starting from IE6!). No extension or administrative rights required. The clipboard synchronization requires Chrome (or async clipboard API support) and HTTPS connection
-- Gateway (myrtille): Windows 8.1 or Windows Server 2012 R2 or greater (IIS 8.0+, .NET 4.5+ and WCF/HTTP activation enabled)
+- Gateway (myrtille): Windows 8.1 or Windows Server 2012 R2 or greater (IIS 8.0+, .NET 4.5+ and WCF/HTTP activation enabled). CAUTION! IIS on Windows client OSes (7, 8, 10) is limited to 10 simultaneous connections only - across all http sessions - and will hang after that! use Windows Server editions for production environments
 - RDP server: any RDP enabled machine (preferably Windows Server but can also be Windows XP, 7, 8, 10 or Linux xRDP server)
 - SSH server: any SSH server (tests were made using the built-in Windows 10 OpenSSH server)
 
@@ -45,10 +45,10 @@ There is no limitation about the maximal number of concurrent users beside what 
 
 Regarding the gateway, a simple dual core CPU with 4GB RAM can handle up to 50 simultaneous sessions (about 50MB RAM by rdp client process, even less for ssh).
 
-Each session uses about 20KB/sec bandwidth with the browser.
+A session uses about 200 KB/s of bandwidth on average. 1MB/s per user is a good provision for most cases. What's really important to Myrtille is the outgoing bandwidth, as display updates will take up most of the traffic.
 
 ## Build
-Microsoft Visual Studio 2017. See DOCUMENTATION.md.
+Microsoft Visual Studio 2017 or greater. See DOCUMENTATION.md.
 
 ## Installation
 All releases here: https://github.com/cedrozor/myrtille/releases
@@ -154,6 +154,7 @@ Cedric Coste.
 - Practice-Labs (https://practice-labs.com/) - audio support, REST APIs, improved iframes integration
 - Schleupen AG (https://www.schleupen.de/) - clipboard synchronization, disconnect API, drain of disconnected sessions
 - Microarea SpA (https://www.microarea.it/) - application pool API, reduced memory usage
+- Arkafort (https://www.arkafort.com) - improved Hyper-V console support, on screen keyboard
 - Your company here (contact me!)
 
 ## Fun
