@@ -1,4 +1,5 @@
-﻿2021-02-20 Version 2.9.2
+﻿2021-02-21 Version 2.9.2
+	fixed a problem with the creation of the self-signed certificate that prevented Myrtille from installing correctly on Windows Server 2012 R2 (thanks camjcorley)
 	a session can now be shared directly by url (simply copy & paste the page url then share it), with owner rights (web.config, can be disabled for anti-spoofing protection)
 	region updates are now dropped by the gateway if the client latency is above the image cache duration (1 sec); only fullscreen updates are sent
 	display updates can now be distributed across concurrent websockets (round robin load balancing) to reduce lag in case of network issues (config.js, default 5 websockets: 1 up 4 down). CAUTION! IIS on Windows client OSes (7, 8, 10) is limited to 10 simultaneous connections only - across all http sessions - and will hang after that! use Windows Server editions for production environments
