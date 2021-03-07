@@ -18,6 +18,9 @@
 
 <%@ Page Language="C#" Inherits="Myrtille.Web.OnScreenKeyboard" Codebehind="OnScreenKeyboard.aspx.cs" AutoEventWireup="true" Culture="auto" UICulture="auto" %>
 <%@ OutputCache Location="None" %>
+<%@ Import Namespace="System.Globalization" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<%@ Import Namespace="Myrtille.Web" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -25,9 +28,9 @@
 	
     <head>
         <title>Myrtille</title>
-        <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css"/>
-        <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.min.js"></script>
-        <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/simple-keyboard-layouts@latest/build/index.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="<%=BundleTable.Bundles.ResolveBundleUrl("~/node_modules/simple-keyboard/build/css/index.css", true)%>"/>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/node_modules/simple-keyboard/build/index.js", true)%>"></script>
+        <script language="javascript" type="text/javascript" src="<%=BundleTable.Bundles.ResolveBundleUrl("~/node_modules/simple-keyboard-layouts/build/index.js", true)%>"></script>
 	</head>
 
     <body>

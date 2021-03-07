@@ -1,4 +1,6 @@
-﻿2021-02-21 Version 2.9.2
+﻿2021-03-07 Version 2.9.2
+	FreeRDP is now built as a dll instead of an executable for better modularity and to reduce the risk of false positive detection of wfreerdp.exe by some antiviruses (mostly cloud based)
+	embedded interact.js and simple-keyboard (nodejs modules) into myrtille in order to remove dependencies on external CDNs (ans thus allow myrtille to be used standalone and not subject to external changes)
 	fixed a problem with the creation of the self-signed certificate that prevented Myrtille from installing correctly on Windows Server 2012 R2 (thanks camjcorley)
 	a session can now be shared directly by url (simply copy & paste the page url then share it), with owner rights (web.config, can be disabled for anti-spoofing protection)
 	region updates are now dropped by the gateway if the client latency is above the image cache duration (1 sec); only fullscreen updates are sent

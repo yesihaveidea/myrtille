@@ -276,7 +276,8 @@ FakesAssemblies/
 
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
-node_modules/
+# allow to embed nodejs modules into Myrtille so as not to use external CDNs
+#node_modules/
 
 # Visual Studio 6 build log
 *.plg
