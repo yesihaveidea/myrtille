@@ -479,7 +479,6 @@
     <Content Include="node_modules\interactjs\LICENSE" />
     <Content Include="node_modules\interactjs\package.json" />
     <Content Include="node_modules\interactjs\README.md" />
-    <Content Include="node_modules\simple-keyboard-layouts\bin\postinstall" />
     <Content Include="node_modules\simple-keyboard-layouts\build\index.js.map" />
     <Content Include="node_modules\simple-keyboard-layouts\LICENSE" />
     <Content Include="node_modules\simple-keyboard-layouts\package.json" />
