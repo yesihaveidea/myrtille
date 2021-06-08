@@ -1,0 +1,57 @@
+﻿@page "/"
+@namespace Myrtille.Web.Blazor.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="stylesheet" href="~/css/Default.css" />
+    <link rel="stylesheet" href="~/css/xterm.css" />
+
+    <script src="~/js/tools/common.js"></script>
+    <script src="~/js/tools/convert.js"></script>
+    <script src="~/js/myrtille.js"></script>
+    <script src="~/js/config.js"></script>
+    <script src="~/js/dialog.js"></script>
+    <script src="~/js/display.js"></script>
+    <script src="~/js/display/canvas.js"></script>
+    <script src="~/js/display/divs.js"></script>
+    <script src="~/js/display/terminaldiv.js"></script>
+    <script src="~/js/network.js"></script>
+    <script src="~/js/network/buffer.js"></script>
+    <script src="~/js/network/eventsource.js"></script>
+    <script src="~/js/network/longpolling.js"></script>
+    <script src="~/js/network/websocket.js"></script>
+    <script src="~/js/network/xmlhttp.js"></script>
+    <script src="~/js/user.js"></script>
+    <script src="~/js/user/keyboard.js"></script>
+    <script src="~/js/user/mouse.js"></script>
+    <script src="~/js/user/touchscreen.js"></script>
+    <script src="~/js/xterm/xterm.js"></script>
+    <script src="~/js/xterm/addons/fit/fit.js"></script>
+    <script src="~/js/audio/audiowebsocket.js"></script>
+    <script src="~/node_modules/interactjs/dist/interact.js"></script>
+</head>
+<body>
+    <app>
+        <component type="typeof(App)" render-mode="ServerPrerendered" />
+    </app>
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>

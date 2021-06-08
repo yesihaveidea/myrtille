@@ -1,0 +1,1184 @@
+﻿@page "/"
+@using Myrtille.Services.Contracts
+@using Myrtille.Helpers
+@using Microsoft.AspNetCore.Http
+@using System.Threading
+@using Microsoft.Extensions.Configuration
+@using System.Net.Mime
+@inject IConfiguration Configuration
+@inject IHttpContextAccessor httpContextAccessor
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.JSInterop.Implementation
+@inject ProtectedSessionStorage ProtectedSessionStore
+@inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime
+
+<div onload="startMyrtille(
+    @(RemoteSession != null ? "'" + RemoteSession.State.ToString().ToUpper() + "'" : "null"),
+    getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'stat'),
+    getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'debug'),
+    getToggleCookie((parent != null && window.name != '' ? window.name + '_' : '') + 'browser'),
+    @(RemoteSession != null && RemoteSession.BrowserResize.HasValue ? "'" + RemoteSession.BrowserResize.Value.ToString().ToUpper() + "'" : "null"),
+    @(RemoteSession != null ? RemoteSession.ClientWidth.ToString() : "null"),
+    @(RemoteSession != null ? RemoteSession.ClientHeight.ToString() : "null"),
+    '@(RemoteSession != null ? RemoteSession.HostType.ToString() : HostType.RDP.ToString())',
+    @(RemoteSession != null && !string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode).ToString().ToLower());">
+
+    <!-- custom UI: all elements below, including the logo, are customizable into Default.css -->
+
+    <form method="post" runat="server" id="mainForm">
+
+        <!-- display resolution -->
+        <input type="hidden" runat="server" id="width" />
+        <input type="hidden" runat="server" id="height" />
+
+        <!-- ********************************************************************************************************************************************************************************** -->
+        <!-- *** LOGIN                                                                                                                                                                      *** -->
+        <!-- ********************************************************************************************************************************************************************************** -->
+
+        <div runat="server" id="login" visible="false">
+
+            <!-- customizable logo -->
+            <div runat="server" id="logo"></div>
+
+            <!-- standard mode -->
+            <div runat="server" id="hostConnectDiv">
+
+                <!-- type -->
+                <div class="inputDiv">
+                    <label id="hostTypeLabel" for="hostType">Protocol</label>
+                    <select runat="server" id="hostType" onchange="onHostTypeChange(this);" title="host type">
+                        <option value="0" selected="selected">RDP</option>
+                        <option value="0">RDP over VM bus (Hyper-V)</option>
+                        <option value="1">SSH</option>
+                    </select>
+                </div>
+
+                <!-- security -->
+                <div class="inputDiv" id="securityProtocolDiv">
+                    <label id="securityProtocolLabel" for="securityProtocol">Security</label>
+                    <select runat="server" id="securityProtocol" title="NLA = safest, RDP = backward compatibility (if the server doesn't enforce NLA) and interactive logon (leave user and password empty); AUTO for Hyper-V VM or if not sure">
+                        <option value="0" selected="selected">AUTO</option>
+                        <option value="1">RDP</option>
+                        <option value="2">TLS</option>
+                        <option value="3">NLA</option>
+                        <option value="4">NLA-EXT</option>
+                    </select>
+                </div>
+
+                <!-- server -->
+                <div class="inputDiv">
+                    <label id="serverLabel" for="server">Server (:port)</label>
+                    <input type="text" runat="server" id="server" title="host name or address (:port, if other than the standard 3389 (rdp), 2179 (rdp over vm bus) or 22 (ssh)). use [] for ipv6. CAUTION! if using a hostname or if you have a connection broker, make sure the DNS is reachable by myrtille (or myrtille has joined the domain)" />
+                </div>
+
+                <!-- hyper-v -->
+                <div id="vmDiv" style="visibility:hidden;display:none;">
+
+                    <!-- vm guid -->
+                    <div class="inputDiv" id="vmGuidDiv">
+                        <label id="vmGuidLabel" for="vmGuid">VM GUID</label>
+                        <input type="text" runat="server" id="vmGuid" title="guid of the Hyper-V VM to connect" />
+                    </div>
+
+                    <!-- enhanced mode -->
+                    <div class="inputDiv" id="vmEnhancedModeDiv">
+                        <label id="vmEnhancedModeLabel" for="vmEnhancedMode">VM Enhanced Mode</label>
+                        <input type="checkbox" runat="server" id="vmEnhancedMode" title="faster display and clipboard/printer redirection, if supported by the guest VM" />
+                    </div>
+
+                </div>
+
+                <!-- domain -->
+                <div class="inputDiv" id="domainDiv">
+                    <label id="domainLabel" for="domain">Domain (optional)</label>
+                    <input type="text" runat="server" id="domain" title="user domain (if applicable)" />
+                </div>
+
+            </div>
+
+            <!-- user -->
+            <div class="inputDiv">
+                <label id="userLabel" for="user">User</label>
+                <input type="text" runat="server" id="user" title="user name" />
+            </div>
+
+            <!-- password -->
+            <div class="inputDiv">
+                <label id="passwordLabel" for="password">Password</label>
+                <input type="password" runat="server" id="password" title="user password" />
+            </div>
+
+            <!-- hashed password (aka password 51) -->
+            <input type="hidden" runat="server" id="passwordHash" />
+
+            <!-- MFA password -->
+            <div class="inputDiv" runat="server" id="mfaDiv" visible="false">
+                <a runat="server" id="mfaProvider" href="#" target="_blank" tabindex="-1" title="MFA provider"></a>
+                <input type="text" runat="server" id="mfaPassword" title="MFA password" />
+            </div>
+
+            <!-- program to run -->
+            <div class="inputDiv">
+                <label id="programLabel" for="program">Program to run (optional)</label>
+                <input type="text" runat="server" id="program" title="executable path, name and parameters (double quotes must be escaped) (optional)" />
+            </div>
+
+            <!-- connect -->
+            <input type="submit" runat="server" id="connect" value="Connect!" onserverclick="ConnectButtonClick" title="open session" />
+
+            <!-- myrtille version -->
+            <div id="version">
+                <a href="https://www.myrtille.io/" target="_blank" title="myrtille">
+                    <img src="img/myrtille.png" alt="myrtille" width="15px" height="15px" />
+                </a>
+                <span>
+                    <%=typeof(Default).Assembly.GetName().Version%>
+                </span>
+            </div>
+
+            <!-- hosts management -->
+            <div runat="server" id="adminDiv" visible="false">
+                <a runat="server" id="adminUrl" href="?mode=admin">
+                    <span runat="server" id="adminText">Hosts management</span>
+                </a>
+            </div>
+
+            <!-- connect error -->
+            <div id="errorDiv">
+                <span runat="server" id="connectError"></span>
+            </div>
+
+        </div>
+
+        <!-- ********************************************************************************************************************************************************************************** -->
+        <!-- *** HOSTS                                                                                                                                                                      *** -->
+        <!-- ********************************************************************************************************************************************************************************** -->
+
+        <div runat="server" id="hosts" visible="false">
+
+            <div id="hostsControl">
+
+                <!-- enterprise user info -->
+                <input type="text" runat="server" id="enterpriseUserInfo" title="logged in user" disabled="disabled" />
+
+                <!-- new rdp host -->
+                <input type="button" runat="server" id="newRDPHost" value="New RDP Host" onclick="openPopup('editHostPopup', 'EditHost.aspx?hostType=RDP');" title="New RDP Host (standard or over VM bus)" />
+
+                <!-- new ssh host -->
+                <input type="button" runat="server" id="newSSHHost" value="New SSH Host" onclick="openPopup('editHostPopup', 'EditHost.aspx?hostType=SSH');" title="New SSH Host" />
+
+                <!-- logout -->
+                <input type="button" runat="server" id="logout" value="Logout" onserverclick="LogoutButtonClick" title="Logout" />
+
+            </div>
+
+            <!-- hosts list -->
+            <asp:Repeater runat="server" id="hostsList" OnItemDataBound="hostsList_ItemDataBound">
+                <ItemTemplate>
+                    <div class="hostDiv">
+                        <a runat="server" id="hostLink" title="connect">
+                            <img src="<%# Eval(" HostImage").ToString() %>" alt="host" width="128px" height="128px"/>
+                        </a>
+                        <br />
+                        <span runat="server" id="hostName"></span>
+                    </div>
+                </ItemTemplate>
+            </asp:Repeater>
+
+        </div>
+
+        <!-- ********************************************************************************************************************************************************************************** -->
+        <!-- *** TOOLBAR                                                                                                                                                                    *** -->
+        <!-- ********************************************************************************************************************************************************************************** -->
+
+        <div runat="server" id="toolbarToggle" visible="false">
+            <!-- icon from: https://icons8.com/ -->
+            <img src="img/icons8-menu-horizontal-21.png" alt="show/hide toolbar" width="21px" height="21px" onclick="toggleToolbar();" />
+        </div>
+
+        <div runat="server" id="toolbar" visible="false" style="visibility:hidden;display:none;">
+
+            <!-- server info -->
+            <input type="text" runat="server" id="serverInfo" title="connected server" disabled="disabled" />
+
+            <!-- user info -->
+            <input type="text" runat="server" id="userInfo" title="connected user" disabled="disabled" />
+
+            <!-- stat bar -->
+            <input type="button" id="stat" value="Stat OFF" onclick="toggleStatMode();" title="display network and rendering info" />
+
+            <!-- debug log -->
+            <input type="button" id="debug" value="Debug OFF" onclick="toggleDebugMode();" title="display debug info" />
+
+            <!-- browser mode -->
+            <input type="button" id="browser" value="HTML5 OFF" onclick="toggleCompatibilityMode();" title="rendering mode" />
+
+            <!-- scale display -->
+            <input type="button" runat="server" id="scale" value="Scale OFF" onclick="toggleScaleDisplay();" title="scale the remote session to the browser size" disabled="disabled" />
+
+            <!-- reconnect session -->
+            <input type="button" runat="server" id="reconnect" value="Reconnect OFF" onclick="toggleReconnectSession();" title="reconnect the remote session to the browser size" disabled="disabled" />
+
+            <!-- device keyboard. on devices without a physical keyboard, forces the device virtual keyboard to pop up, then allow to send text (a text target must be focused) -->
+            <input type="button" runat="server" id="keyboard" value="Text" onclick="openPopup('virtualKeyboardPopup', 'VirtualKeyboard.aspx', false);" title="send some text into the remote session" disabled="disabled" />
+
+            <!-- on-screen keyboard. on devices without a physical keyboard, display an on-screen keyboard, then allow to send characters (a text target must be focused) -->
+            <input type="button" runat="server" id="osk" value="Keyboard" onclick="openPopup('onScreenKeyboardPopup', 'onScreenKeyboard.aspx', false);" title="on-screen keyboard" disabled="disabled" />
+
+            <!-- clipboard synchronization -->
+            <!-- this is a fallback/manual action if the async clipboard API is not supported/enabled/allowed (requires read/write access and HTTPS) -->
+            <input type="button" runat="server" id="clipboard" value="Clipboard" onclick="openPopup('pasteClipboardPopup', 'PasteClipboard.aspx', false);" title="send some text into the remote clipboard" disabled="disabled" />
+
+            <!-- upload/download file(s). only enabled if the connected server is localhost or if a domain is specified (so file(s) can be accessed within the remote session) -->
+            <input type="button" runat="server" id="files" value="Files" onclick="openPopup('fileStoragePopup', 'FileStorage.aspx');" title="upload/download files to/from the user documents folder" disabled="disabled" />
+
+            <!-- send ctrl+alt+del. may be useful to change the user password, for example -->
+            <input type="button" runat="server" id="cad" value="Ctrl+Alt+Del" onclick="sendCtrlAltDel();" title="send Ctrl+Alt+Del" disabled="disabled" />
+
+            <!-- send a right-click on the next touch or left-click action. may be useful on touchpads or iOS devices -->
+            <input type="button" runat="server" id="mrc" value="Right-Click OFF" onclick="toggleRightClick(this);" title="if toggled on, send a Right-Click on the next touch or left-click action" disabled="disabled" />
+
+            <!-- swipe up/down gesture management for touchscreen devices. emulate vertical scroll in applications -->
+            <input type="button" runat="server" id="vswipe" value="VSwipe ON" onclick="toggleVerticalSwipe(this);" title="if toggled on, allow vertical scroll on swipe (experimental feature, disabled on IE/Edge)" disabled="disabled" />
+
+            <!-- share session -->
+            <input type="button" runat="server" id="share" value="Share" onclick="openPopup('shareSessionPopup', 'ShareSession.aspx');" title="share session" disabled="disabled" />
+
+            <!-- disconnect -->
+            <input type="button" runat="server" id="disconnect" value="Disconnect" onclick="doDisconnect();" title="disconnect session" disabled="disabled" />
+
+            <!-- image quality -->
+            <input type="range" runat="server" id="imageQuality" min="5" max="90" step="5" onchange="changeImageQuality(this.value);" title="image quality (lower quality = lower bandwidth usage)" disabled="disabled" />
+
+            <!-- connection info -->
+            <div id="statDiv"></div>
+
+            <!-- debug info -->
+            <div id="debugDiv"></div>
+
+        </div>
+
+        <!-- remote session display -->
+        <div id="displayDiv"></div>
+
+        <!-- remote session helpers -->
+        <div id="cacheDiv"></div>
+        <div id="msgDiv"></div>
+        <div id="kbhDiv"></div>
+        <div id="bgfDiv"></div>
+
+        <!-- draggable popup -->
+        <div id="dragDiv">
+            <div id="dragHandle"></div>
+        </div>
+
+    </form>
+
+</div>
+
+@code
+{
+    private MFAAuthenticationClient _mfaAuthClient = new MFAAuthenticationClient();
+    private EnterpriseClient _enterpriseClient = new EnterpriseClient();
+    private ConnectionClient _connectionClient = new ConnectionClient(Settings.Default.ConnectionServiceUrl);
+
+    private bool _allowRemoteClipboard;
+    private bool _allowFileTransfer;
+    private bool _allowPrintDownload;
+    private bool _allowSessionSharing;
+    private bool _allowAudioPlayback;
+    private bool _allowShareSessionUrl;
+    private bool _clientIPTracking;
+    private bool _toolbarEnabled;
+    private bool _loginEnabled;
+    private string _loginUrl;
+    private bool _httpSessionUseUri;
+
+    protected bool ToolbarVisible;
+    protected bool ToolbarToggleVisible;
+    protected string ServerInfoValue;
+    protected string UserInfoValue;
+    protected bool UserInfoVisible;
+    protected bool ScaleValue;
+    protected bool ScaleDisabled;
+    protected string ReconnectValue;
+    protected bool ReconnectDisabled;
+    protected bool KeyboardDisabled;
+    protected bool OskDisabled;
+    protected bool ClipboardDisabled;
+    protected bool FilesDisabled;
+    protected bool CadDisabled;
+    protected bool MrcDisabled;
+    protected bool VswipeDisabled;
+    protected bool ShareDisabled;
+    protected bool DisconnectDisabled;
+    protected bool ImageQualityDisabled;
+    protected bool HostsVisible;
+    protected string EnterpriseUserInfoValue;
+    protected bool EnterpriseUserInfoVisible;
+    protected bool NewRdpHostVisible;
+    protected bool NewSshHostVisible;
+    protected object HostsListDataSource;
+    protected bool LoginVisible;
+    protected bool MfaDivVisible;
+    protected string MfaProviderInnerText;
+    protected string MfaProviderHRef;
+    protected bool HostConnectDivVisible;
+    protected bool AdminDivVisible;
+    protected string AdminTextInnerText;
+    protected string AdminUrlHRef;
+
+    private bool _authorizedRequest = true;
+
+    private bool _localAdmin;
+
+    private EnterpriseSession _enterpriseSession;
+    protected RemoteSession RemoteSession;
+
+    protected override async Task OnInitializedAsync()
+    {
+        #region Page_Init
+
+        // remote clipboard
+        if (!bool.TryParse(Configuration["AllowRemoteClipboard"], out _allowRemoteClipboard))
+        {
+            _allowRemoteClipboard = true;
+        }
+
+        // file transfer
+        if (!bool.TryParse(Configuration["AllowFileTransfer"], out _allowFileTransfer))
+        {
+            _allowFileTransfer = true;
+        }
+
+        // print download
+        if (!bool.TryParse(Configuration["AllowPrintDownload"], out _allowPrintDownload))
+        {
+            _allowPrintDownload = true;
+        }
+
+        // session sharing
+        if (!bool.TryParse(Configuration["AllowSessionSharing"], out _allowSessionSharing))
+        {
+            _allowSessionSharing = true;
+        }
+
+        // audio playback
+        if (!bool.TryParse(Configuration["AllowAudioPlayback"], out _allowAudioPlayback))
+        {
+            _allowAudioPlayback = true;
+        }
+
+        // share session by url (session spoofing protection if disabled)
+        if (!bool.TryParse(Configuration["AllowShareSessionUrl"], out _allowShareSessionUrl))
+        {
+            _allowShareSessionUrl = true;
+        }
+
+        // client ip tracking
+        if (!bool.TryParse(Configuration["ClientIPTracking"], out _clientIPTracking))
+        {
+            _clientIPTracking = false;
+        }
+
+        // toolbar control
+        if (!bool.TryParse(Configuration["ToolbarEnabled"], out _toolbarEnabled))
+        {
+            _toolbarEnabled = true;
+        }
+
+        // connect from a login page or url
+        if (!bool.TryParse(Configuration["LoginEnabled"], out _loginEnabled))
+        {
+            _loginEnabled = true;
+        }
+
+        // if enabled, url of the login page
+        if (_loginEnabled)
+        {
+            _loginUrl = Configuration["LoginUrl"];
+        }
+
+        // cookieless session
+        var sessionStateSection = (SessionStateSection)ConfigurationManager.GetSection("system.web/sessionState");
+        _httpSessionUseUri = sessionStateSection.Cookieless == HttpCookieMode.UseUri;
+
+        #endregion
+
+        #region Page_Load
+
+        // client ip protection
+        if (_clientIPTracking)
+        {
+            var clientIP = httpContextAccessor.HttpContext.Connection?.RemoteIpAddress?.ToString();
+            var clientIPSessionVariable = await ProtectedSessionStore.GetAsync<string>("ClientIP");
+            var clientIPSessionVariableValue = clientIPSessionVariable.Value;
+
+            if (string.IsNullOrEmpty(clientIPSessionVariableValue))
+            {
+                await ProtectedSessionStore.SetAsync("ClientIP", clientIP);
+            }
+            else if (!string.Equals(clientIPSessionVariableValue, clientIP, StringComparison.OrdinalIgnoreCase))
+            {
+                System.Diagnostics.Trace.TraceWarning("Failed to validate the client ip");
+                _authorizedRequest = false;
+                UpdateControls();
+                return;
+            }
+        }
+
+        //// session spoofing protection
+        //if (_httpSessionUseUri)
+        //{
+        //    if (Request.Cookies[HttpRequestCookies.ClientKey.ToString()] == null)
+        //    {
+        //        if (Session[HttpSessionStateVariables.ClientKey.ToString()] == null || _allowShareSessionUrl)
+        //        {
+        //            var cookie = new HttpCookie(HttpRequestCookies.ClientKey.ToString());
+        //            cookie.Value = Guid.NewGuid().ToString();
+        //            cookie.Path = "/";
+        //            Response.Cookies.Add(cookie);
+        //        }
+        //        else
+        //        {
+        //            System.Diagnostics.Trace.TraceWarning("Failed to validate the client key: missing key");
+        //            _authorizedRequest = false;
+        //            UpdateControls();
+        //            return;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var clientKey = Request.Cookies[HttpRequestCookies.ClientKey.ToString()].Value;
+        //        if (Session[HttpSessionStateVariables.ClientKey.ToString()] == null)
+        //        {
+        //            Session[HttpSessionStateVariables.ClientKey.ToString()] = clientKey;
+        //        }
+        //        else if (!((string)Session[HttpSessionStateVariables.ClientKey.ToString()]).Equals(clientKey) && !_allowShareSessionUrl)
+        //        {
+        //            System.Diagnostics.Trace.TraceWarning("Failed to validate the client key: key mismatch");
+        //            _authorizedRequest = false;
+        //            UpdateControls();
+        //            return;
+        //        }
+        //    }
+        //}
+
+        // retrieve the active enterprise session, if any
+        var enterpriseSessionVariable = await ProtectedSessionStore.GetAsync<EnterpriseSession>("EnterpriseSession");
+        if (enterpriseSessionVariable.Success)
+        {
+            try
+            {
+                _enterpriseSession = enterpriseSessionVariable.Value;
+            }
+            catch (Exception exc)
+            {
+                System.Diagnostics.Trace.TraceError("Failed to retrieve the active enterprise session ({0})", exc);
+            }
+        }
+
+        // retrieve the active remote session, if any
+        var remoteSessionVariable = await ProtectedSessionStore.GetAsync<RemoteSession>("RemoteSession");
+        if (remoteSessionVariable.Success)
+        {
+            try
+            {
+                RemoteSession = remoteSessionVariable.Value;
+
+                //// if using a connection service, send the connection state
+                //if (Session.SessionID.Equals(RemoteSession.OwnerSessionID) && RemoteSession.ConnectionService)
+                //{
+                //    _connectionClient.SetConnectionState(RemoteSession.Id, string.IsNullOrEmpty(RemoteSession.VMAddress) ? RemoteSession.ServerAddress : RemoteSession.VMAddress, GuidHelper.ConvertFromString(RemoteSession.VMGuid), RemoteSession.State);
+                //}
+                _connectionClient.SetConnectionState(RemoteSession.Id, string.IsNullOrEmpty(RemoteSession.VMAddress) ? RemoteSession.ServerAddress : RemoteSession.VMAddress, GuidHelper.ConvertFromString(RemoteSession.VMGuid), RemoteSession.State);
+
+                if (RemoteSession.State == RemoteSessionState.Disconnected)
+                {
+                    // if connecting from a login page or url, show any connection failure into a dialog box
+                    // otherwise, this is delegated to the connection API used and its related UI
+                    if (_loginEnabled)
+                    {
+                        var jsObjectReference = JSRuntime.InvokeAsync<JSObjectReference>("import", "~/js/handleRemoteSessionExit.js").AsTask();
+                        await using var module = await jsObjectReference;
+                        await module.InvokeVoidAsync("handle", RemoteSession.ExitCode, _loginUrl);
+                    }
+
+                    // cleanup
+                    await ProtectedSessionStore.DeleteAsync("RemoteSession");
+                    var guestInfoVariable = await ProtectedSessionStore.GetAsync<RemoteSession>("GuestInfo");
+
+                    if (guestInfoVariable.Success)
+                    {
+                        await ProtectedSessionStore.DeleteAsync("GuestInfo");
+                    }
+                    RemoteSession = null;
+                }
+            }
+            catch (Exception exc)
+            {
+                System.Diagnostics.Trace.TraceError("Failed to retrieve the active remote session ({0})", exc);
+            }
+        }
+        // retrieve a shared remote session from url, if any
+        else if (QueryHelpers.ParseQuery(NavManager.ToAbsoluteUri(NavManager.Uri).Query).TryGetValue("gid", out var gid))
+        {
+            if (Guid.TryParse(gid, out var guestId))
+            {
+                var sharingInfo = GetSharingInfo(guestId);
+                if (sharingInfo != null)
+                {
+                    await ProtectedSessionStore.SetAsync("RemoteSession", sharingInfo.RemoteSession);
+                    await ProtectedSessionStore.SetAsync("GuestInfo", sharingInfo.GuestInfo);
+
+                    try
+                    {
+                        // remove the shared session guid from url
+                        NavManager.NavigateTo("~/", true);
+                    }
+                    catch (ThreadAbortException)
+                    {
+                        // occurs because the response is ended after redirect
+                    }
+                }
+            }
+        }
+
+        if (_httpSessionUseUri)
+        {
+            // if running myrtille into an iframe, the iframe url is registered (into a cookie) after the remote session is connected
+            // this is necessary to prevent a new http session from being generated for the iframe if the page is reloaded, due to the missing http session id into the iframe url (!)
+            // multiple iframes (on the same page), like multiple connections/tabs, requires cookieless="UseUri" for sessionState into web.config
+
+            // problem is, there can be many cases where the cookie is not removed after the remote session is disconnected (network issue, server down, etc?)
+            // if the page is reloaded, the iframe will use it's previously registered http session... which may not exist anymore or have its active remote session disconnected
+            // if that happens, unregister the iframe url (from the cookie) and reload the page; that will provide a new connection identifier to the iframe and reconnect it
+            if (QueryHelpers.ParseQuery(NavManager.ToAbsoluteUri(NavManager.Uri).Query).TryGetValue("fid", out var fid) && RemoteSession == null)
+            {
+                // remove the cookie for the given iframe
+                var val = await JSRuntime.InvokeAsync<string>("blazorExtensions.WriteCookie", "fid", fid, DateTime.Now.AddDays(-1));
+
+                // reload the page
+                this.StateHasChanged();
+            }
+        }
+
+        // local admin
+        //if (_enterpriseSession == null && RemoteSession == null && _enterpriseClient.GetMode() == EnterpriseMode.Local && !string.IsNullOrEmpty(Request["mode"]) && Request["mode"].Equals("admin"))
+        if (_enterpriseSession == null &&
+            RemoteSession == null &&
+            _enterpriseClient.GetMode() == EnterpriseMode.Local &&
+            QueryHelpers.ParseQuery(NavManager.ToAbsoluteUri(NavManager.Uri).Query).TryGetValue("mode", out var mode) &&
+            string.Equals(mode.ToString(), "admin", StringComparison.OrdinalIgnoreCase))
+        {
+            _localAdmin = true;
+        }
+
+        //// postback events may redirect after execution; UI is updated from there
+        //if (!IsPostBack)
+        //{
+        //    UpdateControls();
+        //}
+
+        //// disable the browser cache; in addition to a "noCache" dummy param, with current time, on long-polling and xhr requests
+        //Response.Cache.SetCacheability(HttpCacheability.NoCache);
+        //Response.Cache.SetNoStore();
+
+        #endregion
+    }
+
+    /// <summary>
+    /// update the UI
+    /// </summary>
+    private void UpdateControls()
+    {
+        // remote session toolbar
+        if (RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected))
+        {
+            if (_toolbarEnabled)
+            {
+                // interacting with the remote session is available to guests with control access, but only the remote session owner should have control on the remote session itself
+                var controlEnabled = Session.SessionID.Equals(RemoteSession.OwnerSessionID) || (Session[HttpSessionStateVariables.GuestInfo.ToString()] != null && ((GuestInfo)Session[HttpSessionStateVariables.GuestInfo.ToString()]).Control);
+
+                ToolbarVisible = true;
+                ToolbarToggleVisible = true;
+                ServerInfoValue = !string.IsNullOrEmpty(RemoteSession.VMGuid) ? RemoteSession.VMGuid : (!string.IsNullOrEmpty(RemoteSession.HostName) ? RemoteSession.HostName : RemoteSession.ServerAddress);
+                UserInfoValue = !string.IsNullOrEmpty(RemoteSession.VMGuid) || RemoteSession.SecurityProtocol == SecurityProtocol.rdp ? string.Empty : (string.IsNullOrEmpty(RemoteSession.UserDomain) ? RemoteSession.UserName : string.Format("{0}\\{1}", RemoteSession.UserDomain, RemoteSession.UserName));
+                UserInfoVisible = !string.IsNullOrEmpty(UserInfoValue);
+                ScaleValue = RemoteSession.BrowserResize == BrowserResize.Scale ? "Scale ON" : "Scale OFF";
+                ScaleDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
+                ReconnectValue = RemoteSession.BrowserResize == BrowserResize.Reconnect ? "Reconnect ON" : "Reconnect OFF";
+                ReconnectDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
+                KeyboardDisabled = !controlEnabled || (!string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode);
+                OskDisabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
+                ClipboardDisabled = !controlEnabled || RemoteSession.HostType == HostType.SSH || !RemoteSession.AllowRemoteClipboard || (!string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode);
+                FilesDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH || !RemoteSession.AllowFileTransfer || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain)) || !string.IsNullOrEmpty(RemoteSession.VMGuid);
+                CadDisabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
+                MrcDisabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
+                VswipeDisabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
+                ShareDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || !RemoteSession.AllowSessionSharing;
+                DisconnectDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
+                ImageQualityDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
+            }
+        }
+        // hosts list
+        else if (_enterpriseSession != null && _enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.NONE)
+        {
+            HostsVisible = true;
+            EnterpriseUserInfoValue = string.IsNullOrEmpty(_enterpriseSession.Domain) ? _enterpriseSession.UserName : string.Format("{0}\\{1}", _enterpriseSession.Domain, _enterpriseSession.UserName);
+            EnterpriseUserInfoVisible = !string.IsNullOrEmpty(EnterpriseUserInfoValue);
+            NewRdpHostVisible = _enterpriseSession.IsAdmin;
+            NewSshHostVisible = _enterpriseSession.IsAdmin;
+            HostsListDataSource = _enterpriseClient.GetSessionHosts(_enterpriseSession.SessionID);
+            HostsList.DataBind();
+        }
+        // login screen
+        else
+        {
+            // connection params are sent when the login form is submitted, either through http post (the default form method) or http get (querystring)
+            LoginVisible = _loginEnabled;
+
+            // MFA
+            if (_mfaAuthClient.GetState())
+            {
+                MfaDivVisible = true;
+                MfaProviderInnerText = _mfaAuthClient.GetPromptLabel();
+                MfaProviderHRef = _mfaAuthClient.GetProviderURL();
+            }
+
+            // enterprise mode
+            if (_enterpriseClient.GetMode() == EnterpriseMode.Domain || _localAdmin)
+            {
+                HostConnectDivVisible = false;
+                AdminDivVisible = _localAdmin;
+                if (AdminDivVisible)
+                {
+                    AdminTextInnerText = "Home";
+                    AdminUrlHRef = "~/";
+                }
+            }
+            // standard mode
+            else
+            {
+                connect.Attributes["onclick"] = "initDisplay();";
+                AdminDivVisible = _enterpriseClient.GetMode() == EnterpriseMode.Local;
+            }
+        }
+    }
+
+    /// <summary>
+    /// enterprise mode from url: load the enterprise session (from querystring param) and proceed to connection; the user is non admin and the url is only usable once
+    /// enterprise mode from login: authenticate the user against the enterprise active directory and list the servers available to the user; the user is admin if member of the "EnterpriseAdminGroup" defined into myrtille services config
+    /// standard mode: connect the specified server; authentication is delegated to the remote server or connection broker (if applicable)
+    /// if MFA is enabled and not already processed, authenticate the user against the configured MFA provider (OTP preferred)
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    protected void ConnectButtonClick(
+        object sender,
+        EventArgs e)
+    {
+        if (!_authorizedRequest)
+            return;
+
+        // one time usage enterprise session url
+        if (_enterpriseSession == null && Request["SI"] != null && Request["SD"] != null && Request["SK"] != null)
+        {
+            CreateEnterpriseSessionFromUrl();
+        }
+
+        // MFA (OTP passcode)
+        if (_enterpriseSession == null && _mfaAuthClient.GetState())
+        {
+            var clientIP = ClientIPHelper.ClientIPFromRequest(new HttpContextWrapper(HttpContext.Current).Request, true, new string[] { });
+            if (!_mfaAuthClient.Authenticate(user.Value, mfaPassword.Value, clientIP))
+            {
+                connectError.InnerText = "MFA Authentication failed!";
+                UpdateControls();
+                return;
+            }
+        }
+
+        // enterprise mode from login
+        if (_enterpriseSession == null && (_enterpriseClient.GetMode() == EnterpriseMode.Domain || _localAdmin))
+        {
+            CreateEnterpriseSessionFromLogin();
+        }
+        // connection from:
+        // > standard mode
+        // > enterprise mode: hosts list
+        // > enterprise mode: one time session url
+        else
+        {
+            // the display size is required to start a remote session
+            // if missing, the client will provide it automatically
+            if (string.IsNullOrEmpty(width.Value) || string.IsNullOrEmpty(height.Value))
+            {
+                return;
+            }
+
+            // connect
+            if (ConnectRemoteServer())
+            {
+                // in enterprise mode from login, a new http session id was already generated (no need to do it each time an host is connected!)
+                // in standard mode or enterprise mode from url, a new http session id must be generated
+                if (_enterpriseSession == null || Request["SI"] != null)
+                {
+                    // session fixation protection
+                    if (_httpSessionUseUri)
+                    {
+                        // generate a new http session id
+                        RemoteSession.OwnerSessionID = HttpSessionHelper.RegenerateSessionId();
+                    }
+                }
+                try
+                {
+                    // standard mode: switch to http get (standard login) or remove the connection params from url (auto-connect / start program from url)
+                    // enterprise mode: remove the host id from url
+                    Response.Redirect("~/", true);
+                }
+                catch (ThreadAbortException)
+                {
+                    // occurs because the response is ended after redirect
+                }
+            }
+            // connection failed from the hosts list or from a one time session url
+            else if (_enterpriseSession != null && Request["SD"] != null)
+            {
+                try
+                {
+                    // remove the host id from url
+                    Response.Redirect("~/", true);
+                }
+                catch (ThreadAbortException)
+                {
+                    // occurs because the response is ended after redirect
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// connect the remote server
+    /// </summary>
+    /// <remarks>
+    /// authentication is delegated to the remote server or connection broker (if applicable)
+    /// </remarks>
+    private bool ConnectRemoteServer()
+    {
+        // connection parameters
+        string loginHostName = null;
+        var loginHostType = (HostType)Convert.ToInt32(hostType.Value);
+        var loginProtocol = (SecurityProtocol)securityProtocol.SelectedIndex;
+        var loginServer = string.IsNullOrEmpty(server.Value) ? "localhost" : server.Value;
+        var loginVMGuid = vmGuid.Value;
+        var loginVMAddress = string.Empty;
+        var loginVMEnhancedMode = vmEnhancedMode.Checked;
+        var loginDomain = domain.Value;
+        var loginUser = user.Value;
+        var loginPassword = string.IsNullOrEmpty(passwordHash.Value) ? password.Value : CryptoHelper.RDP_Decrypt(passwordHash.Value);
+        var startProgram = program.Value;
+
+        // allowed features
+        var allowRemoteClipboard = _allowRemoteClipboard;
+        var allowFileTransfer = _allowFileTransfer;
+        var allowPrintDownload = _allowPrintDownload;
+        var allowSessionSharing = _allowSessionSharing;
+        var allowAudioPlayback = _allowAudioPlayback;
+
+        // sharing parameters
+        int maxActiveGuests = int.MaxValue;
+
+        var connectionId = Guid.NewGuid();
+
+        // connect an host from the hosts list or from a one time session url
+        if (_enterpriseSession != null && (!string.IsNullOrEmpty(Request["SD"])))
+        {
+            long hostId;
+            if (!long.TryParse(Request["SD"], out hostId))
+            {
+                hostId = 0;
+            }
+
+            try
+            {
+                // retrieve the host connection details
+                var connection = _enterpriseClient.GetSessionConnectionDetails(_enterpriseSession.SessionID, hostId, _enterpriseSession.SessionKey);
+                if (connection == null)
+                {
+                    System.Diagnostics.Trace.TraceInformation("Unable to retrieve host {0} connection details (invalid host or one time session url already used?)", hostId);
+                    return false;
+                }
+
+                loginHostName = connection.HostName;
+                loginHostType = connection.HostType;
+                loginProtocol = connection.Protocol;
+                loginServer = !string.IsNullOrEmpty(connection.HostAddress) ? connection.HostAddress : connection.HostName;
+                loginVMGuid = connection.VMGuid;
+                loginVMEnhancedMode = connection.VMEnhancedMode;
+                loginDomain = connection.Domain;
+                loginUser = connection.Username;
+                loginPassword = CryptoHelper.RDP_Decrypt(connection.Password);
+                startProgram = connection.StartRemoteProgram;
+            }
+            catch (Exception exc)
+            {
+                System.Diagnostics.Trace.TraceError("Failed to retrieve host {0} connection details ({1})", hostId, exc);
+                return false;
+            }
+        }
+        // by using a connection service on a backend (connection API), the connection details can be hidden from querystring and mapped to a connection identifier
+        else if (!string.IsNullOrEmpty(Request["cid"]))
+        {
+            if (!Guid.TryParse(Request["cid"], out connectionId))
+            {
+                System.Diagnostics.Trace.TraceInformation("Invalid connection id {0}", Request["cid"]);
+                return false;
+            }
+
+            try
+            {
+                // retrieve the connection details
+                var connection = _connectionClient.GetConnectionInfo(connectionId);
+                if (connection == null)
+                {
+                    System.Diagnostics.Trace.TraceInformation("Unable to retrieve connection info {0}", connectionId);
+                    return false;
+                }
+
+                // ensure the user is allowed to connect the host
+                if (!_connectionClient.IsUserAllowedToConnectHost(connection.User.Domain, connection.User.UserName, connection.Host.IPAddress, connection.VM != null ? connection.VM.Guid : Guid.Empty))
+                {
+                    System.Diagnostics.Trace.TraceInformation("User: domain={0}, name={1} is not allowed to connect host {2}", connection.User.Domain, connection.User.UserName, connection.Host.IPAddress);
+                    return false;
+                }
+
+                loginHostType = connection.Host.HostType;
+                loginProtocol = connection.Host.SecurityProtocol;
+                loginServer = connection.Host.IPAddress;
+                loginVMGuid = connection.VM != null ? connection.VM.Guid.ToString() : string.Empty;
+                loginVMAddress = connection.VM != null ? connection.VM.IPAddress : string.Empty;
+                loginVMEnhancedMode = connection.VM != null ? connection.VM.EnhancedMode : false;
+                loginDomain = connection.User.Domain;
+                loginUser = connection.User.UserName;
+                loginPassword = connection.User.Password;
+                startProgram = connection.StartProgram;
+
+                allowRemoteClipboard = allowRemoteClipboard && connection.AllowRemoteClipboard;
+                allowFileTransfer = allowFileTransfer && connection.AllowFileTransfer;
+                allowPrintDownload = allowPrintDownload && connection.AllowPrintDownload;
+                allowSessionSharing = allowSessionSharing && connection.MaxActiveGuests > 0;
+                allowAudioPlayback = allowAudioPlayback && connection.AllowAudioPlayback;
+
+                maxActiveGuests = connection.MaxActiveGuests;
+            }
+            catch (Exception exc)
+            {
+                System.Diagnostics.Trace.TraceError("Failed to retrieve connection info {0} ({1})", connectionId, exc);
+                return false;
+            }
+        }
+        // if the connection from login screen or url is disabled, the connection must be done either by using a connection API or from the enterprise mode
+        else if (!_loginEnabled)
+        {
+            return false;
+        }
+
+        // remove any active remote session (disconnected?)
+        if (RemoteSession != null)
+        {
+            // unset the remote session for the current http session
+            Session[HttpSessionStateVariables.RemoteSession.ToString()] = null;
+            RemoteSession = null;
+        }
+
+        // create a new remote session
+        try
+        {
+            MediaTypeNames.Application.Lock();
+
+            // create the remote session
+            RemoteSession = new RemoteSession(
+                connectionId,
+                loginHostName,
+                loginHostType,
+                loginProtocol,
+                loginServer,
+                loginVMGuid,
+                loginVMAddress,
+                loginVMEnhancedMode,
+                !string.IsNullOrEmpty(loginDomain) ? loginDomain : AccountHelper.GetDomain(loginUser, loginPassword),
+                AccountHelper.GetUserName(loginUser),
+                loginPassword,
+                int.Parse(width.Value),
+                int.Parse(height.Value),
+                startProgram,
+                allowRemoteClipboard,
+                allowFileTransfer,
+                allowPrintDownload,
+                allowSessionSharing,
+                allowAudioPlayback,
+                maxActiveGuests,
+                Session.SessionID,
+                (string)Session[HttpSessionStateVariables.ClientKey.ToString()],
+                Request["cid"] != null
+            );
+
+            // bind the remote session to the current http session
+            Session[HttpSessionStateVariables.RemoteSession.ToString()] = RemoteSession;
+
+            // register the remote session at the application level
+            var remoteSessions = (IDictionary<Guid, RemoteSession>)Application[HttpApplicationStateVariables.RemoteSessions.ToString()];
+            remoteSessions.Add(RemoteSession.Id, RemoteSession);
+        }
+        catch (Exception exc)
+        {
+            System.Diagnostics.Trace.TraceError("Failed to create remote session ({0})", exc);
+            RemoteSession = null;
+        }
+        finally
+        {
+            MediaTypeNames.Application.UnLock();
+        }
+
+        // connect it
+        if (RemoteSession != null)
+        {
+            RemoteSession.State = RemoteSessionState.Connecting;
+        }
+        else
+        {
+            connectError.InnerText = "Failed to create remote session!";
+            return false;
+        }
+
+        return true;
+    }
+
+    #region enterprise mode
+
+    /// <summary>
+    /// create an enterprise session from a one time url
+    /// </summary>
+    private void CreateEnterpriseSessionFromUrl()
+    {
+        try
+        {
+            // create enterprise session from querystring params
+            _enterpriseSession = new EnterpriseSession
+            {
+                IsAdmin = false,    // simple host connection only (no hosts management)
+                SessionID = Request["SI"],
+                SessionKey = Request["SK"],
+                SingleUseConnection = true
+            };
+
+            // bind the enterprise session to the current http session
+            Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = _enterpriseSession;
+
+            // session fixation protection
+            if (_httpSessionUseUri)
+            {
+                // generate a new http session id
+                HttpSessionHelper.RegenerateSessionId();
+            }
+        }
+        catch (Exception exc)
+        {
+            System.Diagnostics.Trace.TraceError("Failed to create enterprise session from url ({0})", exc);
+        }
+    }
+
+    /// <summary>
+    /// authenticate the user against the enterprise active directory and list the servers available to the user
+    /// </summary>
+    private void CreateEnterpriseSessionFromLogin()
+    {
+        try
+        {
+            // authenticate the user
+            _enterpriseSession = _enterpriseClient.Authenticate(user.Value, password.Value);
+
+            if (_enterpriseSession == null || _enterpriseSession.AuthenticationErrorCode != EnterpriseAuthenticationErrorCode.NONE)
+            {
+                if (_enterpriseSession == null)
+                {
+                    connectError.InnerText = EnterpriseAuthenticationErrorHelper.GetErrorDescription(EnterpriseAuthenticationErrorCode.UNKNOWN_ERROR);
+                }
+                else if (_enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.PASSWORD_EXPIRED)
+                {
+                    ClientScript.RegisterClientScriptBlock(GetType(), Guid.NewGuid().ToString(), "window.onload = function() { " + string.Format("openPopup('changePasswordPopup', 'EnterpriseChangePassword.aspx?userName={0}" + (_localAdmin ? "&mode=admin" : string.Empty) + "');", user.Value) + " }", true);
+                }
+                else
+                {
+                    connectError.InnerText = EnterpriseAuthenticationErrorHelper.GetErrorDescription(_enterpriseSession.AuthenticationErrorCode);
+                }
+                UpdateControls();
+                return;
+            }
+
+            // bind the enterprise session to the current http session
+            Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = _enterpriseSession;
+
+            // session fixation protection
+            if (_httpSessionUseUri)
+            {
+                // generate a new http session id
+                HttpSessionHelper.RegenerateSessionId();
+            }
+
+            // redirect to the hosts list
+            Response.Redirect("~/", true);
+        }
+        catch (ThreadAbortException)
+        {
+            // occurs because the response is ended after redirect
+        }
+        catch (Exception exc)
+        {
+            System.Diagnostics.Trace.TraceError("Failed to create enterprise session from login ({0})", exc);
+        }
+    }
+
+    /// <summary>
+    /// populate the enterprise session hosts list
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    protected void hostsList_ItemDataBound(
+        object sender,
+        RepeaterItemEventArgs e)
+    {
+        try
+        {
+            var host = e.Item.DataItem as EnterpriseHost;
+
+            if (host.PromptForCredentials || string.IsNullOrEmpty(_enterpriseSession.Domain))
+            {
+                var hostLink = e.Item.FindControl("hostLink") as HtmlAnchor;
+                hostLink.HRef = null;
+                hostLink.Attributes["onclick"] = string.Format("openPopup('editCredentialPopup', 'CredentialsPrompt.aspx?hostId={0}');", host.HostID);
+                hostLink.Attributes["class"] = "hostLink";
+            }
+            else
+            {
+                var hostLink = e.Item.FindControl("hostLink") as HtmlAnchor;
+                hostLink.HRef = string.Format("?SD={0}&__EVENTTARGET=&__EVENTARGUMENT=&connect=Connect%21", host.HostID);
+                hostLink.Attributes["class"] = "hostLink";
+            }
+
+            var hostName = e.Item.FindControl("hostName") as HtmlGenericControl;
+            hostName.InnerText = (_enterpriseSession.IsAdmin ? "Edit " : string.Empty) + host.HostName;
+            if (_enterpriseSession.IsAdmin)
+            {
+                hostName.Attributes["class"] = "hostName";
+                hostName.Attributes["title"] = "edit";
+                hostName.Attributes["onclick"] = string.Format("openPopup('editHostPopup', 'EditHost.aspx?hostId={0}');", host.HostID);
+            }
+        }
+        catch (Exception exc)
+        {
+            System.Diagnostics.Trace.TraceError("Failed to populate hosts for the enterprise session {0} ({1})", _enterpriseSession.SessionID, exc);
+        }
+    }
+
+    /// <summary>
+    /// logout the enterprise session
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    protected void LogoutButtonClick(
+        object sender,
+        EventArgs e)
+    {
+        if (!_authorizedRequest)
+            return;
+
+        if (_enterpriseSession == null)
+            return;
+
+        try
+        {
+            // logout the enterprise session
+            _enterpriseClient.Logout(_enterpriseSession.SessionID);
+            Session[HttpSessionStateVariables.EnterpriseSession.ToString()] = null;
+            _enterpriseSession = null;
+
+            // redirect to the login screen
+            Response.Redirect("~/", true);
+        }
+        catch (ThreadAbortException)
+        {
+            // occurs because the response is ended after redirect
+        }
+        catch (Exception exc)
+        {
+            System.Diagnostics.Trace.TraceError("Failed to logout the enterprise session {0} ({1})", _enterpriseSession.SessionID, exc);
+        }
+    }
+
+    #endregion
+
+    #region session sharing
+
+    /// <summary>
+    /// retrieve a shared remote session information
+    /// </summary>
+    /// <param name="guestId"></param>
+    /// <returns></returns>
+    private SharingInfo GetSharingInfo(
+        Guid guestId)
+    {
+        SharingInfo sharingInfo = null;
+
+        try
+        {
+            MediaTypeNames.Application.Lock();
+
+            var sharedSessions = (IDictionary<Guid, SharingInfo>)Application[HttpApplicationStateVariables.SharedRemoteSessions.ToString()];
+            if (!sharedSessions.ContainsKey(guestId))
+            {
+                connectError.InnerText = "Invalid sharing link";
+            }
+            else
+            {
+                sharingInfo = sharedSessions[guestId];
+                if (sharingInfo.GuestInfo.Active)
+                {
+                    connectError.InnerText = "The sharing link was already used";
+                    sharingInfo = null;
+                }
+                else if (sharingInfo.RemoteSession.State != RemoteSessionState.Connected)
+                {
+                    connectError.InnerText = "The session is not connected";
+                    sharingInfo = null;
+                }
+                else if (sharingInfo.RemoteSession.ActiveGuests >= sharingInfo.RemoteSession.MaxActiveGuests)
+                {
+                    connectError.InnerText = "The maximum number of active guests was reached for the session";
+                    sharingInfo = null;
+                }
+                else
+                {
+                    sharingInfo.HttpSession = Session;
+                    sharingInfo.RemoteSession.ActiveGuests++;
+                    sharingInfo.GuestInfo.Active = true;
+                }
+            }
+        }
+        catch (Exception exc)
+        {
+            System.Diagnostics.Trace.TraceError("Failed to retrieve the shared remote session for guest {0} ({1})", guestId, exc);
+        }
+        finally
+        {
+            MediaTypeNames.Application.UnLock();
+        }
+
+        return sharingInfo;
+    }
+
+    #endregion
+}
