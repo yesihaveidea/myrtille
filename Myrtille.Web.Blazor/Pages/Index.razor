@@ -301,7 +301,7 @@
     protected string ServerInfoValue;
     protected string UserInfoValue;
     protected bool UserInfoVisible;
-    protected bool ScaleValue;
+    protected string ScaleValue;
     protected bool ScaleDisabled;
     protected string ReconnectValue;
     protected bool ReconnectDisabled;
@@ -592,7 +592,7 @@
     /// <summary>
     /// update the UI
     /// </summary>
-    private void UpdateControls()
+    private async Task UpdateControls()
     {
         // remote session toolbar
         if (RemoteSession != null && (RemoteSession.State == RemoteSessionState.Connecting || RemoteSession.State == RemoteSessionState.Connected))
@@ -600,34 +600,36 @@
             if (_toolbarEnabled)
             {
                 // interacting with the remote session is available to guests with control access, but only the remote session owner should have control on the remote session itself
-                var controlEnabled = Session.SessionID.Equals(RemoteSession.OwnerSessionID) || (Session[HttpSessionStateVariables.GuestInfo.ToString()] != null && ((GuestInfo)Session[HttpSessionStateVariables.GuestInfo.ToString()]).Control);
+                var guestInfoVariable = await ProtectedSessionStore.GetAsync<GuestInfo>("GuestInfo");
+                var sessionIdVariable = await ProtectedSessionStore.GetAsync<string>("SessionID");
+                var controlEnabled = sessionIdVariable.Value.Equals(RemoteSession.OwnerSessionID) || (guestInfoVariable.Success && guestInfoVariable.Value.Control);
 
                 ToolbarVisible = true;
                 ToolbarToggleVisible = true;
                 ServerInfoValue = !string.IsNullOrEmpty(RemoteSession.VMGuid) ? RemoteSession.VMGuid : (!string.IsNullOrEmpty(RemoteSession.HostName) ? RemoteSession.HostName : RemoteSession.ServerAddress);
-                UserInfoValue = !string.IsNullOrEmpty(RemoteSession.VMGuid) || RemoteSession.SecurityProtocol == SecurityProtocol.rdp ? string.Empty : (string.IsNullOrEmpty(RemoteSession.UserDomain) ? RemoteSession.UserName : string.Format("{0}\\{1}", RemoteSession.UserDomain, RemoteSession.UserName));
+                UserInfoValue = !string.IsNullOrEmpty(RemoteSession.VMGuid) || RemoteSession.SecurityProtocol == SecurityProtocol.rdp ? string.Empty : (string.IsNullOrEmpty(RemoteSession.UserDomain) ? RemoteSession.UserName : $"{RemoteSession.UserDomain}\\{RemoteSession.UserName}");
                 UserInfoVisible = !string.IsNullOrEmpty(UserInfoValue);
                 ScaleValue = RemoteSession.BrowserResize == BrowserResize.Scale ? "Scale ON" : "Scale OFF";
-                ScaleDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
+                ScaleDisabled = !sessionIdVariable.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
                 ReconnectValue = RemoteSession.BrowserResize == BrowserResize.Reconnect ? "Reconnect ON" : "Reconnect OFF";
-                ReconnectDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
+                ReconnectDisabled = !sessionIdVariable.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
                 KeyboardDisabled = !controlEnabled || (!string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode);
                 OskDisabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
                 ClipboardDisabled = !controlEnabled || RemoteSession.HostType == HostType.SSH || !RemoteSession.AllowRemoteClipboard || (!string.IsNullOrEmpty(RemoteSession.VMGuid) && !RemoteSession.VMEnhancedMode);
-                FilesDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH || !RemoteSession.AllowFileTransfer || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain)) || !string.IsNullOrEmpty(RemoteSession.VMGuid);
+                FilesDisabled = !sessionIdVariable.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH || !RemoteSession.AllowFileTransfer || (RemoteSession.ServerAddress.ToLower() != "localhost" && RemoteSession.ServerAddress != "127.0.0.1" && RemoteSession.ServerAddress != "[::1]" && RemoteSession.ServerAddress != Request.Url.Host && string.IsNullOrEmpty(RemoteSession.UserDomain)) || !string.IsNullOrEmpty(RemoteSession.VMGuid);
                 CadDisabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
                 MrcDisabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
                 VswipeDisabled = !controlEnabled || RemoteSession.HostType == HostType.SSH;
-                ShareDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || !RemoteSession.AllowSessionSharing;
-                DisconnectDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID);
-                ImageQualityDisabled = !Session.SessionID.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
+                ShareDisabled = !sessionIdVariable.Equals(RemoteSession.OwnerSessionID) || !RemoteSession.AllowSessionSharing;
+                DisconnectDisabled = !sessionIdVariable.Equals(RemoteSession.OwnerSessionID);
+                ImageQualityDisabled = !sessionIdVariable.Equals(RemoteSession.OwnerSessionID) || RemoteSession.HostType == HostType.SSH;
             }
         }
         // hosts list
         else if (_enterpriseSession != null && _enterpriseSession.AuthenticationErrorCode == EnterpriseAuthenticationErrorCode.NONE)
         {
             HostsVisible = true;
-            EnterpriseUserInfoValue = string.IsNullOrEmpty(_enterpriseSession.Domain) ? _enterpriseSession.UserName : string.Format("{0}\\{1}", _enterpriseSession.Domain, _enterpriseSession.UserName);
+            EnterpriseUserInfoValue = string.IsNullOrEmpty(_enterpriseSession.Domain) ? _enterpriseSession.UserName : $"{_enterpriseSession.Domain}\\{_enterpriseSession.UserName}";
             EnterpriseUserInfoVisible = !string.IsNullOrEmpty(EnterpriseUserInfoValue);
             NewRdpHostVisible = _enterpriseSession.IsAdmin;
             NewSshHostVisible = _enterpriseSession.IsAdmin;
